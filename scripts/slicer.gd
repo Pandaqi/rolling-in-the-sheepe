@@ -1,5 +1,7 @@
 extends Node2D
 
+const MIN_AREA_FOR_VALID_SHAPE : float = 400.0
+
 onready var main_node = get_node("/root/Main")
 var body_scene = preload("res://scenes/body.tscn")
 
@@ -86,8 +88,6 @@ func slice_body(b, p1, p2):
 	
 	# determine which shapes belong together ("are in the same layer")
 	var shape_layers = determine_shape_layers(new_shapes, p1, p2)
-	
-	print(shape_layers)
 
 	# create bodies for each set of points left over
 	for key in shape_layers:
@@ -195,6 +195,14 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	return [shape1, shape2]
 
 func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
+	var area = 0
+	for shp in shapes:
+		var extra_area = calculate_area(shp)
+		area += extra_area
+		
+	area /= float(shapes.size())
+	if area < MIN_AREA_FOR_VALID_SHAPE: return null
+	
 	var body = body_scene.instance()
 	
 	# the average centroid of all centroids will be the center of the new body
@@ -212,6 +220,9 @@ func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
 	return body
 
 func create_body_from_shape(shp : Array) -> RigidBody2D:
+	var area = calculate_area(shp)
+	if area < MIN_AREA_FOR_VALID_SHAPE: return null
+	
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
@@ -293,3 +304,22 @@ func point_is_between(a, b, c):
 		return false
 	
 	return true
+
+func calculate_area(shp):
+	var x_bounds = Vector2(INF, -INF)
+	var y_bounds = Vector2(INF, -INF)
+	
+	for point in shp:
+		x_bounds.x = min(point.x, x_bounds.x)
+		x_bounds.y = max(point.x, x_bounds.y)
+		
+		y_bounds.x = min(point.y, y_bounds.x)
+		y_bounds.y = max(point.y, y_bounds.y)
+	
+	var width = (x_bounds.y - x_bounds.x)
+	var height = (y_bounds.y - y_bounds.x)
+	
+	return 0.5*width*height
+	
+	
+	

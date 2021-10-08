@@ -1,6 +1,6 @@
 extends Node2D
 
-const SIZE : float = 100.0
+const SIZE : float = 20.0
 
 func create_from_shape_list(shapes):
 	var col_node = get_parent().get_node("CollisionPolygon2D")
@@ -10,8 +10,6 @@ func create_from_shape_list(shapes):
 		var shape_node = ConvexPolygonShape2D.new()
 		shape_node.points = shp
 		get_parent().shape_owner_add_shape(0, shape_node)
-
-	print(get_parent().get_shape_owners())
 
 	update()
 
@@ -23,15 +21,18 @@ func create_from_shape(shp):
 	
 	update()
 
+func create_from_random_shape():
+	create_from_shape(create_random_shape())
+
 func create_random_shape():
 	var shape = []
 	
 	var ang = 0
 	var avg_ang_jump = 0.2*PI
-	var ang_jump_error = 1.0
+	var ang_jump_error = 0.5
 	
 	var avg_radius = SIZE
-	var avg_radius_error = 1.0
+	var avg_radius_error = 0.5
 	
 	while ang < 2*PI:
 		var radius = (1.0 + (randf() - 0.5)*avg_radius_error)*avg_radius

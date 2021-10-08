@@ -1,0 +1,6 @@
+[gd_scene format=2]
+
+[node name="Opening" type="Node2D" groups=[
+"Opening",
+]]
+position = Vector2( 33, 287 )
