@@ -16,5 +16,7 @@ script = ExtResource( 1 )
 [node name="Mover" type="Node2D" parent="."]
 script = ExtResource( 2 )
 
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]

@@ -6,7 +6,10 @@ var body_scene = preload("res://scenes/body.tscn")
 var start_point
 var end_point
 
-onready var test_body = get_node("/root/Main/Body")
+onready var test_shaper = get_node("/root/Main/Body/Shaper")
+
+func _ready():
+	test_shaper.create_from_shape(test_shaper.create_random_shape())
 
 func _input(ev):
 	if ev is InputEventMouseMotion:
@@ -75,100 +78,74 @@ func slice_body(b, p1, p2):
 	
 	# shape lists are the same? nothing happened, abort mission
 	if cur_shapes.size() == new_shapes.size():
+		print("Slicing didn't change anything")
 		return
 	
 	# destroy the old body
 	b.queue_free()
 	
-	# THE IDEA
-	# Create an object: "shape layers"
-	# For each triangle, check if it has matching points with other triangles
-	#  => If we find something, immediately put our shape into the SAME category as the one we matched
-	#  => If we find nothing, create a new category for us, and put us in there
-	# We should end up with 1+ lists of shapes that "belong together". Create a body for each list, then handing the shapes directly to it.
-	var shape_layers = []
+	# determine which shapes belong together ("are in the same layer")
+	var shape_layers = determine_shape_layers(new_shapes, p1, p2)
+	
+	print(shape_layers)
+
+	# create bodies for each set of points left over
+	for key in shape_layers:
+		create_body_from_shape_list(shape_layers[key])
+
+func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
 	
+	# initialize all to "no layer"
+	for i in range(new_shapes.size()):
+		saved_layers.append(-1)
 	
-	# merge the new triangles
-	# TO DO: THis is all a bit wonky and I'm not sure if this is the way to go
-	var merge_triangles = true
-
-	if merge_triangles:
-		for i in range(0, new_shapes.size()):
-			var tr1 = new_shapes[i]
+	# move through shapes left to right
+	var cur_highest_layer = 0
+	for i in range(new_shapes.size()):
 		
-			for j in range(i+1, new_shapes.size()):
-				var tr2 = new_shapes[j]
-					
-				var res = try_merge(tr1, tr2)
-				if res.size() == 2: continue
-					
-				new_shapes[i] = res[0]
-				tr1 = res[0]
-	
-	# create bodies for each set of points left over
-	for shp in new_shapes:
-		create_body_from_shape(shp)
-
-func try_merge(tr1, tr2):
-	var epsilon : float = 0.003
-	
-	var start1 = -1
-	var start2 = -1
-	
-	var sequence_length = -1
-	
-	# TO DO: ISSUE => this might not be the first point _in sequence_
-	#        We, somehow, need to check at which point the LONGEST sequence starts
-	# find the first matching point
-	for a in range(tr1.size()):
-		var p1 = tr1[a]
-		for b in range(tr2.size()):
-			var p2 = tr2[b]
-			if (p1-p2).length() > epsilon: continue
+		# not in a layer yet? create a new one, add us to it, and save the index
+		# (the previous shapes never matched ours, so we can't be in the same layer)
+		if saved_layers[i] == -1:
+			saved_layers[i] = cur_highest_layer
+			cur_highest_layer += 1
+		
+		# now check if we're adjacent to any other shapes
+		var our_layer = saved_layers[i]
+		for j in range(new_shapes.size()):
+			if i == j: continue
 			
-			start1 = a
-			start2 = b
-			sequence_length = 1
-			break
+			var their_layer = saved_layers[j]
+			if their_layer == our_layer: continue
+			
+			if not is_adjacent(new_shapes[i], new_shapes[j], p1, p2): continue
+
+			# they aren't in any group yet? put them in our group
+			if their_layer == -1:
+				saved_layers[j] = our_layer
+				continue
+			
+			# they are part of an earlier group?
+			# reduce us to that group and start checking again
+			if their_layer < our_layer:
+				saved_layers[i] = their_layer
+				our_layer = their_layer
+				j = -1 # start again from the front, because we need to take everyone else in our (previous) layer with us
 	
-	# no match? abort mission
-	if sequence_length < 0:
-		return [tr1, tr2]
+	# now that each shape has a layer index,
+	# simply build a dictionary from that
+	var shape_layers = {}
 	
-	# now check for how long we keep matching
-	var found_match = true
-	var pos1 = start1
-	var pos2 = start2
-	
-	while found_match:
-		found_match = false
+	for i in range(new_shapes.size()):
+		var shp = new_shapes[i]
+		var layer = saved_layers[i]
 		
-		pos1 = (pos1 + 1) % int(tr1.size())
-		pos2 = (pos2 - 1 + tr2.size()) % int(tr2.size())
+		if not shape_layers.has(layer):
+			shape_layers[layer] = []
 		
-		if (pos1-pos2).length() > epsilon: break
-		
-		found_match = true
-		sequence_length += 1
+		shape_layers[layer].append(shp)
 	
-	# no proper match? abort mission
-	if sequence_length <= 1:
-		return [tr1, tr2]
-	
-	# all UNMATCHED points need to be added to the original one
-	# to merge the two triangles
-	var points_to_add = tr2.size() - sequence_length
-	for i in range(points_to_add):
-		start2 = (start2 + 1) % int(tr2.size())
-		
-		var pos = tr2[start2]
-		
-		tr1.insert(start1, pos)
-		start1 += 1
-	
-	return [tr1]
+	return shape_layers
 
 func make_shape_global(owner, shape : ConvexPolygonShape2D) -> Array:
 	var trans = owner.get_global_transform()
@@ -178,10 +155,6 @@ func make_shape_global(owner, shape : ConvexPolygonShape2D) -> Array:
 		points[j] = trans.xform(points[j])
 	
 	return points
-
-#func make_shape_global(b, shape):
-#	for i in range(shape.size()):
-#		shape[i] = b.get_global_position() + shape[i].rotated(b.get_rotation())
 
 func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	shp = shp + []
@@ -208,9 +181,7 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 			succesful_slice = true
 			break
 	
-	if not succesful_slice: 
-		print("Nothing to slice!")
-		return [shp]
+	if not succesful_slice: return [shp]
 	
 	shape1 = shp.slice(0,intersect_indices[0])
 	shape1.append(intersect_points[0])
@@ -222,17 +193,30 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	shape2.append(intersect_points[1])
 	
 	return [shape1, shape2]
+
+func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
+	var body = body_scene.instance()
 	
-	#var b1 = create_body_from_shape(shape1)
-	#var b2 = create_body_from_shape(shape2)
+	# the average centroid of all centroids will be the center of the new body
+	var avg_pos = Vector2.ZERO
+	for shp in shapes:
+		avg_pos += calculate_centroid(shp)
+	
+	avg_pos /= float(shapes.size())
+	body.position = avg_pos
+	
+	# now we ask the body to create a collision thing from our shapes
+	body.get_node("Shaper").create_from_shape_list(shapes)
+	main_node.call_deferred("add_child", body)
+	
+	return body
 
 func create_body_from_shape(shp : Array) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
 	
-	# NOTE: the shape is currently GLOBAL, but because the shaper module already repositions it around Vector2.ZERO ( = -centroid), it automatically makes it LOCAL
-	body.get_node("Shaper").shape = shp
+	body.get_node("Shaper").create_from_shape(shp)
 	main_node.call_deferred("add_child", body)
 	
 	return body
@@ -274,3 +258,38 @@ func calculate_centroid(shp):
 		avg += point
 	
 	return avg / float(shp.size())
+
+func is_adjacent(sh1, sh2, slice_start, slice_end):
+	var epsilon : float = 0.05
+	
+	for p1 in sh1:
+		
+		var along_slicing_line = point_is_between(slice_start, slice_end, p1)
+		if along_slicing_line: continue
+		
+		for p2 in sh2:
+			along_slicing_line = point_is_between(slice_start, slice_end, p2)
+			if along_slicing_line: continue
+			
+			if (p1-p2).length() > epsilon: continue
+
+			return true
+
+func point_is_between(a, b, c):
+	# CRUCIAL NOTE! 
+	#  => If you take this too SMALL, this will perform erratically, ruining the algorithm
+	#  => If too big, it will obviously slice more than it should
+	#  => However, seeing that the crossproduct uses non-normalized vectors, and distances can be huge, I think you're quite safe with epsilons > 0.1
+	var epsilon = 0.1
+	
+	var crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y)
+	if abs(crossproduct) > epsilon: return false
+	
+	var dotproduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y)*(b.y - a.y)
+	if dotproduct < 0: return false
+	
+	var squaredlengthba = (b - a).length_squared()
+	if dotproduct > squaredlengthba:
+		return false
+	
+	return true
