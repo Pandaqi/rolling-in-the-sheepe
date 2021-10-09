@@ -5,7 +5,6 @@
 [ext_resource path="res://scripts/module_shaper.gd" type="Script" id=3]
 
 [sub_resource type="PhysicsMaterial" id=1]
-bounce = 0.5
 
 [node name="Body" type="RigidBody2D" groups=[
 "Players",
@@ -26,5 +25,6 @@ script = ExtResource( 2 )
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 
+[connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]
