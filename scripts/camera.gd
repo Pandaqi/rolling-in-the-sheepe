@@ -15,21 +15,26 @@ func _physics_process(dt):
 	zoom_to_show_all_players(dt)
 
 func focus_on_average_player_pos(dt):
-	var avg_pos = Vector2.ZERO
-	var num_data_points = players.size()
+	if players.size() <= 0: return
+	
+	var avg_pos : Vector2 = Vector2.ZERO
+	var num_data_points : float = players.size()
 	for p in players:
 		avg_pos += p.get_global_position()
 	
-	var coming_pos_weight = 2.0
-	
-	avg_pos += coming_pos_weight * generator.get_pos_just_ahead()
-	num_data_points += coming_pos_weight
+	var coming_pos = generator.get_pos_just_ahead()
+	if coming_pos:
+		var coming_pos_weight = 2.0
+		avg_pos += coming_pos_weight * coming_pos
+		num_data_points += coming_pos_weight
 	
 	avg_pos /= float(num_data_points)
 	
 	position = lerp(position, avg_pos, 5*dt)
 
 func zoom_to_show_all_players(dt):
+	if players.size() <= 0: return
+	
 	var vp = get_viewport().size
 	var cam_pos = get_position()
 	
@@ -45,8 +50,9 @@ func zoom_to_show_all_players(dt):
 	
 	# check that position up ahead, to include it as well
 	var pos_ahead = generator.get_pos_just_ahead()
-	player_bounds.x = max(abs(pos_ahead.x - cam_pos.x), player_bounds.x)
-	player_bounds.y = max(abs(pos_ahead.y - cam_pos.y), player_bounds.y)
+	if pos_ahead:
+		player_bounds.x = max(abs(pos_ahead.x - cam_pos.x), player_bounds.x)
+		player_bounds.y = max(abs(pos_ahead.y - cam_pos.y), player_bounds.y)
 	
 	var wanted_vp = 2*player_bounds
 	wanted_vp += ZOOM_MARGIN
