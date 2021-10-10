@@ -14,6 +14,7 @@ const AIR_RESISTANCE_FORCE : float = 10.0
 
 var normal_vec : Vector2
 var cling_vec : Vector2
+var debug_cling_raycasts = []
 var in_air : bool = false
 
 var keys_down = {
@@ -79,8 +80,11 @@ func determine_normal_vec():
 # TO DO: Add clingable objects to their own layer?
 #        Or should you also cling to other players??
 
-# TO DO: Bit of duplicate code between this one and determining normal vec (loads of raycasts)
-#		 Optimize or not?
+# TO DO: Now I reset the clinging vector (to zero) if you're not moving (quickly enough)
+#		 Change this to allow you to just _stay clung to the wall_ when not giving input?
+
+# TO DO: Bit of duplicate code between this one and determining normal vec (loads of raycasts) => Optimize or not?
+
 func execute_wall_cling():
 	get_parent().gravity_scale = 0.5*BASE_GRAVITY_SCALE
 	
@@ -106,16 +110,22 @@ func execute_wall_cling():
 	
 	var moving_angle = moving_dir.angle()
 	
+	debug_cling_raycasts = []
+	
 	for i in range(dirs.size()):
 		var dir = dirs[i]
 		
-		#if moving_dir.dot(dir) <= 0: continue
 		dir = dir.rotated(moving_angle)
 		
-		var end = start + dir*CLING_RAYCAST_DIST
+		var extra_raycast_margin = 8
+		var raycast_dist = get_parent().get_node("Shaper").get_bounding_box_along_vec(dir) + extra_raycast_margin
+
+		var end = start + dir*raycast_dist
+		
+		debug_cling_raycasts.append(end)
 	
 		var exclude = [get_parent()]
-		var collision_layer = 1
+		var collision_layer = 2
 		
 		var result = space_state.intersect_ray(start, end, exclude, collision_layer)
 		if not result: continue
@@ -130,6 +140,8 @@ func execute_wall_cling():
 		avg_cling_vec += weight*cling_dir
 		considered_vectors += weight
 	
+	update()
+	
 	if considered_vectors <= 0: 
 		cling_vec = Vector2.ZERO
 		return
@@ -139,4 +151,9 @@ func execute_wall_cling():
 	
 	if cling_vec.y < 0:
 		get_parent().gravity_scale = 0.5*BASE_GRAVITY_SCALE
+
+func _draw():
+	set_rotation(-get_parent().rotation)
 	
+	for rc in debug_cling_raycasts:
+		draw_line(Vector2.ZERO, rc - get_global_position(), Color(1,0,0), 5)

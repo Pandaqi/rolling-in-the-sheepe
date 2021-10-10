@@ -7,7 +7,7 @@ const NUM_ROOMS_BACK_BUFFER : int = 5
 const NUM_ROOMS_FRONT_BUFFER : int = 5
 
 const TILE_SIZE : float = 64.0
-const WORLD_SIZE : int = 30
+const WORLD_SIZE : Vector2 = Vector2(50, 30)
 var default_starting_pos = Vector2(0.5,0)*WORLD_SIZE
 var map = []
 
@@ -17,17 +17,20 @@ var path_dirs = []
 var leading_player
 var trailing_player
 
-var player_scene = preload("res://scenes/body.tscn")
+var edge_scene = preload("res://scenes/edge.tscn")
+
 var RoomRect = preload("res://scripts/RoomRect.gd")
+
+var pause_room_generation : bool = false
 
 var total_rooms_created : int = 0
 var rooms_until_finish : int = 0
-var level_size_bounds : Vector2 = Vector2(10, 20) #Vector2(100, 150)
+var level_size_bounds : Vector2 = Vector2(200, 300)
 var has_finished : bool = false
 
 var rooms_in_current_section : int = 0
 var rooms_until_section_end : int = 0
-var section_size_bounds : Vector2 = Vector2(15, 30)
+var section_size_bounds : Vector2 = Vector2(30, 60)
 
 onready var tilemap = $TileMap
 onready var tilemap_terrain = $TileMapTerrain
@@ -39,37 +42,27 @@ var test_player
 # Initialization
 #
 ####
-func _ready():
+func generate():
 	randomize()
 	
 	set_global_parameters()
 	
 	initialize_grid()
 	initialize_rooms()
-	
-	place_test_player()
 
-func place_test_player():
-	var player = player_scene.instance()
-	player.get_node("Shaper").create_from_random_shape()
-	place_inside_room(cur_path[0], player)
-	call_deferred("add_child", player)
-	
-	test_player = player
-
-func place_inside_room(pos, player):
+func place_inside_room(pos):
 	var room = get_room_at(pos)
-	player.set_position(room.get_center())
+	return room.get_center()
 
 func initialize_grid():
 	map = []
-	map.resize(WORLD_SIZE)
+	map.resize(WORLD_SIZE.x)
 
-	for x in range(WORLD_SIZE):
+	for x in range(WORLD_SIZE.x):
 		map[x] = []
-		map[x].resize(WORLD_SIZE)
+		map[x].resize(WORLD_SIZE.y)
 		
-		for y in range(WORLD_SIZE):
+		for y in range(WORLD_SIZE.y):
 			var pos = Vector2(x,y)
 			
 			tilemap.set_cellv(pos, 0)
@@ -78,17 +71,17 @@ func initialize_grid():
 				'pos': pos,
 				'terrain': null,
 				'edges': [null, null, null, null],
-				'room': null
+				'room': null,
 			}
 	
 	# create an extra border around the world so we can never just go outside
-	for x in range(-1, WORLD_SIZE+1):
+	for x in range(-1, WORLD_SIZE.x+1):
 		tilemap.set_cellv(Vector2(x, -1), 0)
-		tilemap.set_cellv(Vector2(x, WORLD_SIZE), 0)
+		tilemap.set_cellv(Vector2(x, WORLD_SIZE.y), 0)
 	
-	for y in range(-1, WORLD_SIZE+1):
+	for y in range(-1, WORLD_SIZE.y+1):
 		tilemap.set_cellv(Vector2(-1,y), 0)
-		tilemap.set_cellv(Vector2(WORLD_SIZE,y), 0)
+		tilemap.set_cellv(Vector2(WORLD_SIZE.x,y), 0)
 
 func initialize_rooms():
 	var num_rooms = 5
@@ -97,33 +90,93 @@ func initialize_rooms():
 
 func set_global_parameters():
 	rooms_until_finish = floor(rand_range(level_size_bounds.x, level_size_bounds.y))
-	rooms_in_current_section = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
+	rooms_until_section_end = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
 
 ####
 #
 # Easily changing (or accessing) properties of cells
 #
 ####
+func get_cell(pos):
+	return map[pos.x][pos.y]
+
 func change_terrain_at(pos, type):
-	map[pos.x][pos.y].terrain = type
+	get_cell(pos).terrain = type
+
+# TO DO: Actually set to the given TYPE
+# TO DO: Check if the other side actually exists (in both functions - add + remove)
+func set_edge_at(pos, dir_index, type):
+	var e = edge_scene.instance()
+	var vec = get_vector_from_dir(dir_index)
+
+	var edge_grid_pos = pos + 0.5*Vector2(1,1) + 0.5*vec
+	e.set_position(edge_grid_pos*TILE_SIZE)
+	e.set_rotation(dir_index * 0.5 * PI)
+	
+	get_cell(pos).edges[dir_index] = e
+	
+	var other_side = vec
+	var other_dir_index = (dir_index + 2) % 4
+	get_cell(pos+other_side).edges[other_dir_index] = e
+	
+	add_child(e)
+
+func remove_edge_at(pos, dir_index):
+	var other_pos = pos + get_vector_from_dir(dir_index)
+	var other_dir_index = (dir_index + 2) % 4
+	
+	if not get_cell(pos).edges[dir_index]: return
+	
+	get_cell(pos).edges[dir_index].queue_free()
+	get_cell(pos).edges[dir_index] = null
+	
+	get_cell(other_pos).edges[other_dir_index].queue_free()
+	get_cell(other_pos).edges[other_dir_index] = null
 
 ####
 #
 # Helpers
 #
 ####
+func get_random_grid_pos():
+	return Vector2(randi() % int(WORLD_SIZE.x), randi() % int(WORLD_SIZE.y))
+
+func get_real_pos(pos):
+	return pos*TILE_SIZE
+
+func keep_within_bounds(pos : Vector2) -> Vector2:
+	if pos.x < 0: pos.x = 0
+	if pos.x >= WORLD_SIZE.x: pos.x = WORLD_SIZE.x - 1
+	
+	if pos.y < 0: pos.y = 0
+	if pos.y >= WORLD_SIZE.y: pos.y = WORLD_SIZE.y - 1
+	
+	return pos
+
+func get_vector_from_dir(d):
+	var angle = d*0.5*PI
+	return Vector2(cos(angle), sin(angle))
+
+func get_dir_from_vector(vec):
+	var angle = vec.angle()
+	var epsilon = 0.003
+	return floor( (angle * 4) / 2*PI + epsilon )
+
 func get_cell_from_node(node):
 	var grid_pos = node.get_global_position() / float(TILE_SIZE)
-	return map[grid_pos.x][grid_pos.y]
+	return get_cell(grid_pos)
 
 func get_room_at(pos):
-	return map[pos.x][pos.y].room
+	return get_cell(pos).room
 
 func set_room_at(pos, r):
-	map[pos.x][pos.y].room = r
+	for x in range(r.size.x):
+		for y in range(r.size.y):
+			var new_pos = r.pos + Vector2(x,y)
+			get_cell(new_pos).room = r
 
 func out_of_bounds(pos):
-	return pos.x < 0 or pos.x >= WORLD_SIZE or pos.y < 0 or pos.y >= WORLD_SIZE
+	return pos.x < 0 or pos.x >= WORLD_SIZE.x or pos.y < 0 or pos.y >= WORLD_SIZE.y
 
 func is_empty(pos):
 	if out_of_bounds(pos): return false
@@ -141,6 +194,12 @@ func get_cur_room_index(p : RigidBody2D) -> int:
 	
 	return -1
 
+func get_path_from_front(offset : int = 0):
+	var index = cur_path.size() - 1 - offset
+	if index < 0: return null
+	
+	return get_room_at(cur_path[index])
+
 func get_furthest_room():
 	if cur_path.size() == 0: return null
 	
@@ -153,7 +212,11 @@ func can_place_rectangle(r):
 			var my_pos = r.pos + Vector2(x,y)
 			if out_of_bounds(my_pos): return false
 			
-			for their_pos in cur_path:
+			for i in range(cur_path.size()):
+				var cur_furthest_room = (i == (cur_path.size() - 1))
+				if cur_furthest_room: continue
+				
+				var their_pos = cur_path[i]
 				var other_room = get_room_at(their_pos)
 				
 				if r.overlaps(other_room): return false
@@ -263,19 +326,19 @@ func _physics_process(dt):
 	determine_leading_and_trailing_player()
 	check_for_new_room()
 	check_for_old_room_deletion()
-#
-#	if test_player:
-#		print(get_cur_room_index(test_player))
 
-func create_new_room():
+func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
+	if pause_room_generation: return
+	
 	var rand_rect = RoomRect.new()
 	rand_rect.init(self, tilemap, tilemap_terrain)
 	
-	total_rooms_created += 1
-	rooms_in_current_section += 1
+	if proposed_location:
+		rand_rect.pos = proposed_location
 	
 	var place_finish = (total_rooms_created > rooms_until_finish)
 	var place_lock = (rooms_in_current_section > rooms_until_section_end)
+	var ignore_wanted_placements = false
 	
 	var require_large_size = (place_finish or place_lock)
 	
@@ -287,8 +350,8 @@ func create_new_room():
 	
 	var room = get_furthest_room()
 	var num_tries = 0
-	var max_tries = 1000
-	
+	var smaller_room_try_threshold = 400
+	var max_tries = 600
 	
 	if room:
 		var base_pos = room.pos
@@ -298,6 +361,19 @@ func create_new_room():
 			bad_choice = false
 			
 			rand_rect.set_random_size(require_large_size)
+			
+			# when we're out of space (mostly)
+			# try 1-wide, very long rooms for a while
+			# (they'll most likely fit AND get us out of trouble)
+			if num_tries > smaller_room_try_threshold:
+				var ratio = 1.0 - (num_tries - smaller_room_try_threshold) / float(max_tries - smaller_room_try_threshold)
+				var long_side = round( max(5 * ratio, 1) )
+				
+				rand_rect.set_size(Vector2(1,long_side))
+				if randf() <= 0.5:
+					rand_rect.set_size(Vector2(long_side,1))
+				
+				ignore_wanted_placements = true
 
 			var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 			var candidates = []
@@ -317,7 +393,7 @@ func create_new_room():
 				
 				rand_rect.set_pos(temp_pos)
 				
-				if not can_place_rectangle(rand_rect): continue
+				if not can_place_rectangle(rand_rect.copy_and_grow(1)): continue
 				
 				candidates.append({ 'dir': dir, 'pos': temp_pos, 'dir_index': i })
 			
@@ -331,8 +407,13 @@ func create_new_room():
 			new_dir = final_candidate.dir_index
 	
 	if num_tries >= max_tries:
-		print("NO MORE PLACES TO GO => Place teleporter or end level")
+		pause_room_generation = true
+		get_furthest_room().turn_into_teleporter()
 		return
+	
+	var first_room = (cur_path.size() == 0)
+	if first_room:
+		rand_rect.set_random_size(true)
 	
 	rand_rect.set_pos(new_pos)
 	rand_rect.erase_tiles()
@@ -344,26 +425,31 @@ func create_new_room():
 	var grown_rect = rand_rect.copy_and_grow(1)
 	check_for_slopes(grown_rect)
 	
-	if place_finish:
-		has_finished = true
-		rand_rect.paint_terrain("finish")
-	
-	elif place_lock:
-		rand_rect.add_lock()
+	if not ignore_wanted_placements:
+		if place_finish:
+			has_finished = true
+			rand_rect.paint_terrain("finish")
 		
-		rooms_in_current_section = 0
-		rooms_until_section_end = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
+		elif place_lock:
+			rand_rect.add_lock()
+			
+			rooms_in_current_section = 0
+			rooms_until_section_end = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
+	
+	total_rooms_created += rand_rect.get_longest_side()
+	rooms_in_current_section += rand_rect.get_longest_side()
 
 func delete_oldest_room():
 	var old_pos = cur_path.pop_front()
 	var old_room = get_room_at(old_pos)
 	
-	old_room.fill_tiles()
+	old_room.delete()
 	
 	map[old_pos.x][old_pos.y].room = null
 
 func check_for_new_room():
 	if not leading_player: return
+	if pause_room_generation: return
 	if has_finished: return
 	
 	var index = get_cur_room_index(leading_player)
@@ -416,3 +502,8 @@ func get_pos_just_ahead():
 	coming_positions /= num_positions_considered
 	
 	return coming_positions
+
+func delete_all_rooms():
+	var num_rooms = cur_path.size()
+	for i in range(num_rooms):
+		delete_oldest_room()

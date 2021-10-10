@@ -1,6 +1,6 @@
 extends Node2D
 
-const WORLD_SIZE : int = 30
+const WORLD_SIZE : Vector2 = Vector2(50, 30)
 const TILE_DIMENSIONS : int = 6
 const ROOM_SIZE : float = 64.0*TILE_DIMENSIONS
 var map = []
@@ -34,17 +34,17 @@ func place_inside_room(pos, player):
 	player.set_position(room_pos)
 
 func out_of_bounds(pos):
-	return pos.x < 0 or pos.x >= WORLD_SIZE or pos.y < 0 or pos.y >= WORLD_SIZE
+	return pos.x < 0 or pos.x >= WORLD_SIZE.x or pos.y < 0 or pos.y >= WORLD_SIZE.y
 
 func initialize_grid():
 	map = []
-	map.resize(WORLD_SIZE)
+	map.resize(WORLD_SIZE.x)
 
-	for x in range(WORLD_SIZE):
+	for x in range(WORLD_SIZE.x):
 		map[x] = []
-		map[x].resize(WORLD_SIZE)
+		map[x].resize(WORLD_SIZE.y)
 		
-		for y in range(WORLD_SIZE):
+		for y in range(WORLD_SIZE.y):
 			var pos = Vector2(x,y)
 
 			map[x][y] = {

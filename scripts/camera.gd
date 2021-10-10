@@ -1,12 +1,15 @@
 extends Camera2D
 
-const MIN_ZOOM : float = 0.25
-const MAX_ZOOM : float = 1.0
+const MIN_ZOOM : float = 0.75
+const MAX_ZOOM : float = 4.0
 
 const ZOOM_MARGIN : Vector2 = Vector2(250.0, 150.0)
 
 var players
-onready var generator = get_parent()
+onready var map = get_node("/root/Main/Map")
+
+# TO DO: Test if this even works AND if it's a good idea (focusing on the look ahead this much)
+var look_ahead : bool = false
 
 func _physics_process(dt):
 	players = get_tree().get_nodes_in_group("Players")
@@ -22,8 +25,8 @@ func focus_on_average_player_pos(dt):
 	for p in players:
 		avg_pos += p.get_global_position()
 	
-	var coming_pos = generator.get_pos_just_ahead()
-	if coming_pos:
+	var coming_pos = map.get_pos_just_ahead()
+	if coming_pos and look_ahead:
 		var coming_pos_weight = 2.0
 		avg_pos += coming_pos_weight * coming_pos
 		num_data_points += coming_pos_weight
@@ -49,8 +52,8 @@ func zoom_to_show_all_players(dt):
 		player_bounds.y = max(y_dist, player_bounds.y)
 	
 	# check that position up ahead, to include it as well
-	var pos_ahead = generator.get_pos_just_ahead()
-	if pos_ahead:
+	var pos_ahead = map.get_pos_just_ahead()
+	if pos_ahead and look_ahead:
 		player_bounds.x = max(abs(pos_ahead.x - cam_pos.x), player_bounds.x)
 		player_bounds.y = max(abs(pos_ahead.y - cam_pos.y), player_bounds.y)
 	

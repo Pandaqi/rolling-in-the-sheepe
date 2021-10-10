@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://scripts/locks/teleporter.gd" type="Script" id=1]
+[ext_resource path="res://assets/fonts/main_small.tres" type="DynamicFont" id=2]
+
+[node name="Teleporter" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Timer" type="Timer" parent="."]
+
+[node name="Label" type="Node2D" parent="."]
+
+[node name="Label" type="Label" parent="Label"]
+margin_left = -18.7089
+margin_top = -15.1453
+margin_right = 21.2911
+margin_bottom = 17.8547
+custom_fonts/font = ExtResource( 2 )
+text = "?"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

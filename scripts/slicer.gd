@@ -2,16 +2,11 @@ extends Node2D
 
 const MIN_AREA_FOR_VALID_SHAPE : float = 400.0
 
-onready var main_node = get_node("/root/Main")
+onready var map = get_node("/root/Main/Map")
 var body_scene = preload("res://scenes/body.tscn")
 
 var start_point
 var end_point
-
-onready var test_shaper = get_node("/root/Main/Body/Shaper")
-
-func _ready():
-	test_shaper.create_from_shape(test_shaper.create_random_shape())
 
 func _input(ev):
 	if ev is InputEventMouseMotion:
@@ -215,7 +210,7 @@ func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
 	
 	# now we ask the body to create a collision thing from our shapes
 	body.get_node("Shaper").create_from_shape_list(shapes)
-	main_node.call_deferred("add_child", body)
+	map.call_deferred("add_child", body)
 	
 	return body
 
@@ -228,7 +223,7 @@ func create_body_from_shape(shp : Array) -> RigidBody2D:
 	body.position = calculate_centroid(shp)
 	
 	body.get_node("Shaper").create_from_shape(shp)
-	main_node.call_deferred("add_child", body)
+	map.call_deferred("add_child", body)
 	
 	return body
 
