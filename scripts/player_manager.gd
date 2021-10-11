@@ -28,10 +28,11 @@ func create_player(player_num : int):
 	var rand_shape = available_shapes.pop_front()
 	
 	player.get_node("Shaper").create_from_shape(predefined_shapes[rand_shape])
-	player.get_node("Status").set_player_num(self, player_num)
 	
 	player.set_position(map.place_inside_room(map.cur_path[0]))
-	map.call_deferred("add_child", player)
+	map.add_child(player)
+	
+	player.get_node("Status").set_player_num(player_num)
 
 func load_colors():
 	var num_colors = 10

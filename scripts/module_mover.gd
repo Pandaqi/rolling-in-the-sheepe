@@ -4,10 +4,9 @@ const BASE_GRAVITY_SCALE : float = 5.0
 const ANGULAR_IMPULSE_STRENGTH : float = 200.0
 
 const JUMP_FORCE : float = 90.0
-const JUMP_RAYCAST_DIST : float = 40.0
-
-const CLING_RAYCAST_DIST : float = 40.0
 const CLING_FORCE : float = 30.0
+
+const EXTRA_RAYCAST_MARGIN : float = 8.0
 
 # NOTE: This force is applied _constantly_, each frame, so it should be quite low
 const AIR_RESISTANCE_FORCE : float = 10.0
@@ -58,7 +57,8 @@ func determine_normal_vec():
 	
 	var num_hits = 0
 	for dir in dirs:
-		var end = start + dir*JUMP_RAYCAST_DIST
+		var raycast_dist = get_parent().get_node("Shaper").get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
+		var end = start + dir*raycast_dist
 		
 		var exclude = [get_parent()]
 		var collision_layer = 1
@@ -116,10 +116,8 @@ func execute_wall_cling():
 		var dir = dirs[i]
 		
 		dir = dir.rotated(moving_angle)
-		
-		var extra_raycast_margin = 8
-		var raycast_dist = get_parent().get_node("Shaper").get_bounding_box_along_vec(dir) + extra_raycast_margin
 
+		var raycast_dist = get_parent().get_node("Shaper").get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
 		var end = start + dir*raycast_dist
 		
 		debug_cling_raycasts.append(end)

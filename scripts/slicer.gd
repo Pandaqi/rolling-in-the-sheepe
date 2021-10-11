@@ -1,6 +1,6 @@
 extends Node2D
 
-const MIN_AREA_FOR_VALID_SHAPE : float = 400.0
+const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
 
 onready var map = get_node("/root/Main/Map")
 var body_scene = preload("res://scenes/body.tscn")
@@ -79,6 +79,9 @@ func slice_body(b, p1, p2):
 		return
 	
 	# destroy the old body
+	var original_player_num = b.get_node("Status").player_num
+	map.on_body_sliced(b)
+	b.remove_from_group("Players")
 	b.queue_free()
 	
 	# determine which shapes belong together ("are in the same layer")
@@ -86,7 +89,7 @@ func slice_body(b, p1, p2):
 
 	# create bodies for each set of points left over
 	for key in shape_layers:
-		create_body_from_shape_list(shape_layers[key])
+		create_body_from_shape_list(original_player_num, shape_layers[key])
 
 func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
@@ -189,7 +192,7 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	
 	return [shape1, shape2]
 
-func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
+func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2D:
 	var area = 0
 	for shp in shapes:
 		var extra_area = calculate_area(shp)
@@ -210,7 +213,11 @@ func create_body_from_shape_list(shapes : Array) -> RigidBody2D:
 	
 	# now we ask the body to create a collision thing from our shapes
 	body.get_node("Shaper").create_from_shape_list(shapes)
-	map.call_deferred("add_child", body)
+	
+	map.add_child(body)
+	
+	# and we make sure it has the same parent as the original body
+	body.get_node("Status").set_player_num(player_num)
 	
 	return body
 

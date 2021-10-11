@@ -25,7 +25,7 @@ var pause_room_generation : bool = false
 
 var total_rooms_created : int = 0
 var rooms_until_finish : int = 0
-var level_size_bounds : Vector2 = Vector2(200, 300)
+var level_size_bounds : Vector2 = Vector2(5, 10) #Vector2(200, 300)
 var has_finished : bool = false
 
 var rooms_in_current_section : int = 0
@@ -115,11 +115,13 @@ func set_edge_at(pos, dir_index, type):
 	
 	get_cell(pos).edges[dir_index] = e
 	
+	add_child(e)
+	
 	var other_side = vec
+	if out_of_bounds(pos+other_side): return
+	
 	var other_dir_index = (dir_index + 2) % 4
 	get_cell(pos+other_side).edges[other_dir_index] = e
-	
-	add_child(e)
 
 func remove_edge_at(pos, dir_index):
 	var other_pos = pos + get_vector_from_dir(dir_index)
@@ -129,6 +131,8 @@ func remove_edge_at(pos, dir_index):
 	
 	get_cell(pos).edges[dir_index].queue_free()
 	get_cell(pos).edges[dir_index] = null
+	
+	if out_of_bounds(other_pos): return
 	
 	get_cell(other_pos).edges[other_dir_index].queue_free()
 	get_cell(other_pos).edges[other_dir_index] = null
@@ -185,7 +189,7 @@ func is_empty(pos):
 
 func get_cur_room_index(p : RigidBody2D) -> int:
 	var pos = p.get_global_position()
-	for i in range(cur_path.size()):
+	for i in range(cur_path.size()-1,-1,-1):
 		var point = cur_path[i]
 		var room = get_room_at(point)
 		
@@ -206,15 +210,14 @@ func get_furthest_room():
 	var pos = cur_path[cur_path.size() - 1]
 	return get_room_at(pos)
 
-func can_place_rectangle(r):
+func can_place_rectangle(r, ignore_room_index):
 	for x in range(r.size.x):
 		for y in range(r.size.y):
 			var my_pos = r.pos + Vector2(x,y)
 			if out_of_bounds(my_pos): return false
 			
 			for i in range(cur_path.size()):
-				var cur_furthest_room = (i == (cur_path.size() - 1))
-				if cur_furthest_room: continue
+				if i == ignore_room_index: continue
 				
 				var their_pos = cur_path[i]
 				var other_room = get_room_at(their_pos)
@@ -327,9 +330,7 @@ func _physics_process(dt):
 	check_for_new_room()
 	check_for_old_room_deletion()
 
-func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
-	if pause_room_generation: return
-	
+func initialize_new_room_rect(params):
 	var rand_rect = RoomRect.new()
 	rand_rect.init(self, tilemap, tilemap_terrain)
 	
@@ -337,107 +338,171 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 	if first_room:
 		rand_rect.set_random_size(true)
 	
-	if proposed_location:
-		rand_rect.pos = proposed_location
+	params.rect = rand_rect
+
+# "Optional requirements" means that we WANT to do something at the earliest moment possible
+# but if we're barely able to place rooms, just place a fitting room and postpone it until later
+func set_wanted_room_parameters(params):
+	params.place_finish = (total_rooms_created > rooms_until_finish)
+	params.place_lock = (rooms_in_current_section > rooms_until_section_end)
 	
-	var place_finish = (total_rooms_created > rooms_until_finish)
-	var place_lock = (rooms_in_current_section > rooms_until_section_end)
-	var ignore_wanted_placements = false
+	params.require_large_size = (params.place_finish or params.place_lock)
 	
-	var require_large_size = (place_finish or place_lock)
-	
+	params.ignore_optional_requirements = false
+	params.no_valid_placement = false
+
+func find_valid_configuration(params):
 	# Keep trying to find an open spot
 	# changing room SIZE and DISPLACEMENT ( = exact position) every time
 	var final_candidate
 	var new_pos = default_starting_pos
 	var new_dir = 0
 	
-	var room = get_furthest_room()
 	var num_tries = 0
-	var smaller_room_try_threshold = 400
-	var max_tries = 600
+	var smaller_room_try_threshold = 100
+	var check_against_grown_rect_threshold = 100
+	var max_tries = 200
 	
-	if room:
-		var base_pos = room.pos
-		var bad_choice = true
+	var base_pos = params.room.pos
+	var first_room = (params.room_index == (cur_path.size() - 1))
+	var bad_choice = true
+	
+	print("TRYING WITH BASE POS")
+	print(base_pos)
+	
+	var rect = params.rect
+	
+	params.disallow_going_back = true
+	
+	while bad_choice and num_tries < max_tries:
+		bad_choice = false
 		
-		while bad_choice and num_tries < max_tries:
-			bad_choice = false
+		rect.set_random_size(params.require_large_size)
+		
+		# when we're out of space (mostly)
+		# try 1-wide, very long rooms for a while
+		# (they'll most likely fit AND get us out of trouble)
+		if num_tries > smaller_room_try_threshold:
+			var ratio = 1.0 - (num_tries - smaller_room_try_threshold) / float(max_tries - smaller_room_try_threshold)
+			var long_side = round( max(5 * ratio, 1) )
 			
-			rand_rect.set_random_size(require_large_size)
+			rect.set_size(Vector2(1,long_side))
+			if randf() <= 0.5:
+				rect.set_size(Vector2(long_side,1))
 			
-			# when we're out of space (mostly)
-			# try 1-wide, very long rooms for a while
-			# (they'll most likely fit AND get us out of trouble)
-			if num_tries > smaller_room_try_threshold:
-				var ratio = 1.0 - (num_tries - smaller_room_try_threshold) / float(max_tries - smaller_room_try_threshold)
-				var long_side = round( max(5 * ratio, 1) )
-				
-				rand_rect.set_size(Vector2(1,long_side))
-				if randf() <= 0.5:
-					rand_rect.set_size(Vector2(long_side,1))
-				
-				ignore_wanted_placements = true
+			params.disallow_going_back = false
+			params.ignore_optional_requirements = true
 
-			var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
-			var candidates = []
-			
-			var last_dir = path_dirs[path_dirs.size()-1]
-			var opposite_to_last_dir = ((last_dir + 2) % 4)
-			
-			for i in range(dirs.size()):
+		var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
+		var candidates = []
+		
+		var last_dir = path_dirs[path_dirs.size()-1]
+		var opposite_to_last_dir = ((last_dir + 2) % 4)
+		
+		for i in range(dirs.size()):
+			if params.disallow_going_back:
 				if i == opposite_to_last_dir: continue
-				var random_displacement = get_random_displacement(room, rand_rect, i)
+			
+			var random_displacement = get_random_displacement(params.room, rect, i)
 
-				var dir = dirs[i]
-				var temp_pos = base_pos + dir * room.size + random_displacement
-				
-				if dir.x < 0 or dir.y < 0:
-					temp_pos = base_pos + dir * rand_rect.size + random_displacement
-				
-				rand_rect.set_pos(temp_pos)
-				
-				if not can_place_rectangle(rand_rect.copy_and_grow(1)): continue
-				
+			var dir = dirs[i]
+			var temp_pos = base_pos + dir * params.room.size + random_displacement
+			
+			if dir.x < 0 or dir.y < 0:
+				temp_pos = base_pos + dir * rect.size + random_displacement
+			
+			rect.set_pos(temp_pos)
+			
+			var rect_to_check_against = rect
+			if num_tries < check_against_grown_rect_threshold:
+				rect_to_check_against = rect.copy_and_grow(1)
+			
+			if not can_place_rectangle(rect_to_check_against, params.room_index): continue
+			
+			# make horizontal movements more probable
+			var weight : int = 1
+			if i == 0 or i == 2:
+				weight = 3
+			
+			for w in range(weight):
 				candidates.append({ 'dir': dir, 'pos': temp_pos, 'dir_index': i })
-			
-			if candidates.size() <= 0:
-				bad_choice = true
-				num_tries += 1
-				continue
-			
-			final_candidate = candidates[randi() % candidates.size()]
-			new_pos = final_candidate.pos
-			new_dir = final_candidate.dir_index
+		
+		if candidates.size() <= 0:
+			bad_choice = true
+			num_tries += 1
+			continue
+		
+		final_candidate = candidates[randi() % candidates.size()]
+		
+		params.pos = final_candidate.pos
+		params.dir = final_candidate.dir_index
 	
-	if num_tries >= max_tries:
+	params.no_valid_placement = (num_tries >= max_tries)
+
+func place_room_according_to_params(params):
+	var rect = params.rect
+	
+	rect.set_pos(params.pos)
+	rect.erase_tiles()
+	
+	cur_path.append(params.pos)
+	path_dirs.append(params.dir)
+	set_room_at(params.pos, rect)
+	
+	var grown_rect = rect.copy_and_grow(1)
+	check_for_slopes(grown_rect)
+
+func handle_optional_requirements(params):
+	if params.ignore_optional_requirements: return
+	
+	if params.place_finish:
+		has_finished = true
+		params.rect.paint_terrain("finish")
+		
+	elif params.place_lock:
+		params.rect.add_lock()
+		
+		rooms_in_current_section = 0
+		rooms_until_section_end = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
+
+func update_global_generation_parameters(params):
+	total_rooms_created += params.rect.get_longest_side()
+	rooms_in_current_section += params.rect.get_longest_side()
+
+func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
+	if pause_room_generation: return
+	
+	var room = get_furthest_room()
+	var params = {
+		'pos': default_starting_pos,
+		'dir': 0,
+		'room': room,
+		'room_index': cur_path.size() - 1
+	}
+	
+	if proposed_location: params.pos = proposed_location
+	
+	initialize_new_room_rect(params)
+	set_wanted_room_parameters(params)
+	
+	if room: 
+		# allow backtracking = trying earlier and earlier rooms if the others yield nothing
+		for i in range(NUM_ROOMS_FRONT_BUFFER):
+			params.room_index = cur_path.size() - 1 - i
+			params.room = get_path_from_front(i)
+			find_valid_configuration(params)
+			
+			if not params.no_valid_placement: break
+	
+	if params.no_valid_placement:
 		pause_room_generation = true
 		get_furthest_room().turn_into_teleporter()
 		return
 	
-	rand_rect.set_pos(new_pos)
-	rand_rect.erase_tiles()
+	place_room_according_to_params(params)
+	handle_optional_requirements(params)
 	
-	cur_path.append(new_pos)
-	path_dirs.append(new_dir)
-	set_room_at(new_pos, rand_rect)
-	
-	var grown_rect = rand_rect.copy_and_grow(1)
-	check_for_slopes(grown_rect)
-	
-	if not ignore_wanted_placements:
-		if place_finish:
-			has_finished = true
-			rand_rect.paint_terrain("finish")
-		
-		elif place_lock:
-			rand_rect.add_lock()
-			
-			rooms_in_current_section = 0
-			rooms_until_section_end = floor(rand_range(section_size_bounds.x, section_size_bounds.y))
-	
-	total_rooms_created += rand_rect.get_longest_side()
-	rooms_in_current_section += rand_rect.get_longest_side()
+	update_global_generation_parameters(params)
 
 func delete_oldest_room():
 	var old_pos = cur_path.pop_front()
@@ -448,7 +513,7 @@ func delete_oldest_room():
 	map[old_pos.x][old_pos.y].room = null
 
 func check_for_new_room():
-	if not leading_player: return
+	if not leading_player or not is_instance_valid(leading_player): return
 	if pause_room_generation: return
 	if has_finished: return
 	
@@ -473,8 +538,13 @@ func determine_leading_and_trailing_player():
 	var max_room = -INF
 	var min_room = INF
 	
+	leading_player = null
+	trailing_player = null
+	
 	var players = get_tree().get_nodes_in_group("Players")
 	for p in players:
+		if not is_instance_valid(p): continue
+		
 		var index = get_cur_room_index(p)
 		
 		if index > max_room:
@@ -485,8 +555,15 @@ func determine_leading_and_trailing_player():
 			min_room = index
 			trailing_player = p
 
+func on_body_sliced(b):
+	if b == leading_player:
+		leading_player = null
+	
+	elif b == trailing_player:
+		trailing_player = null
+
 func get_pos_just_ahead():
-	if not leading_player: return null
+	if not leading_player or not is_instance_valid(leading_player): return null
 	
 	var index = get_cur_room_index(leading_player)
 	if index == (cur_path.size()-1): return null

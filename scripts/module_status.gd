@@ -1,10 +1,9 @@
 extends Node2D
 
-var player_manager
+onready var player_manager = get_node("/root/Main/PlayerManager")
 var player_num : int = -1
 
-func set_player_num(manager, num : int):
-	player_manager = manager
+func set_player_num(num : int):
 	player_num = num
 	
 	if has_node("../Input"):

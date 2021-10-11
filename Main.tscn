@@ -33,3 +33,5 @@ format = 1
 
 [node name="PlayerManager" type="Node2D" parent="."]
 script = ExtResource( 7 )
+
+[node name="GUI" type="CanvasLayer" parent="."]
