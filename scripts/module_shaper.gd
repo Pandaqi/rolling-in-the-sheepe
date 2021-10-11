@@ -3,6 +3,7 @@ extends Node2D
 const SIZE : float = 20.0
 
 var bounding_box
+var color : Color = Color(1.0, 0.0, 0.0)
 
 #####
 #
@@ -56,6 +57,9 @@ func create_random_shape():
 # Helpers
 #
 #####
+func set_color(c):
+	color = c
+
 func make_point_global(point):
 	return get_parent().get_global_transform().xform(point)
 
@@ -98,13 +102,11 @@ func on_shape_updated():
 	recalculate_bounding_box() 
 
 func _draw():
-	var col = Color(randf(), randf(), randf())
-	
 	var num_shapes = get_parent().shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
 		var shape = get_parent().shape_owner_get_shape(0, i)
 		var points = shape.points
-		draw_polygon(points, [col])
+		draw_polygon(points, [color])
 
 #####
 #

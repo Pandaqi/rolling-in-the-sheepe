@@ -1,0 +1,89 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://assets/basicshapes.jpg" type="Texture" id=2]
+
+[node name="ShapeList" type="StaticBody2D"]
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
+
+[node name="Basicshapes" type="Sprite" parent="."]
+position = Vector2( -0.130341, 66.9744 )
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 2 )
+
+[node name="Square" type="CollisionPolygon2D" parent="."]
+position = Vector2( -65.6867, -129.254 )
+polygon = PoolVector2Array( -20, -20, 20, -20, 20, 20, -20, 20 )
+
+[node name="Circle" type="CollisionPolygon2D" parent="."]
+position = Vector2( -195.471, -129.254 )
+polygon = PoolVector2Array( 20, 0, 18, 8, 14, 14, 8, 18, 0, 20, -8, 18, -14, 14, -18, 8, -20, 0, -18, -8, -14, -14, -8, -18, 0, -20, 8, -18, 14, -14, 18, -8 )
+
+[node name="Triangle" type="CollisionPolygon2D" parent="."]
+position = Vector2( -130.844, -128.725 )
+polygon = PoolVector2Array( 20, 20, -20, 20, 0, -20 )
+
+[node name="Pentagon" type="CollisionPolygon2D" parent="."]
+position = Vector2( 0, -126.076 )
+polygon = PoolVector2Array( 20, 0, 6, 19, -16, 12, -16, -12, 6, -19 )
+
+[node name="Hexagon" type="CollisionPolygon2D" parent="."]
+position = Vector2( 65.6867, -128.725 )
+polygon = PoolVector2Array( 20, 0, 10, 17, -10, 17, -20, 0, -10, -17, 10, -17 )
+
+[node name="Parallellogram" type="CollisionPolygon2D" parent="."]
+position = Vector2( 66.2165, -65.157 )
+polygon = PoolVector2Array( -22.9927, 14.062, -12.8791, -13.2821, 21.9565, -12.9075, 9.97004, 13.6875 )
+
+[node name="L-Shape" type="CollisionPolygon2D" parent="."]
+position = Vector2( -251.093, -1.05946 )
+polygon = PoolVector2Array( -20, -20, 0, -20, 0, 0, 20, 0, 20, 20, -20, 20 )
+
+[node name="StarPenta" type="CollisionPolygon2D" parent="."]
+polygon = PoolVector2Array( -0.0625458, -21.8882, 6.11099, -8.13805, 21.2642, -6.45436, 10.3202, 4.20902, 12.8458, 18.801, -0.34317, 12.3469, -13.5321, 19.6429, -10.7259, 4.48964, -21.9506, -6.17375, -7.07794, -8.13805 )
+
+[node name="StarHexa" type="CollisionPolygon2D" parent="."]
+position = Vector2( -65.1028, 0 )
+polygon = PoolVector2Array( -0.328659, -22.92, 5.6241, -11.8082, 17.9265, -12.0066, 12.3706, -1.49011, 18.1249, 9.22485, 5.82253, 9.22485, -0.130234, 19.7414, -6.67826, 9.42327, -18.9806, 9.42327, -13.2263, -0.894836, -18.9806, -12.4035, -6.67826, -12.4035 )
+
+[node name="Trapezium" type="CollisionPolygon2D" parent="."]
+position = Vector2( 0.561234, -61.1742 )
+polygon = PoolVector2Array( -13.2515, -17.679, 11.7233, -17.3984, 20.4223, 8.97949, -22.7924, 9.2601 )
+
+[node name="Crown" type="CollisionPolygon2D" parent="."]
+position = Vector2( 131.328, 4.77045 )
+polygon = PoolVector2Array( -1.18507, -19.9239, 7.7946, -5.05123, 20.1417, -10.9441, 15.3712, 8.41831, -17.1802, 7.85708, -22.2313, -10.9441, -9.88416, -5.33184 )
+
+[node name="Cross" type="CollisionPolygon2D" parent="."]
+position = Vector2( -130.196, 4.77045 )
+polygon = PoolVector2Array( -7.07503, -25.7217, 6.02103, -26.1186, 5.62418, -13.0225, 19.1171, -12.8241, 18.9187, 0.0735703, 6.02103, 0.0735703, 6.02103, 13.5665, -7.47188, 13.368, -7.47188, 0.470421, -19.9727, 0.271996, -20.3695, -13.2209, -7.07503, -13.0225 )
+
+[node name="Heart" type="CollisionPolygon2D" parent="."]
+position = Vector2( -195.299, 68.1896 )
+polygon = PoolVector2Array( -0.859146, 11.8254, 9.65739, 5.67426, 16.9991, -2.26276, 20.1739, -10.0013, 18.3881, -18.732, 14.2212, -21.51, 6.87944, -22.5021, 0.926682, -19.9226, -0.660721, -17.5415, -3.6371, -20.7163, -9.78827, -22.3037, -16.5347, -20.5179, -20.7016, -14.962, -20.7016, -6.82653, -16.5347, -0.476929, -10.7804, 6.07111 )
+
+[node name="Drop" type="CollisionPolygon2D" parent="."]
+position = Vector2( -130.612, 68.1896 )
+polygon = PoolVector2Array( 0.147354, -28.0289, -8.98019, -16.5203, -15.3298, -6.20214, -16.5204, 0.941154, -13.3456, 8.87817, -3.82114, 16.0215, 2.13161, 16.0215, 12.4497, 10.0687, 16.0214, 2.52856, 15.6245, -5.40844, 7.29066, -18.5045 )
+
+[node name="Arrow" type="CollisionPolygon2D" parent="."]
+position = Vector2( -65.9259, 68.1896 )
+polygon = PoolVector2Array( -6.24635, 15.9771, -6.00377, 3.81832, -17.5124, 3.81832, 0.34584, -27.7313, 19.0091, 3.3494, 7.48914, 3.6199, 7.48914, 15.9223 )
+
+[node name="Diamond" type="CollisionPolygon2D" parent="."]
+position = Vector2( 63.8441, 68.1896 )
+polygon = PoolVector2Array( -8.59975, -21.036, 11.0433, -21.3166, 21.9873, -12.6175, 0.94117, 13.7603, -20.3856, -12.3369 )
+
+[node name="Crescent" type="CollisionPolygon2D" parent="."]
+position = Vector2( 128.947, 68.1896 )
+polygon = PoolVector2Array( 15.2526, -26.3677, 9.64026, -27.7708, 2.06363, -27.2095, -6.07423, -23.8422, -12.2478, -16.5462, -15.0539, -8.68892, -14.4927, -2.51538, -11.4059, 5.62247, -4.67115, 12.0766, 0.941162, 14.6022, 7.67593, 15.444, 15.2526, 14.0409, 11.3239, 10.9542, 7.39532, 7.58678, 4.30856, 0.852005, 3.1861, -3.63785, 2.90549, -8.96954, 5.43103, -15.9849, 5.43103, -16.2655, 11.0433, -23.5615 )
+
+[node name="Trefoil" type="CollisionPolygon2D" parent="."]
+position = Vector2( -131.864, 134.561 )
+polygon = PoolVector2Array( 9.77692, -11.6575, 12.6723, -17.4483, 11.7814, -22.3483, 6.65877, -27.9164, -0.0229797, -29.6982, -6.03653, -26.58, -9.82285, -21.0119, -9.82285, -13.662, -7.37289, -11.6575, -14.0546, -10.7666, -18.9546, -5.42119, -20.2909, 0.815109, -17.1728, 6.82867, -13.3864, 9.72409, -5.36836, 10.1695, -0.0229797, 6.38322, 1.09065, 4.15598, 4.65424, 7.94229, 10.4451, 10.3923, 16.6814, 9.72409, 21.5813, 6.16049, 22.6949, 0.815109, 21.804, -6.08936, 17.5723, -10.0984, 12.0042, -11.6575 )
+
+[node name="Quatrefoil" type="CollisionPolygon2D" parent="."]
+position = Vector2( -67.0508, 133.671 )
+polygon = PoolVector2Array( 10.4451, -17.0585, 11.2246, -20.2881, 10.5564, -24.0744, 5.87923, -29.3084, 0.645203, -29.9766, -4.3661, -27.9721, -7.15016, -23.1835, -7.70698, -18.8403, -7.0388, -16.9472, -10.7138, -17.504, -16.95, -15.4995, -19.7341, -10.5995, -19.8455, -6.36777, -17.1728, -1.80191, -13.4978, 0.75943, -7.59561, 0.425339, -7.70698, 4.54575, -6.03654, 9.22296, -3.14112, 11.6729, 0.979286, 13.0093, 5.87923, 12.4525, 9.10873, 9.66841, 10.6678, 5.88208, 10.4451, 0.425339, 13.4519, 1.09351, 16.9041, 0.425339, 21.6927, -1.80191, 23.3631, -5.47687, 23.3631, -9.82, 21.3586, -14.4972, 17.6836, -17.0585, 13.0064, -17.6154 )

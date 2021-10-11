@@ -333,6 +333,10 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 	var rand_rect = RoomRect.new()
 	rand_rect.init(self, tilemap, tilemap_terrain)
 	
+	var first_room = (cur_path.size() == 0)
+	if first_room:
+		rand_rect.set_random_size(true)
+	
 	if proposed_location:
 		rand_rect.pos = proposed_location
 	
@@ -410,10 +414,6 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 		pause_room_generation = true
 		get_furthest_room().turn_into_teleporter()
 		return
-	
-	var first_room = (cur_path.size() == 0)
-	if first_room:
-		rand_rect.set_random_size(true)
 	
 	rand_rect.set_pos(new_pos)
 	rand_rect.erase_tiles()
