@@ -11,9 +11,9 @@ var gui
 var has_finished : bool = false
 
 func _physics_process(dt):
-	if has_finished: 
-		position_gui_above_us()
-		return
+	position_gui_above_us()
+	
+	if has_finished: return
 	
 	var cur_cell = map.get_cell_from_node(self)
 	var terrain = cur_cell.terrain
@@ -46,6 +46,8 @@ func set_gui_rank(r):
 	gui.get_node("Label/Label").set_text("#" + str(r+1))
 
 func position_gui_above_us():
+	if not gui: return
+	
 	var pos = body.get_global_transform_with_canvas().origin
 	var offset = Vector2.UP * 50
 	

@@ -1,0 +1,50 @@
+--- Debugging process started ---
+Godot Engine v3.4.beta4.official.6a058cbf3 - https://godotengine.org
+OpenGL ES 3.0 Renderer: Quadro K610M/PCIe/SSE2
+OpenGL ES Batching: ON
+ 
+TRYING WITH BASE POS
+(10, 0)
+OPENING
+(12, -1)
+1
+OPENING
+(13, -1)
+1
+TRYING WITH BASE POS
+(14, 3)
+OPENING
+(13, 3)
+0
+TRYING WITH BASE POS
+(16, 3)
+OPENING
+(16, 2)
+1
+TRYING WITH BASE POS
+(17, 3)
+OPENING
+(17, 2)
+1
+{x:{max:21.166449, min:-21.206553}, y:{max:13.549707, min:-14.792503}}
+{x:{max:20.983427, min:-19.892073}, y:{max:22.744453, min:-11.583047}}
+TRYING WITH BASE POS
+(18, 3)
+OPENING
+(18, 2)
+1
+TRYING WITH BASE POS
+(16, 1)
+OPENING
+(17, 0)
+1
+TRYING WITH BASE POS
+(19, 2)
+OPENING
+(19, 1)
+1
+TRYING WITH BASE POS
+(19, 7)
+OPENING
+(18, 8)
+0

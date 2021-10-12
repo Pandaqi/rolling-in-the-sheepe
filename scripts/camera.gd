@@ -3,7 +3,7 @@ extends Camera2D
 const MIN_ZOOM : float = 0.75
 const MAX_ZOOM : float = 4.0
 
-const ZOOM_MARGIN : Vector2 = Vector2(250.0, 150.0)
+const ZOOM_MARGIN : Vector2 = Vector2(600.0, 600.0) #Vector2(250.0, 150.0)
 
 var players
 onready var map = get_node("/root/Main/Map")

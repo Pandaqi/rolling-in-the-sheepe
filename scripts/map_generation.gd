@@ -7,7 +7,7 @@ const NUM_ROOMS_BACK_BUFFER : int = 5
 const NUM_ROOMS_FRONT_BUFFER : int = 5
 
 const TILE_SIZE : float = 64.0
-const WORLD_SIZE : Vector2 = Vector2(50, 30)
+const WORLD_SIZE : Vector2 = Vector2(20, 10) # Vector2(50, 30)
 var default_starting_pos = Vector2(0.5,0)*WORLD_SIZE
 var map = []
 
@@ -25,7 +25,7 @@ var pause_room_generation : bool = false
 
 var total_rooms_created : int = 0
 var rooms_until_finish : int = 0
-var level_size_bounds : Vector2 = Vector2(5, 10) #Vector2(200, 300)
+var level_size_bounds : Vector2 = Vector2(200, 300)
 var has_finished : bool = false
 
 var rooms_in_current_section : int = 0
@@ -33,6 +33,7 @@ var rooms_until_section_end : int = 0
 var section_size_bounds : Vector2 = Vector2(30, 60)
 
 onready var tilemap = $TileMap
+onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
 onready var tilemap_terrain = $TileMapTerrain
 
 var test_player
@@ -44,6 +45,8 @@ var test_player
 ####
 func generate():
 	randomize()
+	
+	$MaskPainter/TilemapTexture.size = WORLD_SIZE*TILE_SIZE
 	
 	set_global_parameters()
 	
@@ -65,7 +68,7 @@ func initialize_grid():
 		for y in range(WORLD_SIZE.y):
 			var pos = Vector2(x,y)
 			
-			tilemap.set_cellv(pos, 0)
+			change_cell(pos, 0)
 			
 			map[x][y] = {
 				'pos': pos,
@@ -76,12 +79,12 @@ func initialize_grid():
 	
 	# create an extra border around the world so we can never just go outside
 	for x in range(-1, WORLD_SIZE.x+1):
-		tilemap.set_cellv(Vector2(x, -1), 0)
-		tilemap.set_cellv(Vector2(x, WORLD_SIZE.y), 0)
+		change_cell(Vector2(x, -1), 0)
+		change_cell(Vector2(x, WORLD_SIZE.y), 0)
 	
 	for y in range(-1, WORLD_SIZE.y+1):
-		tilemap.set_cellv(Vector2(-1,y), 0)
-		tilemap.set_cellv(Vector2(WORLD_SIZE.x,y), 0)
+		change_cell(Vector2(-1,y), 0)
+		change_cell(Vector2(WORLD_SIZE.x,y), 0)
 
 func initialize_rooms():
 	var num_rooms = 5
@@ -97,6 +100,10 @@ func set_global_parameters():
 # Easily changing (or accessing) properties of cells
 #
 ####
+func change_cell(pos, id, flip_x = false, flip_y = false, transpose = false):
+	tilemap.set_cellv(pos, id, flip_x, flip_y, transpose)
+	tilemap_copy.set_cellv(pos, id, flip_x, flip_y, transpose)
+
 func get_cell(pos):
 	return map[pos.x][pos.y]
 
@@ -294,7 +301,7 @@ func check_for_slopes(r):
 			var pos = r.pos + Vector2(x,y)
 
 			if is_slope(pos) and not should_be_slope(pos):
-				tilemap.set_cellv(pos, -1)
+				change_cell(pos, -1)
 	
 	# plan the creation of new slopes
 	for x in range(r.size.x):
@@ -317,7 +324,7 @@ func check_for_slopes(r):
 		if (pos - nbs[0]).y > 0 or (pos - nbs[1]).y > 0: flip_y = true
 		
 		# @params => set_cellv (pos, id, flip_x, flip_y, transpose)
-		tilemap.set_cellv(pos, 1, flip_x, flip_y)
+		change_cell(pos, 1, flip_x, flip_y)
 
 ####
 #
@@ -373,6 +380,7 @@ func find_valid_configuration(params):
 	var rect = params.rect
 	
 	params.disallow_going_back = true
+	params.overlapping_rooms_were_allowed = false
 	
 	while bad_choice and num_tries < max_tries:
 		bad_choice = false
@@ -414,10 +422,17 @@ func find_valid_configuration(params):
 			rect.set_pos(temp_pos)
 			
 			var rect_to_check_against = rect
+			var ignore_index = -1
 			if num_tries < check_against_grown_rect_threshold:
 				rect_to_check_against = rect.copy_and_grow(1)
+				ignore_index = params.room_index
+			else:
+				# NOTE: if we don't grow the rectangle, we should NOT ignore
+				# overlaps with ANY room, as that means an ACTUAL OVERLAP
+				params.overlapping_rooms_were_allowed = true
 			
-			if not can_place_rectangle(rect_to_check_against, params.room_index): continue
+			if not can_place_rectangle(rect_to_check_against, ignore_index): 
+				continue
 			
 			# make horizontal movements more probable
 			var weight : int = 1
@@ -442,6 +457,7 @@ func find_valid_configuration(params):
 func place_room_according_to_params(params):
 	var rect = params.rect
 	
+	rect.set_previous_room(params.room)
 	rect.set_pos(params.pos)
 	rect.erase_tiles()
 	
@@ -451,6 +467,9 @@ func place_room_according_to_params(params):
 	
 	var grown_rect = rect.copy_and_grow(1)
 	check_for_slopes(grown_rect)
+	
+	if params.overlapping_rooms_were_allowed:
+		rect.create_border_around_us()
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return
@@ -477,7 +496,9 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 		'pos': default_starting_pos,
 		'dir': 0,
 		'room': room,
-		'room_index': cur_path.size() - 1
+		'room_index': cur_path.size() - 1,
+		
+		'overlapping_rooms_were_allowed': false
 	}
 	
 	if proposed_location: params.pos = proposed_location

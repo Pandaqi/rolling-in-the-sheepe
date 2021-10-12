@@ -4,6 +4,9 @@ const TILE_SIZE : float = 64.0
 
 var pos : Vector2
 var size : Vector2
+var prev_room
+
+var has_border : bool = false
 
 var tilemap : TileMap
 var tilemap_terrain : TileMap
@@ -12,7 +15,10 @@ var map
 var terrain_types = {
 	"finish": { "frame": 0 },
 	"lock": { "frame": 1 },
-	"teleporter": { "frame": 2 }
+	"teleporter": { "frame": 2 },
+	"a": { "frame": 0 },
+	"b": { "frame": 1 },
+	"c": { "frame": 2 }
 }
 
 var lock_module
@@ -48,7 +54,7 @@ func set_random_size(require_large_size = false, require_small_size = false):
 	set_size(get_random_size(require_large_size, require_small_size))
 
 func get_bottom_right():
-	return pos+size
+	return pos + size
 
 func get_center():
 	return (pos + 0.5*size)*TILE_SIZE
@@ -62,6 +68,56 @@ func make_local(p):
 
 #####
 #
+# For workig with our (relative) position within the current route
+#
+#####
+func set_previous_room(r):
+	prev_room = r
+	open_connection_to_previous_room()
+
+func get_previous_room():
+	return prev_room
+
+func open_connection_to_previous_room():
+	if not prev_room: return
+	if prev_room.has_lock(): return
+	
+	var outline = determine_outline()
+	for edge in outline:
+		if not edge_links_to_previous_room(edge): continue
+		
+		print("OPENING")
+		print(edge.pos)
+		print(edge.dir_index)
+		
+		map.remove_edge_at(edge.pos, edge.dir_index)
+
+func create_border_around_us(type = "lock"):
+	var outline = determine_outline()
+	for edge in outline:
+		if edge_links_to_previous_room(edge): continue
+		
+		# @params => position, index (which direction), type of edge
+		map.set_edge_at(edge.pos, edge.dir_index, type)
+	
+	has_border = true
+
+func remove_border_around_us():
+	var outline = determine_outline()
+	for edge in outline:
+		map.remove_edge_at(edge.pos, edge.dir_index)
+
+func edge_links_to_previous_room(edge):
+	var epsilon = 0.05*Vector2(1,1)
+	
+	var opposite_grid_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
+	var opposite_real_pos = (opposite_grid_pos + epsilon) * TILE_SIZE
+	
+	var other_side_is_open = get_previous_room().has_point(opposite_real_pos)
+	return other_side_is_open
+
+#####
+#
 # (Physics) Helper functions
 #
 #####
@@ -69,6 +125,9 @@ func has_point(p : Vector2) -> bool:
 	p = make_local(p)
 	return p.x >= pos.x and p.x <= (pos.x+size.x) and p.y >= pos.y and p.y <= (pos.y+size.y)
 
+# TO DO/ISSUE
+#  => If I do "<=" it also counts ADJACENT rectangles as overlapping
+#  => If I do "<", it's not a good check, because rectangles that start at the same edge are counte as NOT overlapping
 func overlaps(rect) -> bool:
 	return (pos.x < rect.get_bottom_right().x and rect.pos.x < get_bottom_right().x) and pos.y < rect.get_bottom_right().y and rect.pos.y < get_bottom_right().y
 
@@ -100,6 +159,16 @@ func delete():
 
 func erase_tiles():
 	change_tiles_to(-1)
+	
+	# DEBUGGING: To see the actual size of individual rooms
+	var type = "a"
+	var path_index = map.cur_path.size()
+	if path_index % 3 == 1:
+		type = "b"
+	elif path_index % 3 == 2:
+		type = "c"
+	
+	paint_terrain(type)
 
 func fill_tiles():
 	change_tiles_to(0)
@@ -110,7 +179,7 @@ func change_tiles_to(tile_id : int = -1):
 		for y in range(size.y):
 			var temp_pos = pos + Vector2(x,y)
 			if map.out_of_bounds(temp_pos): continue
-			tilemap.set_cellv(temp_pos, tile_id)
+			map.change_cell(temp_pos, tile_id)
 
 func copy_and_grow(val, keep_within_bounds = false):
 	var copy = get_script().new()
@@ -130,20 +199,12 @@ func copy_and_grow(val, keep_within_bounds = false):
 # Section locks
 #
 #####
+func has_lock():
+	return (lock_module != null)
+
 func add_lock():
-	var outline = determine_outline()
-	var previous_room = map.get_path_from_front(1)
-	for edge in outline:
-		var opposite_grid_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
-		var opposite_real_pos = opposite_grid_pos * TILE_SIZE
-		
-		if previous_room:
-			var other_side_is_open = previous_room.has_point(opposite_real_pos)
-			if other_side_is_open: 
-				continue
-		
-		# @params => position, index (which direction), type of edge
-		map.set_edge_at(edge.pos, edge.dir_index, "lock")
+	if not has_border:
+		create_border_around_us()
 	
 	paint_terrain("lock")
 	
@@ -158,9 +219,7 @@ func add_lock():
 	print("Should add lock now")
 
 func remove_lock():
-	var outline = determine_outline()
-	for edge in outline:
-		map.remove_edge_at(edge.pos, edge.dir_index)
+	remove_border_around_us()
 	
 	lock_module = null
 	

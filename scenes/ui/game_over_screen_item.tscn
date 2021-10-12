@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/fonts/main_medium.tres" type="DynamicFont" id=1]
+[ext_resource path="res://assets/ui/player_rank_bg.png" type="Texture" id=2]
+[ext_resource path="res://assets/ui/predefined_shapes.png" type="Texture" id=3]
+
+[node name="Item" type="Node2D"]
+scale = Vector2( 0.5, 0.5 )
+
+[node name="BG" type="Sprite" parent="."]
+scale = Vector2( 0.75, 0.75 )
+texture = ExtResource( 2 )
+centered = false
+
+[node name="Shape" type="Sprite" parent="."]
+position = Vector2( 77.4499, 48.2659 )
+texture = ExtResource( 3 )
+hframes = 8
+vframes = 4
+
+[node name="Rank" type="Label" parent="."]
+margin_left = 141.43
+margin_top = 14.592
+margin_right = 205.43
+margin_bottom = 80.592
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 1 )
+text = "#1"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Time" type="Label" parent="."]
+margin_left = 225.775
+margin_top = 15.0
+margin_right = 365.775
+margin_bottom = 81.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 1 )
+text = "00:00"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}

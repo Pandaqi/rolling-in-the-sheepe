@@ -1,0 +1,22 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=1]
+resource_local_to_scene = true
+code = "shader_type canvas_item;
+
+uniform sampler2D mask_tex;
+
+void fragment() {
+	vec4 col = texture(TEXTURE, UV);
+	vec4 mask = texture(mask_tex, UV);
+	
+	if(mask.a > 0.5) {
+		col.rgb = mask.rgb;
+	}
+	
+	COLOR = col;
+}"
+
+[resource]
+resource_local_to_scene = true
+shader = SubResource( 1 )

@@ -1,0 +1,47 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://assets/paint_mask.png" type="Texture" id=1]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+//render_mode skip_vertex_transform;
+
+uniform sampler2D mask_tex;
+uniform vec2 mask_size;
+
+uniform float cam_zoom;
+uniform float cam_pos;
+
+uniform mat4 global_transform;
+
+varying vec2 world_pos;
+
+void vertex() {
+	// world_pos = VERTEX * cam_zoom;
+	// VERTEX = (EXTRA_MATRIX * (WORLD_MATRIX * vec4(VERTEX, 0.0, 1.0))).xy;
+	
+	world_pos = (global_transform * vec4(VERTEX, 0.0, 1.0)).xy;
+	
+	//world_pos = ((WORLD_MATRIX * vec4(VERTEX, 1.0, 1.0)).xy - cam_pos*cam_zoom) * cam_zoom;
+}
+
+void fragment() {
+	vec4 col = texture(TEXTURE, UV);
+
+	vec2 mask_uv = (world_pos / mask_size);
+	vec4 mask = texture(mask_tex, mask_uv);
+	
+	if(mask.a > 0.5) {
+		col.rgb = mask.rgb;
+	}
+	
+	COLOR = col;
+}"
+
+[resource]
+shader = SubResource( 1 )
+shader_param/mask_size = null
+shader_param/cam_zoom = null
+shader_param/cam_pos = null
+shader_param/global_transform = null
+shader_param/mask_tex = ExtResource( 1 )

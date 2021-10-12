@@ -2,6 +2,9 @@ extends Node2D
 
 onready var map = $Map
 onready var player_manager = $PlayerManager
+onready var gui = $GUI
+
+var game_over_screen = preload("res://scenes/ui/game_over_screen.tscn")
 
 var player_times = {}
 var player_ranks_helper = []
@@ -27,13 +30,14 @@ func _input(ev):
 		print("Should exit to menu")
 
 func show_game_over_screen():
-	pass
+	var screen = game_over_screen.instance()
+	gui.add_child(screen)
 	
-	# TO DO
-	# => Instantiate a separate game over scene
-	# => add it to the screen, somewhere _out_of_the_way of the players
-	# => populate it with player ranks + times
-	# => and give instructions for restarting/exiting
+	# TO DO => find a good position out of the way of players
+	# (give camera unique focus type where "players = one side, gui = other")
+	screen.set_position(Vector2.ZERO)
+	
+	screen.populate(player_ranks, player_times)
 
 func check_if_game_over():
 	if num_players_finished < GlobalInput.get_player_count(): return
