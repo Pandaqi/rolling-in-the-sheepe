@@ -4,7 +4,9 @@ const TILE_SIZE : float = 64.0
 
 var pos : Vector2
 var size : Vector2
+
 var prev_room
+var dir : int
 
 var has_border : bool = false
 
@@ -13,12 +15,18 @@ var tilemap_terrain : TileMap
 var map
 
 var terrain_types = {
-	"finish": { "frame": 0 },
-	"lock": { "frame": 1 },
-	"teleporter": { "frame": 2 },
-	"a": { "frame": 0 },
-	"b": { "frame": 1 },
-	"c": { "frame": 2 }
+	"finish": { "frame": 0, 'unpickable': true },
+	"lock": { "frame": 1, 'unpickable': true },
+	"teleporter": { "frame": 2, 'unpickable': true },
+	"reverse_gravity": { "frame": 3 },
+	"no_gravity": { "frame": 4 },
+	"ice": { "frame": 5 },
+	"bouncy": { "frame": 6 },
+	"spiderman": { "frame": 7 },
+	"speed_boost": { "frame": 8 },
+	"speed_slowdown": { "frame": 9 },
+	"glue": { "frame": 10 },
+	"reverse_controls": { "frame": 11 }
 }
 
 var lock_module
@@ -71,12 +79,26 @@ func make_local(p):
 # For workig with our (relative) position within the current route
 #
 #####
+func set_dir(d):
+	dir = d
+
 func set_previous_room(r):
 	prev_room = r
+	delete_edges_inside()
 	open_connection_to_previous_room()
 
 func get_previous_room():
 	return prev_room
+
+func delete_edges_inside():
+	for x in range(size.x):
+		for y in range(size.y):
+			for i in range(4):
+				var edge = { 'pos': pos + Vector2(x,y), 'dir_index': i }
+				var link = edge_links_to(edge)
+				if not link or link == self: continue
+				
+				map.remove_edge_at(edge.pos, edge.dir_index)
 
 func open_connection_to_previous_room():
 	if not prev_room: return
@@ -85,11 +107,7 @@ func open_connection_to_previous_room():
 	var outline = determine_outline()
 	for edge in outline:
 		if not edge_links_to_previous_room(edge): continue
-		
-		print("OPENING")
-		print(edge.pos)
-		print(edge.dir_index)
-		
+
 		map.remove_edge_at(edge.pos, edge.dir_index)
 
 func create_border_around_us(type = "lock"):
@@ -107,27 +125,29 @@ func remove_border_around_us():
 	for edge in outline:
 		map.remove_edge_at(edge.pos, edge.dir_index)
 
-func edge_links_to_previous_room(edge):
-	var epsilon = 0.05*Vector2(1,1)
-	
+func edge_links_to(edge):
 	var opposite_grid_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
-	var opposite_real_pos = (opposite_grid_pos + epsilon) * TILE_SIZE
+	if map.out_of_bounds(opposite_grid_pos): return null
 	
-	var other_side_is_open = get_previous_room().has_point(opposite_real_pos)
-	return other_side_is_open
+	return map.get_cell(opposite_grid_pos).room
+
+func edge_links_to_previous_room(edge):
+	if not get_previous_room(): return false
+	
+	return (edge_links_to(edge) == get_previous_room())
 
 #####
 #
 # (Physics) Helper functions
 #
 #####
+func has_real_point(p : Vector2) -> bool:
+	return p.x >= pos.x*TILE_SIZE and p.x <= (pos.x+size.x)*TILE_SIZE and p.y >= pos.y*TILE_SIZE and p.y <= (pos.y+size.y)*TILE_SIZE
+
 func has_point(p : Vector2) -> bool:
 	p = make_local(p)
 	return p.x >= pos.x and p.x <= (pos.x+size.x) and p.y >= pos.y and p.y <= (pos.y+size.y)
 
-# TO DO/ISSUE
-#  => If I do "<=" it also counts ADJACENT rectangles as overlapping
-#  => If I do "<", it's not a good check, because rectangles that start at the same edge are counte as NOT overlapping
 func overlaps(rect) -> bool:
 	return (pos.x < rect.get_bottom_right().x and rect.pos.x < get_bottom_right().x) and pos.y < rect.get_bottom_right().y and rect.pos.y < get_bottom_right().y
 
@@ -149,6 +169,24 @@ func get_free_real_pos_inside():
 
 #####
 #
+# Terrain stuff
+#
+#####
+func get_random_terrain_type():
+	var key = "finish"
+	var all_keys = terrain_types.keys()
+	while terrain_types[key].has('unpickable'):
+		key = all_keys[randi() % all_keys.size()]
+	
+	return key
+
+func give_terrain_if_wanted():
+	if size.x <= 1 and size.y <= 1: return
+	
+	paint_terrain(get_random_terrain_type())
+
+#####
+#
 # Tilemap operations
 #
 #####
@@ -156,19 +194,16 @@ func delete():
 	if lock_module: lock_module.delete()
 	
 	fill_tiles()
+	remove_references_in_map()
+
+func remove_references_in_map():
+	for x in range(size.x):
+		for y in range(size.y):
+			var temp_pos = pos + Vector2(x,y)
+			map.get_cell(temp_pos).room = null
 
 func erase_tiles():
 	change_tiles_to(-1)
-	
-	# DEBUGGING: To see the actual size of individual rooms
-	var type = "a"
-	var path_index = map.cur_path.size()
-	if path_index % 3 == 1:
-		type = "b"
-	elif path_index % 3 == 2:
-		type = "c"
-	
-	paint_terrain(type)
 
 func fill_tiles():
 	change_tiles_to(0)
@@ -263,6 +298,7 @@ func turn_into_teleporter():
 	update_map_to_new_rect()
 
 	paint_terrain("teleporter")
+	create_border_around_us()
 	
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = self

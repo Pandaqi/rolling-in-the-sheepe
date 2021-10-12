@@ -3,6 +3,9 @@ extends RigidBody2D
 var teleport_pos : Vector2 = Vector2.ZERO
 var contact_data = []
 
+func _ready():
+	physics_material_override = PhysicsMaterial.new()
+
 func _integrate_forces(state):
 	contact_data = []
 	for i in range(state.get_contact_count()):

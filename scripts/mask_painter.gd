@@ -36,6 +36,11 @@ func _input(ev):
 		print("Painted at position")
 		print(get_global_mouse_position().round())
 
+func clear_mask():
+	surface_image.lock()
+	surface_image.fill(Color(0,0,0,0))
+	surface_image.unlock()
+
 func paint_on_mask(pos : Vector2, player_num : int):
 	surface_image.lock()
 	

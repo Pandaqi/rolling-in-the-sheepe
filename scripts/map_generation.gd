@@ -7,12 +7,11 @@ const NUM_ROOMS_BACK_BUFFER : int = 5
 const NUM_ROOMS_FRONT_BUFFER : int = 5
 
 const TILE_SIZE : float = 64.0
-const WORLD_SIZE : Vector2 = Vector2(20, 10) # Vector2(50, 30)
+const WORLD_SIZE : Vector2 = Vector2(50, 30)
 var default_starting_pos = Vector2(0.5,0)*WORLD_SIZE
 var map = []
 
 var cur_path = []
-var path_dirs = []
 
 var leading_player
 var trailing_player
@@ -35,6 +34,8 @@ var section_size_bounds : Vector2 = Vector2(30, 60)
 onready var tilemap = $TileMap
 onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
 onready var tilemap_terrain = $TileMapTerrain
+onready var mask_painter = $MaskPainter
+onready var tutorial = get_node("/root/Main/Tutorial")
 
 var test_player
 
@@ -144,6 +145,10 @@ func remove_edge_at(pos, dir_index):
 	get_cell(other_pos).edges[other_dir_index].queue_free()
 	get_cell(other_pos).edges[other_dir_index] = null
 
+func remove_all_edges_at(pos):
+	for i in range(4):
+		remove_edge_at(pos, i)
+
 ####
 #
 # Helpers
@@ -174,7 +179,8 @@ func get_dir_from_vector(vec):
 	return floor( (angle * 4) / 2*PI + epsilon )
 
 func get_cell_from_node(node):
-	var grid_pos = node.get_global_position() / float(TILE_SIZE)
+	var grid_pos = (node.get_global_position() / float(TILE_SIZE)).floor()
+	if out_of_bounds(grid_pos): return get_cell(Vector2.ZERO)
 	return get_cell(grid_pos)
 
 func get_room_at(pos):
@@ -185,6 +191,13 @@ func set_room_at(pos, r):
 		for y in range(r.size.y):
 			var new_pos = r.pos + Vector2(x,y)
 			get_cell(new_pos).room = r
+
+# If negative or 0, we're inside the world area (and not out of bounds)
+# If positive, gives us the number of tiles we're out of bounds
+func dist_to_bounds(pos):
+	var x = max(0 - pos.x, pos.x - (WORLD_SIZE.x - 1))
+	var y = max(0 - pos.y, pos.y - (WORLD_SIZE.y - 1))
+	return max(x,y)
 
 func out_of_bounds(pos):
 	return pos.x < 0 or pos.x >= WORLD_SIZE.x or pos.y < 0 or pos.y >= WORLD_SIZE.y
@@ -200,7 +213,7 @@ func get_cur_room_index(p : RigidBody2D) -> int:
 		var point = cur_path[i]
 		var room = get_room_at(point)
 		
-		if room.has_point(pos):
+		if room.has_real_point(pos):
 			return i
 	
 	return -1
@@ -217,11 +230,14 @@ func get_furthest_room():
 	var pos = cur_path[cur_path.size() - 1]
 	return get_room_at(pos)
 
-func can_place_rectangle(r, ignore_room_index):
+func can_place_rectangle(r, ignore_room_index, growth_area : int = 0):
 	for x in range(r.size.x):
 		for y in range(r.size.y):
 			var my_pos = r.pos + Vector2(x,y)
-			if out_of_bounds(my_pos): return false
+			
+			# if the rectangle was GROWN, the REAL rectangle might still be inside the bounds, so ignore if the pos is inside this buffer
+			if dist_to_bounds(my_pos) > growth_area: 
+				return false
 			
 			for i in range(cur_path.size()):
 				if i == ignore_room_index: continue
@@ -246,6 +262,9 @@ func get_neighbor_tiles(pos, params):
 
 # TO DO: Function can be simplified, as 0 == 2 and 1 == 3
 func get_random_displacement(old_r, new_r, dir_index):
+	if tutorial.is_active():
+		return Vector2.ZERO
+	
 	var epsilon = 0.1
 	var ortho_dir = Vector2(0,1)
 	if dir_index == 1 or dir_index == 3:
@@ -366,21 +385,21 @@ func find_valid_configuration(params):
 	var new_dir = 0
 	
 	var num_tries = 0
-	var smaller_room_try_threshold = 100
-	var check_against_grown_rect_threshold = 100
+	var smaller_room_try_threshold = 150
+	var check_against_grown_rect_threshold = 150
+	var forced_dir_try_threshold = 140 # NOTE should be slightly smaller than the others, otherwise we get ugly edges because of the forced dir
 	var max_tries = 200
 	
 	var base_pos = params.room.pos
 	var first_room = (params.room_index == (cur_path.size() - 1))
 	var bad_choice = true
-	
-	print("TRYING WITH BASE POS")
-	print(base_pos)
-	
+
 	var rect = params.rect
 	
 	params.disallow_going_back = true
 	params.overlapping_rooms_were_allowed = false
+	
+	var forced_dir_exists = (params.forced_dir >= 0)
 	
 	while bad_choice and num_tries < max_tries:
 		bad_choice = false
@@ -401,15 +420,19 @@ func find_valid_configuration(params):
 			params.disallow_going_back = false
 			params.ignore_optional_requirements = true
 
+		if forced_dir_exists:
+			params.disallow_going_back = false
+
 		var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 		var candidates = []
 		
-		var last_dir = path_dirs[path_dirs.size()-1]
+		var last_dir = params.room.dir
 		var opposite_to_last_dir = ((last_dir + 2) % 4)
 		
 		for i in range(dirs.size()):
 			if params.disallow_going_back:
-				if i == opposite_to_last_dir: continue
+				if i == opposite_to_last_dir: 
+					continue
 			
 			var random_displacement = get_random_displacement(params.room, rect, i)
 
@@ -423,15 +446,17 @@ func find_valid_configuration(params):
 			
 			var rect_to_check_against = rect
 			var ignore_index = -1
+			var growth_val = 0
 			if num_tries < check_against_grown_rect_threshold:
 				rect_to_check_against = rect.copy_and_grow(1)
 				ignore_index = params.room_index
+				growth_val = 1
 			else:
 				# NOTE: if we don't grow the rectangle, we should NOT ignore
 				# overlaps with ANY room, as that means an ACTUAL OVERLAP
 				params.overlapping_rooms_were_allowed = true
 			
-			if not can_place_rectangle(rect_to_check_against, ignore_index): 
+			if not can_place_rectangle(rect_to_check_against, ignore_index, growth_val): 
 				continue
 			
 			# make horizontal movements more probable
@@ -449,6 +474,26 @@ func find_valid_configuration(params):
 		
 		final_candidate = candidates[randi() % candidates.size()]
 		
+		# if a forced direction was specified
+		# search for a candidate that matches and pick that one
+		var able_to_match_forced_dir = false
+		if forced_dir_exists:
+			print(params.forced_dir)
+			print(candidates)
+			for c in candidates:
+				if c.dir_index == params.forced_dir:
+					final_candidate = c
+					able_to_match_forced_dir = true
+					break
+			
+		if forced_dir_exists and not able_to_match_forced_dir:
+			if num_tries < forced_dir_try_threshold:
+				bad_choice = true
+				num_tries += 1
+				continue
+			else:
+				tutorial.forced_dir_exhausted()
+		
 		params.pos = final_candidate.pos
 		params.dir = final_candidate.dir_index
 	
@@ -457,12 +502,19 @@ func find_valid_configuration(params):
 func place_room_according_to_params(params):
 	var rect = params.rect
 	
-	rect.set_previous_room(params.room)
+	# NOTE: VERY IMPORTANT to do this first, before doing anything else
+	# Otherwise the rect still has the default position and all calculations are wrong
 	rect.set_pos(params.pos)
+	
+	rect.set_previous_room(params.room)
+	rect.set_dir(params.dir)
+	
+	var handout_terrains = (not tutorial.is_active())
+	if handout_terrains:
+		rect.give_terrain_if_wanted()
 	rect.erase_tiles()
 	
 	cur_path.append(params.pos)
-	path_dirs.append(params.dir)
 	set_room_at(params.pos, rect)
 	
 	var grown_rect = rect.copy_and_grow(1)
@@ -498,9 +550,11 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 		'room': room,
 		'room_index': cur_path.size() - 1,
 		
-		'overlapping_rooms_were_allowed': false
+		'overlapping_rooms_were_allowed': false,
+		'forced_dir': -1,
 	}
 	
+	if tutorial.is_active(): params.forced_dir = tutorial.get_forced_dir()
 	if proposed_location: params.pos = proposed_location
 	
 	initialize_new_room_rect(params)
@@ -530,8 +584,6 @@ func delete_oldest_room():
 	var old_room = get_room_at(old_pos)
 	
 	old_room.delete()
-	
-	map[old_pos.x][old_pos.y].room = null
 
 func check_for_new_room():
 	if not leading_player or not is_instance_valid(leading_player): return
@@ -602,6 +654,15 @@ func get_pos_just_ahead():
 	return coming_positions
 
 func delete_all_rooms():
+	# delete all the rooms
 	var num_rooms = cur_path.size()
 	for i in range(num_rooms):
 		delete_oldest_room()
+	
+	# delete all the edges
+	for x in range(WORLD_SIZE.x):
+		for y in range(WORLD_SIZE.y):
+			remove_all_edges_at(Vector2(x,y))
+	
+	# clear the painting mask
+	mask_painter.clear_mask()

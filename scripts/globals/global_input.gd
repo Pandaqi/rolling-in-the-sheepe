@@ -7,6 +7,8 @@ var inputs = [
 	[KEY_B, KEY_C]
 ]
 
+var controller_indices = [[0,1,5,7,8], [2,3,4,6,9]]
+
 var input_order = ["right", "left"]
 
 var devices = {}
@@ -55,50 +57,11 @@ func build_input_map():
 			var key = input_order[j] + "_" + str(i)
 			InputMap.add_action(key)
 			
-			var ev
-			
-			# CONTROLLER BUTTON (any of them will do)
-			# -> 10 are the buttons and shoulder stuff 
-			# -> 11 and 12 are start and select
-			var create_buttons = (j == 4 or j == 5)
-			if create_buttons:
-				if j == 4:
-					ev = InputEventJoypadButton.new()
-					ev.button_index = 0
-					ev.set_device(i)
-					InputMap.action_add_event(key, ev)
-				else:
-					ev = InputEventJoypadButton.new()
-					ev.button_index = 1
-					ev.set_device(i)
-					InputMap.action_add_event(key, ev)
-				
-#				for k in range(10):
-#					ev = InputEventJoypadButton.new()
-#					ev.button_index = k
-#					ev.set_device(i)
-#					InputMap.action_add_event(key, ev)
-			
-			# JOYSTICK MOTION (left and right stick)
-			else:
-				
-				var axes = [JOY_AXIS_0, JOY_AXIS_2]
-				if j % 2 == 1: axes = [JOY_AXIS_1, JOY_AXIS_3]
-				
-				var dir = 1
-				if j >= 2: dir = -1
-				
-				for k in range(axes.size()):
-					ev = InputEventJoypadMotion.new()
-					ev.set_device(i)
-					
-					ev.set_axis(axes[k])
-					ev.set_axis_value(dir) # <- this one determines if it's positive or negative axis
-					
-					InputMap.action_add_event(key, ev)
-	
-	# FOR DEBUGGING
-	#printout_inputmap()
+			for btn_index in controller_indices[j]:
+				var ev = InputEventJoypadButton.new()
+				ev.button_index = btn_index
+				ev.set_device(i)
+				InputMap.action_add_event(key, ev)
 
 func printout_inputmap():
 	var ac = InputMap.get_actions()

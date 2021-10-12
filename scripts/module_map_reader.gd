@@ -1,5 +1,9 @@
 extends Node2D
 
+# values between 0-1, set on PhysicsMaterial of body
+const ICE_FRICTION : float = 0.0
+const BOUNCE_VAL : float = 0.9 
+
 onready var main_node = get_node("/root/Main")
 onready var map = get_node("/root/Main/Map")
 onready var body = get_parent()
@@ -10,20 +14,95 @@ var gui
 
 var has_finished : bool = false
 
+var last_cell
+
 func _physics_process(dt):
 	position_gui_above_us()
 	
 	if has_finished: return
 	
+	read_map()
+
+func read_map():
 	var cur_cell = map.get_cell_from_node(self)
-	var terrain = cur_cell.terrain
-	var room = map.get_room_at(cur_cell.pos) # can be null??
+	if cur_cell == last_cell: return
 	
-	if terrain == "finish":
-		finish()
+	undo_effect_of_cell(last_cell)
+	do_effect_of_cell(cur_cell)
 	
-	elif terrain == "teleporter":
-		room.lock_module.register_player(body)
+	last_cell = cur_cell
+
+func do_effect_of_cell(cell):
+	var terrain = cell.terrain
+	var room = map.get_room_at(cell.pos) # can be null??
+	
+	match terrain:
+		"finish":
+			finish()
+	
+		"teleporter":
+			room.lock_module.register_player(body)
+		
+		"reverse_gravity":
+			body.get_node("Mover").gravity_dir = -1
+		
+		"no_gravity":
+			body.get_node("Mover").gravity_dir = 0
+		
+		"ice":
+			body.physics_material_override.friction = ICE_FRICTION
+		
+		"bouncy": 
+			body.physics_material_override.bounce = BOUNCE_VAL
+		
+		"spiderman":
+			body.get_node("Mover").clinging_active = true
+		
+		"speed_boost":
+			body.get_node("Mover").speed_multiplier = 2.0
+		
+		"speed_slowdown":
+			body.get_node("Mover").speed_multiplier = 0.5
+		
+		"glue":
+			body.get_node("Glue").active = true
+		
+		"reverse_controls":
+			body.get_node("Input").reverse = true
+
+func undo_effect_of_cell(cell):
+	if not cell: return
+	
+	var terrain = cell.terrain
+	var room = map.get_room_at(cell.pos)
+	
+	match terrain:
+		"reverse_gravity":
+			body.get_node("Mover").gravity_dir = 1
+		
+		"no_gravity":
+			body.get_node("Mover").gravity_dir = 1
+		
+		"ice":
+			body.physics_material_override.friction = 1.0
+		
+		"bouncy": 
+			body.physics_material_override.bounce = 0.0
+		
+		"spiderman":
+			body.get_node("Mover").clinging_active = false
+		
+		"speed_boost":
+			body.get_node("Mover").speed_multiplier = 1.0
+		
+		"speed_slowdown":
+			body.get_node("Mover").speed_multiplier = 1.0
+		
+		"glue":
+			body.get_node("Glue").active = false
+		
+		"reverse_controls":
+			body.get_node("Input").reverse = false
 
 func finish():
 	has_finished = true

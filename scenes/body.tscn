@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -8,6 +8,9 @@
 [ext_resource path="res://scripts/module_status.gd" type="Script" id=6]
 [ext_resource path="res://scripts/player.gd" type="Script" id=7]
 [ext_resource path="res://scripts/module_map_painter.gd" type="Script" id=8]
+[ext_resource path="res://scripts/module_glue.gd" type="Script" id=9]
+[ext_resource path="res://scripts/module_tutorial.gd" type="Script" id=10]
+[ext_resource path="res://assets/ui/tutorials.png" type="Texture" id=11]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -55,8 +58,25 @@ script = ExtResource( 4 )
 [node name="MapPainter" type="Node2D" parent="."]
 script = ExtResource( 8 )
 
+[node name="Glue" type="Node2D" parent="."]
+script = ExtResource( 9 )
+
+[node name="Tutorial" type="Node2D" parent="."]
+script = ExtResource( 10 )
+
+[node name="Sprite" type="Sprite" parent="Tutorial"]
+scale = Vector2( 0.25, 0.25 )
+texture = ExtResource( 11 )
+hframes = 5
+vframes = 3
+
+[node name="Timer" type="Timer" parent="Tutorial"]
+wait_time = 5.0
+one_shot = true
+
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]
+[connection signal="timeout" from="Tutorial/Timer" to="Tutorial" method="_on_Timer_timeout"]
