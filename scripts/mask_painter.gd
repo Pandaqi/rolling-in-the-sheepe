@@ -41,6 +41,22 @@ func clear_mask():
 	surface_image.fill(Color(0,0,0,0))
 	surface_image.unlock()
 
+# REMEMBER: when working with these images/texture, only INTEGER coordinates are allowed!
+func clear_rectangle(pos, size):
+	surface_image.lock()
+
+	pos = pos.floor()
+	size = size.floor()
+	
+	var col = Color(0.0,0.0,0.0,0.0)
+	for x in range(size.x):
+		for y in range(size.y):
+			var temp_pos = pos + Vector2(x,y)
+			if out_of_mask_bounds(temp_pos): continue
+			surface_image.set_pixelv(temp_pos, col)
+
+	surface_image.unlock()
+
 func paint_on_mask(pos : Vector2, player_num : int):
 	surface_image.lock()
 	

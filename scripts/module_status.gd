@@ -1,8 +1,12 @@
 extends Node2D
 
+onready var body = get_parent()
 onready var player_manager = get_node("/root/Main/PlayerManager")
+
 var player_num : int = -1
 var shape_name : String = ""
+
+var time_penalty : float = 0.0
 
 func set_shape_name(nm : String):
 	shape_name = nm
@@ -26,3 +30,19 @@ func set_player_num(num : int):
 			module_tutorial.activate()
 		else:
 			module_tutorial.queue_free()
+
+func modify_time_penalty(val):
+	time_penalty += val
+
+func make_ghost():
+	body.collision_layer = 0
+	body.collision_mask = 1
+	
+	body.modulate.a = 0.5
+
+# Layers 1 (2^0; all) and 3 (2^2; players)
+func undo_ghost():
+	body.collision_layer = 1 + 4
+	body.collision_mask = 1 + 4
+	
+	body.modulate.a = 1.0

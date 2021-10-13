@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=1]
 [ext_resource path="res://scripts/slicer.gd" type="Script" id=2]
@@ -9,6 +9,7 @@
 [ext_resource path="res://scripts/player_manager.gd" type="Script" id=7]
 [ext_resource path="res://scripts/mask_painter.gd" type="Script" id=8]
 [ext_resource path="res://scripts/tutorial.gd" type="Script" id=9]
+[ext_resource path="res://scripts/fog_of_war.gd" type="Script" id=10]
 
 [sub_resource type="Shader" id=1]
 resource_local_to_scene = true
@@ -34,6 +35,91 @@ resource_local_to_scene = true
 shader = SubResource( 1 )
 shader_param/viewport_tex = SubResource( 3 )
 
+[sub_resource type="Shader" id=4]
+code = "shader_type canvas_item;
+
+uniform vec2 p0;
+uniform vec2 p1;
+uniform vec2 p2;
+uniform vec2 p3;
+uniform vec2 p4;
+uniform vec2 p5;
+uniform vec2 p6;
+uniform vec2 p7;
+uniform vec2 p8;
+uniform vec2 p9;
+uniform vec2 p10;
+uniform vec2 p11;
+uniform vec2 p12;
+uniform vec2 p13;
+uniform vec2 p14;
+uniform vec2 p15;
+uniform vec2 p16;
+uniform vec2 p17;
+uniform vec2 p18;
+uniform vec2 p19;
+
+uniform float sight_radius = 300;
+uniform vec2 vp_size = vec2(1920.0, 1080.0);
+
+void fragment() {
+	vec4 col = vec4(0,0,0,1.0);
+	vec2 pos = UV*vp_size;
+	
+	float alpha = 0.9;
+	alpha *= min(length(p0 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p1 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p2 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p3 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p4 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p5 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p6 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p7 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p8 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p9 - pos) / sight_radius, 1.0);
+	
+	alpha *= min(length(p10 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p11 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p12 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p13 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p14 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p15 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p16 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p17 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p18 - pos) / sight_radius, 1.0);
+	alpha *= min(length(p19 - pos) / sight_radius, 1.0);
+	
+	
+	col.a = alpha;
+	
+	COLOR = col;
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 4 )
+shader_param/p0 = null
+shader_param/p1 = null
+shader_param/p2 = Vector2( 500, 500 )
+shader_param/p3 = null
+shader_param/p4 = null
+shader_param/p5 = null
+shader_param/p6 = null
+shader_param/p7 = null
+shader_param/p8 = null
+shader_param/p9 = null
+shader_param/p10 = null
+shader_param/p11 = null
+shader_param/p12 = null
+shader_param/p13 = null
+shader_param/p14 = null
+shader_param/p15 = null
+shader_param/p16 = null
+shader_param/p17 = null
+shader_param/p18 = null
+shader_param/p19 = null
+shader_param/sight_radius = 300.0
+shader_param/vp_size = Vector2( 1920, 1080 )
+
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
 
@@ -43,6 +129,7 @@ script = ExtResource( 2 )
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2( 509.545, 302.492 )
 current = true
+limit_smoothed = true
 script = ExtResource( 4 )
 
 [node name="Map" type="Node2D" parent="."]
@@ -57,7 +144,7 @@ tile_set = ExtResource( 3 )
 collision_layer = 3
 collision_mask = 3
 format = 1
-tile_data = PoolIntArray( 2, 1, 0, 65537, 1, 0, 65538, 0, 0, 131072, 1, 0, 131073, 0, 0, 131074, 0, 0 )
+tile_data = PoolIntArray( 131072, 0, 8, 131073, 0, 10, 131074, 0, 11, 131077, 0, 8, 131078, 0, 11, 196608, 0, 196616, 196609, 0, 131077, 196610, 0, 65542, 196611, 0, 6, 196612, 0, 196610, 196613, 0, 131080, 196614, 0, 131083, 262145, 0, 65544, 262146, 0, 131081, 262147, 0, 131083, 262149, 0, 196616, 262150, 0, 131082, 262151, 0, 11, 327681, 0, 65544, 327682, 0, 131078, 327683, 0, 196619, 327686, 0, 131076, 327687, 0, 196614, 327688, 0, 196611, 393217, 0, 196616, 393218, 0, 196619, 393222, 0, 131072 )
 
 [node name="MaskPainter" type="Node2D" parent="Map"]
 position = Vector2( 0, -1 )
@@ -89,3 +176,16 @@ script = ExtResource( 7 )
 script = ExtResource( 9 )
 
 [node name="GUI" type="CanvasLayer" parent="."]
+
+[node name="FogOfWar" type="CanvasLayer" parent="."]
+script = ExtResource( 10 )
+
+[node name="ColorRect" type="ColorRect" parent="FogOfWar"]
+material = SubResource( 5 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LookAhead" type="Node2D" parent="FogOfWar"]

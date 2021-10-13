@@ -3,13 +3,25 @@ extends Camera2D
 const MIN_ZOOM : float = 0.75
 const MAX_ZOOM : float = 4.0
 
-const ZOOM_MARGIN : Vector2 = Vector2(250.0, 150.0)
+const ZOOM_MARGIN : Vector2 = Vector2(600.0, 600.0) #Vector2(250.0, 150.0)
 
 var players
 onready var map = get_node("/root/Main/Map")
 
 # TO DO: Test if this even works AND if it's a good idea (focusing on the look ahead this much)
 var look_ahead : bool = true
+
+func _ready():
+	set_correct_limits()
+
+func set_correct_limits():
+	var dims = map.get_full_dimensions()
+	
+	limit_left = dims.x
+	limit_right = dims.x + dims.width
+	
+	limit_top = dims.y
+	limit_bottom = dims.y + dims.height
 
 func _physics_process(dt):
 	players = get_tree().get_nodes_in_group("Players")

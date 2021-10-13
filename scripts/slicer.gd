@@ -88,8 +88,10 @@ func slice_body(b, p1, p2):
 	var shape_layers = determine_shape_layers(new_shapes, p1, p2)
 
 	# create bodies for each set of points left over
+	var success = true
 	for key in shape_layers:
-		create_body_from_shape_list(original_player_num, shape_layers[key])
+		var body = create_body_from_shape_list(original_player_num, shape_layers[key], success)
+		success = (body != null)
 
 func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
@@ -192,14 +194,17 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	
 	return [shape1, shape2]
 
-func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2D:
+func area_too_small(shapes):
 	var area = 0
 	for shp in shapes:
 		var extra_area = calculate_area(shp)
 		area += extra_area
 		
 	area /= float(shapes.size())
-	if area < MIN_AREA_FOR_VALID_SHAPE: return null
+	return (area < MIN_AREA_FOR_VALID_SHAPE)
+
+func create_body_from_shape_list(player_num : int, shapes : Array, allow_deletion : bool = true) -> RigidBody2D:
+	if area_too_small(shapes): return null
 	
 	var body = body_scene.instance()
 	

@@ -1,12 +1,13 @@
 extends Node2D
 
+const TIME_PENALTY_FOR_MISSING_TELEPORT : float = 10.0
 const MIN_DIST_TO_NEW_ROOM = 10 # in terms of grid tiles, Manhattan distance radius
 
+onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var map = get_node("/root/Main/Map")
 
 var my_room
 
-var old_players_here = {}
 var players_here = {}
 var num_players_here : int = 0
 var time_left = 15
@@ -42,8 +43,6 @@ func _physics_process(dt):
 	
 	if num_players_here >= wanted_num_players:
 		perform_teleport()
-	
-	reset_player_array()
 
 func count_players_here():
 	var sum = 0
@@ -52,18 +51,16 @@ func count_players_here():
 			sum += 1
 	return sum
 
-func reset_player_array():
-	old_players_here = players_here
-	
-	players_here = {}
-	for i in GlobalInput.get_player_count():
-		players_here[i] = []
-
 func register_player(p):
-	players_here[p.get_node("Status").player_num].append(p)
+	var player_num = p.get_node("Status").player_num
+	players_here[player_num].append(p)
 	
 	var first_entry = (not timer_is_running)
 	if first_entry: start_timer()
+
+func deregister_player(p):
+	var player_num = p.get_node("Status").player_num
+	players_here[player_num].erase(p)
 
 func delete():
 	self.queue_free()
@@ -98,21 +95,21 @@ func perform_teleport():
 	map.create_new_room(new_pos)
 	
 	# teleport all players there
-	# REMARK: by now, all of these have been cleared out, so we need to use the OLD version
 	var unteleported_players = []
 	var teleported_bodies = []
 	for i in range(GlobalInput.get_player_count()):
 		unteleported_players.append(i)
 	
-	# ensure each player has at least ONE piece teleported (even if they didn't make it)
 	var teleport_target_pos = map.place_inside_room(map.cur_path[0])
-	for key in old_players_here:
-		for body in old_players_here[key]:
-			body.plan_teleport(teleport_target_pos)
+	for key in players_here:
+		for body in players_here[key]:
+			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
+			body.plan_teleport(final_pos)
 			
 			unteleported_players.erase(body.get_node("Status").player_num)
 			teleported_bodies.append(body)
 	
+	# ensure each player has at least ONE piece teleported (even if they didn't make it)
 	var all_bodies = get_tree().get_nodes_in_group("Players")
 	for body in all_bodies:
 		if unteleported_players.size() <= 0: break
@@ -122,7 +119,11 @@ func perform_teleport():
 		if index < 0: 
 			continue
 		
-		body.plan_teleport(teleport_target_pos)
+		var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
+		
+		body.get_node("Status").modify_time_penalty(TIME_PENALTY_FOR_MISSING_TELEPORT)
+		
+		body.plan_teleport(final_pos)
 		unteleported_players.remove(index)
 		teleported_bodies.append(body)
 	

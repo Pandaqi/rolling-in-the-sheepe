@@ -154,6 +154,18 @@ func get_bounding_box_along_vec(vec):
 		obj.vec = obj.vec.rotated(rot)
 	
 	# then check which one MOST CLOSELY aligns with the given vec
+	var best_option = null
+	var best_dot = -INF
+	
 	for obj in bounding_box_vectors:
-		if vec.dot(obj.vec) >= 0.5:
+		var dot_prod = vec.dot(obj.vec)
+		
+		if dot_prod > best_dot:
+			best_option = abs(obj.dist)
+			best_dot = dot_prod
+		
+		if dot_prod >= 0.5:
 			return abs(obj.dist)
+	
+	# if nothing matches, which can happen sporadically, just return the best one of all options
+	return best_option

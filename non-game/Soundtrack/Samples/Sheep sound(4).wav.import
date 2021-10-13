@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/Sheep sound(4).wav-0c5b3c08e7a277ce4ae3c4b0bc4800ac.sample"
+
+[deps]
+
+source_file="res://non-game/Soundtrack/Samples/Sheep sound(4).wav"
+dest_files=[ "res://.import/Sheep sound(4).wav-0c5b3c08e7a277ce4ae3c4b0bc4800ac.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

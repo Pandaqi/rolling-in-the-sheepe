@@ -8,6 +8,8 @@ var size : Vector2
 var prev_room
 var dir : int
 
+var num_tiles_before_us : int
+
 var has_border : bool = false
 
 var tilemap : TileMap
@@ -26,7 +28,9 @@ var terrain_types = {
 	"speed_boost": { "frame": 8 },
 	"speed_slowdown": { "frame": 9 },
 	"glue": { "frame": 10 },
-	"reverse_controls": { "frame": 11 }
+	"reverse_controls": { "frame": 11 },
+	"spikes": { "frame": 12 },
+	"ghost": { "frame": 13 }
 }
 
 var lock_module
@@ -47,8 +51,14 @@ func init(map_reference, tm, tm_terrain):
 func set_pos(new_pos):
 	pos = new_pos
 
+func get_real_pos():
+	return pos * TILE_SIZE
+
 func set_size(new_size):
 	size = new_size
+
+func get_real_size():
+	return size*TILE_SIZE
 
 func get_random_size(require_large_size = false, require_small_size = false):
 	if require_large_size:
@@ -82,6 +92,12 @@ func make_local(p):
 func set_dir(d):
 	dir = d
 
+func set_path_position(num):
+	num_tiles_before_us = num
+
+func tiled_dist_to(other_room):
+	return (other_room.num_tiles_before_us - num_tiles_before_us)
+
 func set_previous_room(r):
 	prev_room = r
 	delete_edges_inside()
@@ -96,7 +112,7 @@ func delete_edges_inside():
 			for i in range(4):
 				var edge = { 'pos': pos + Vector2(x,y), 'dir_index': i }
 				var link = edge_links_to(edge)
-				if not link or link == self: continue
+				if not link or link != self: continue
 				
 				map.remove_edge_at(edge.pos, edge.dir_index)
 
@@ -110,10 +126,20 @@ func open_connection_to_previous_room():
 
 		map.remove_edge_at(edge.pos, edge.dir_index)
 
-func create_border_around_us(type = "lock"):
+func create_border_around_us(params = {}):
 	var outline = determine_outline()
+	
+	var type = "lock"
+	if params.has('type'): type = params.type
+	
 	for edge in outline:
-		if edge_links_to_previous_room(edge): continue
+		var other_side = edge_links_to(edge)
+		if params.has('open_all_linked_edges'):
+			if other_side and not (other_side == self): 
+				continue
+		elif prev_room:
+			if other_side == prev_room and (not prev_room.has_lock()): 
+				continue
 		
 		# @params => position, index (which direction), type of edge
 		map.set_edge_at(edge.pos, edge.dir_index, type)
@@ -194,12 +220,23 @@ func delete():
 	if lock_module: lock_module.delete()
 	
 	fill_tiles()
+	clear_area_in_paint_mask()
 	remove_references_in_map()
 
+# NOTE: I add half size here because the "paint circles" of course will EXTEND slightly beyond the room borders, as they are circles
+func clear_area_in_paint_mask():
+	map.mask_painter.clear_rectangle((pos-Vector2(0.5,0.5))*TILE_SIZE, (size+ Vector2(1,1))*TILE_SIZE)
+
+# NOTE: It can happen that tiles inside of us do NOT belong to us anymore
+# (e.g. the teleporter overlaps older rooms), so only delete those that still DO
 func remove_references_in_map():
 	for x in range(size.x):
 		for y in range(size.y):
 			var temp_pos = pos + Vector2(x,y)
+			var cur_room = map.get_cell(temp_pos).room
+			
+			if cur_room != self: continue
+			
 			map.get_cell(temp_pos).room = null
 
 func erase_tiles():
@@ -215,6 +252,8 @@ func change_tiles_to(tile_id : int = -1):
 			var temp_pos = pos + Vector2(x,y)
 			if map.out_of_bounds(temp_pos): continue
 			map.change_cell(temp_pos, tile_id)
+	
+	map.update_bitmask(pos, size)
 
 func copy_and_grow(val, keep_within_bounds = false):
 	var copy = get_script().new()
@@ -225,7 +264,7 @@ func copy_and_grow(val, keep_within_bounds = false):
 	
 	if keep_within_bounds:
 		copy.pos = map.keep_within_bounds(copy.pos)
-		copy.size = map.keep_within_bounds(copy.pos + copy.size) - copy.pos
+		copy.size = map.keep_within_bounds(copy.pos + copy.size, true) - copy.pos
 	
 	return copy
 
@@ -298,7 +337,7 @@ func turn_into_teleporter():
 	update_map_to_new_rect()
 
 	paint_terrain("teleporter")
-	create_border_around_us()
+	create_border_around_us({ 'open_all_linked_edges': true })
 	
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = self
@@ -319,9 +358,20 @@ func paint_terrain(type):
 	if terrain_types.has(type):
 		tile_id = terrain_types[type].frame
 	
-	for x in range(size.x):
-		for y in range(size.y):
-			var temp_pos = pos + Vector2(x,y)
+	var grown_rect = copy_and_grow(1, true)
+	
+	for x in range(grown_rect.size.x):
+		for y in range(grown_rect.size.y):
+			var temp_pos = grown_rect.pos + Vector2(x,y)
+			
+			var already_has_terrain = (tilemap_terrain.get_cellv(temp_pos) != -1) and map.get_room_at(temp_pos)
+			
+			if already_has_terrain:
+				var room_came_later_than_us = (map.get_room_at(temp_pos).num_tiles_before_us > self.num_tiles_before_us)
+				if room_came_later_than_us:
+					if type != "teleporter": 
+						continue
+			
 			tilemap_terrain.set_cellv(temp_pos, tile_id)
 			map.change_terrain_at(temp_pos, type)
 

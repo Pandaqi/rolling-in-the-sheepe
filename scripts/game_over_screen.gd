@@ -34,7 +34,7 @@ func populate(ranks, times):
 		
 		add_child(item)
 	
-	$Instructions.rect_position = last_item_pos + Vector2.DOWN*50
+	$Instructions.position = last_item_pos + Vector2.DOWN*50
 
 func convert_to_nice_time(time):
 	var minutes = floor(time / 60)

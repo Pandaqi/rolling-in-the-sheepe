@@ -43,7 +43,7 @@ func check_for_progression():
 	if not listen_for_changes: return
 	
 	var cur_room = map.get_cell_from_node(body).room
-	if tutorial_step == 0 and cur_room.dir == 2:
+	if tutorial_step == 0 and cur_room.dir != 0:
 		load_next_step()
 	elif tutorial_step == 1 and cur_room.dir != 2:
 		load_next_step()

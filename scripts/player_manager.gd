@@ -1,5 +1,7 @@
 extends Node2D
 
+const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
+
 var player_scene = preload("res://scenes/body.tscn")
 
 onready var map = get_node("/root/Main/Map")
@@ -63,11 +65,41 @@ func create_player(player_num : int):
 	player_shapes[player_num] = rand_shape
 	player.get_node("Shaper").create_from_shape(shape_list[rand_shape].points)
 	
-	player.set_position(map.place_inside_room(map.cur_path[0]))
+	var room = map.get_room_at(map.cur_path[0])
+	player.set_position(get_spread_out_position(room))
 	map.add_child(player)
 	
 	player.get_node("Status").set_shape_name(rand_shape)
 	player.get_node("Status").set_player_num(player_num)
+
+func get_spread_out_position(room):
+	var start_pos = room.get_real_pos()
+	var max_dist = room.get_real_size()
+	
+	var bad_choice = true
+	var pos
+	
+	while bad_choice:
+		pos = start_pos + Vector2(randf(), randf())*max_dist
+		
+		if (closest_dist_to_player(pos) < MIN_DIST_BETWEEN_PLAYERS):
+			continue
+		
+		if map.get_tilemap_at_real_pos(pos) != -1:
+			continue
+		
+		bad_choice = false
+	
+	return pos
+
+func closest_dist_to_player(pos):
+	var other_players = get_tree().get_nodes_in_group("Players")
+	var min_dist = INF
+	for p in other_players:
+		var dist = (pos - p.get_global_position()).length()
+		min_dist = min(min_dist, dist)
+	
+	return min_dist
 
 func load_colors():
 	var num_colors = 10

@@ -8,9 +8,13 @@ const NUM_ROOMS_FRONT_BUFFER : int = 5
 
 const TILE_SIZE : float = 64.0
 const WORLD_SIZE : Vector2 = Vector2(50, 30)
-var default_starting_pos = Vector2(0.5,0)*WORLD_SIZE
-var map = []
+const BORDER_THICKNESS : int = 5
 
+var default_starting_pos = Vector2(0.5,0)*WORLD_SIZE
+var default_starting_room_size = Vector2(5,5)
+var default_room_size_for_tutorial = Vector2(2,2)
+
+var map = []
 var cur_path = []
 
 var leading_player
@@ -49,6 +53,9 @@ func generate():
 	
 	$MaskPainter/TilemapTexture.size = WORLD_SIZE*TILE_SIZE
 	
+	if tutorial.is_active():
+		default_starting_room_size = Vector2(6, 2)
+	
 	set_global_parameters()
 	
 	initialize_grid()
@@ -79,13 +86,24 @@ func initialize_grid():
 			}
 	
 	# create an extra border around the world so we can never just go outside
-	for x in range(-1, WORLD_SIZE.x+1):
-		change_cell(Vector2(x, -1), 0)
-		change_cell(Vector2(x, WORLD_SIZE.y), 0)
+	var border_size = BORDER_THICKNESS
+	for x in range(-border_size, WORLD_SIZE.x+border_size):
+		for y in range(border_size):
+			change_cell(Vector2(x, -1-y), 0)
+			change_cell(Vector2(x, WORLD_SIZE.y + y), 0)
 	
-	for y in range(-1, WORLD_SIZE.y+1):
-		change_cell(Vector2(-1,y), 0)
-		change_cell(Vector2(WORLD_SIZE.x,y), 0)
+	for y in range(-border_size, WORLD_SIZE.y+border_size):
+		for x in range(border_size):
+			change_cell(Vector2(-1-x,y), 0)
+			change_cell(Vector2(WORLD_SIZE.x + x,y), 0)
+
+func get_full_dimensions():
+	return {
+		'x': -BORDER_THICKNESS * TILE_SIZE,
+		'y': -BORDER_THICKNESS * TILE_SIZE,
+		'width': (WORLD_SIZE.x+(BORDER_THICKNESS*2)) * TILE_SIZE,
+		'height': (WORLD_SIZE.y+(BORDER_THICKNESS*2)) * TILE_SIZE
+	}
 
 func initialize_rooms():
 	var num_rooms = 5
@@ -105,21 +123,36 @@ func change_cell(pos, id, flip_x = false, flip_y = false, transpose = false):
 	tilemap.set_cellv(pos, id, flip_x, flip_y, transpose)
 	tilemap_copy.set_cellv(pos, id, flip_x, flip_y, transpose)
 
+func update_bitmask(pos, size):
+	var update_margin = Vector2(1,1)
+	tilemap.update_bitmask_region(pos-update_margin, size+update_margin*2)
+	tilemap_copy.update_bitmask_region(pos-update_margin, size+update_margin*2)
+
 func get_cell(pos):
 	return map[pos.x][pos.y]
 
+func get_tilemap_at_real_pos(pos):
+	var grid_pos = (pos / TILE_SIZE).floor()
+	return tilemap.get_cellv(grid_pos)
+
 func change_terrain_at(pos, type):
+	if out_of_bounds(pos): return
 	get_cell(pos).terrain = type
 
-# TO DO: Actually set to the given TYPE
-# TO DO: Check if the other side actually exists (in both functions - add + remove)
+# TO DO: Actually implement the "set_type" function on edge.gd
 func set_edge_at(pos, dir_index, type):
+	var already_has_edge = get_cell(pos).edges[dir_index]
+	if already_has_edge:
+		already_has_edge.set_type(type)
+		return
+	
 	var e = edge_scene.instance()
 	var vec = get_vector_from_dir(dir_index)
 
 	var edge_grid_pos = pos + 0.5*Vector2(1,1) + 0.5*vec
 	e.set_position(edge_grid_pos*TILE_SIZE)
 	e.set_rotation(dir_index * 0.5 * PI)
+	e.set_type(type)
 	
 	get_cell(pos).edges[dir_index] = e
 	
@@ -151,6 +184,66 @@ func remove_all_edges_at(pos):
 
 ####
 #
+# Managing the tilemap
+# (making it look pretty, adding slopes, making sure we choose the right tiles, etc.)
+#
+####
+
+# TO DO: Shouldn't these be functions on the RECTANGLES themselves? Or at least partly?
+func should_be_slope(pos):
+	# an empty cell ...
+	if tilemap.get_cellv(pos) != -1: return false
+
+	# a cell with precisely two neighbours ...
+	var nbs = get_neighbor_tiles(pos, { 'filled': true })
+	if nbs.size() != 2: return false
+	
+	# who are at an angle ( = NOT opposite each other) ...
+	var epsilon = 0.05
+	if (nbs[0] - pos).dot(nbs[1] - pos) < -(1 - epsilon): return false
+	
+	# slope!
+	return true
+
+func check_for_slopes(r):
+	var slopes_to_create = []
+	
+	# plan the creation of new slopes
+	for x in range(r.size.x):
+		for y in range(r.size.y):
+			var pos = r.pos + Vector2(x,y)
+			if not should_be_slope(pos): continue
+			
+			slopes_to_create.append(pos)
+	
+	for pos in slopes_to_create:
+		#if randf() <= 0.5: continue
+		change_cell(pos, 0)
+
+	update_bitmask(r.pos, r.size)
+	
+	var allowed_slopes = [Vector2(0,0), Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), Vector2(0,2), Vector2(1,2), Vector2(3,2), Vector2(1,3), Vector2(3,3), Vector2(8,3), Vector2(11,3)]
+	
+	var something_changed = false
+	for pos in slopes_to_create:
+		var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
+		
+		var good_slope = false
+		for a in allowed_slopes:
+			if (tile_coord - a).length() <= 0.03:
+				good_slope = true
+				break
+		
+		if not good_slope:
+			change_cell(pos, -1)
+			something_changed = true
+	
+	if something_changed:
+		update_bitmask(r.pos, r.size)
+	
+
+####
+#
 # Helpers
 #
 ####
@@ -160,12 +253,16 @@ func get_random_grid_pos():
 func get_real_pos(pos):
 	return pos*TILE_SIZE
 
-func keep_within_bounds(pos : Vector2) -> Vector2:
+func keep_within_bounds(pos : Vector2, allow_edge_overlap = false) -> Vector2:
 	if pos.x < 0: pos.x = 0
-	if pos.x >= WORLD_SIZE.x: pos.x = WORLD_SIZE.x - 1
+	if pos.x >= WORLD_SIZE.x: 
+		pos.x = WORLD_SIZE.x - 1
+		if allow_edge_overlap: pos.x = WORLD_SIZE.x
 	
 	if pos.y < 0: pos.y = 0
-	if pos.y >= WORLD_SIZE.y: pos.y = WORLD_SIZE.y - 1
+	if pos.y >= WORLD_SIZE.y: 
+		pos.y = WORLD_SIZE.y - 1
+		if allow_edge_overlap: pos.y = WORLD_SIZE.y
 	
 	return pos
 
@@ -207,16 +304,48 @@ func is_empty(pos):
 	if not get_room_at(pos): return false
 	return true
 
-func get_cur_room_index(p : RigidBody2D) -> int:
+func get_cur_room(p : RigidBody2D, return_index = false):
 	var pos = p.get_global_position()
 	for i in range(cur_path.size()-1,-1,-1):
 		var point = cur_path[i]
 		var room = get_room_at(point)
 		
 		if room.has_real_point(pos):
-			return i
+			if return_index: return i
+			return room
 	
-	return -1
+	if return_index:
+		return -1
+	return null
+
+func get_cur_room_index(p : RigidBody2D) -> int:
+	return get_cur_room(p, true)
+
+# TO DO: Might be more worthwhile to REGISTER which players are inside each room
+# (So I can just loop through cur_path, starting from player, until I find a room with players inside.)
+# These steps need to be taken => on the map reader, any time we change cell, we also check if we changed room (and register ourselves properly)
+func get_next_best_player(p):
+	var players = get_tree().get_nodes_in_group("Players")
+	
+	var my_num = p.get_node("Status").player_num
+	var my_index = get_cur_room_index(p)
+	
+	var best_index = INF
+	var best_player = null
+	
+	for other_player in players:
+		var num = other_player.get_node("Status").player_num
+		if num == my_num: continue
+		
+		var index = get_cur_room_index(other_player)
+		if index <= my_index: continue
+		
+		if index < best_index:
+			best_player = other_player
+		
+		best_index = min(best_index, index)
+	
+	return best_player
 
 func get_path_from_front(offset : int = 0):
 	var index = cur_path.size() - 1 - offset
@@ -254,7 +383,13 @@ func get_neighbor_tiles(pos, params):
 	var res = []
 	for nb in nbs:
 		var new_pos = pos + nb
-		if tilemap.get_cellv(new_pos) != params.id: continue
+		var tile_data = tilemap.get_cellv(new_pos)
+		
+		if params.has('id'):
+			if tile_data != params.id: continue
+		
+		if params.has('filled'):
+			if tile_data < 0: continue
 		
 		res.append(new_pos)
 	
@@ -287,66 +422,6 @@ func get_random_displacement(old_r, new_r, dir_index):
 
 ####
 #
-# Managing the tilemap
-# (making it look pretty, adding slopes, making sure we choose the right tiles, etc.)
-#
-####
-
-# TO DO: Shouldn't these be functions on the RECTANGLES themselves? Or at least partly?
-func should_be_slope(pos):
-	# an empty cell ...
-	if tilemap.get_cellv(pos) != -1: return false
-	
-	# with precisely two neighbours ...
-	var nbs = get_neighbor_tiles(pos, { 'id': 0 })
-	if nbs.size() != 2: return false
-	
-	# who are at an angle ( = NOT opposite each other) ...
-	var epsilon = 0.05
-	if (nbs[0] - pos).dot(nbs[1] - pos) < -(1 - epsilon): return false
-	
-	# slope!
-	return true
-
-func is_slope(pos):
-	return tilemap.get_cellv(pos) == 1
-
-func check_for_slopes(r):
-	var slopes_to_create = []
-	
-	# remove slopes that have become nonsensical
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var pos = r.pos + Vector2(x,y)
-
-			if is_slope(pos) and not should_be_slope(pos):
-				change_cell(pos, -1)
-	
-	# plan the creation of new slopes
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var pos = r.pos + Vector2(x,y)
-			if not should_be_slope(pos): continue
-			
-			var nbs = get_neighbor_tiles(pos, { 'id': 0 })
-			slopes_to_create.append({ 'pos': pos, 'nbs': nbs })
-	
-	# actually create the slopes AND rotate them correctly
-	for s in slopes_to_create:
-		var pos = s.pos
-		var nbs = s.nbs
-		
-		var flip_x = false
-		if (pos - nbs[0]).x > 0 or (pos - nbs[1]).x > 0: flip_x = true 
-		
-		var flip_y = false
-		if (pos - nbs[0]).y > 0 or (pos - nbs[1]).y > 0: flip_y = true
-		
-		# @params => set_cellv (pos, id, flip_x, flip_y, transpose)
-		change_cell(pos, 1, flip_x, flip_y)
-
-####
-#
 # Frame update; check every frame
 # Concerned with deleting old rooms and creating new ones
 #
@@ -362,7 +437,7 @@ func initialize_new_room_rect(params):
 	
 	var first_room = (cur_path.size() == 0)
 	if first_room:
-		rand_rect.set_random_size(true)
+		rand_rect.set_size(default_starting_room_size)
 	
 	params.rect = rand_rect
 
@@ -371,6 +446,9 @@ func initialize_new_room_rect(params):
 func set_wanted_room_parameters(params):
 	params.place_finish = (total_rooms_created > rooms_until_finish)
 	params.place_lock = (rooms_in_current_section > rooms_until_section_end)
+	
+	if tutorial.is_active(): 
+		params.place_lock = false
 	
 	params.require_large_size = (params.place_finish or params.place_lock)
 	
@@ -387,7 +465,7 @@ func find_valid_configuration(params):
 	var num_tries = 0
 	var smaller_room_try_threshold = 150
 	var check_against_grown_rect_threshold = 150
-	var forced_dir_try_threshold = 140 # NOTE should be slightly smaller than the others, otherwise we get ugly edges because of the forced dir
+	var forced_dir_try_threshold = 190 #NOTE: Must be HIGHER than the others, otherwise it's very hard to do a zigzag and go back early (just too little space)
 	var max_tries = 200
 	
 	var base_pos = params.room.pos
@@ -398,13 +476,20 @@ func find_valid_configuration(params):
 	
 	params.disallow_going_back = true
 	params.overlapping_rooms_were_allowed = false
+	params.disallow_long_verticals = true
 	
 	var forced_dir_exists = (params.forced_dir >= 0)
+	
+	if tutorial.wanted_tutorial_placement:
+		params.require_large_size = true
 	
 	while bad_choice and num_tries < max_tries:
 		bad_choice = false
 		
 		rect.set_random_size(params.require_large_size)
+		
+		if forced_dir_exists and tutorial.is_active():
+			rect.set_size(default_room_size_for_tutorial)
 		
 		# when we're out of space (mostly)
 		# try 1-wide, very long rooms for a while
@@ -419,11 +504,10 @@ func find_valid_configuration(params):
 			
 			params.disallow_going_back = false
 			params.ignore_optional_requirements = true
-
-		if forced_dir_exists:
-			params.disallow_going_back = false
+			params.require_large_size = false
 
 		var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
+		
 		var candidates = []
 		
 		var last_dir = params.room.dir
@@ -433,6 +517,11 @@ func find_valid_configuration(params):
 			if params.disallow_going_back:
 				if i == opposite_to_last_dir: 
 					continue
+			
+			if params.disallow_long_verticals:
+				if last_dir == 1 or last_dir == 3:
+					if i == 1 or i == 3:
+						continue
 			
 			var random_displacement = get_random_displacement(params.room, rect, i)
 
@@ -478,12 +567,11 @@ func find_valid_configuration(params):
 		# search for a candidate that matches and pick that one
 		var able_to_match_forced_dir = false
 		if forced_dir_exists:
-			print(params.forced_dir)
-			print(candidates)
 			for c in candidates:
 				if c.dir_index == params.forced_dir:
 					final_candidate = c
 					able_to_match_forced_dir = true
+					tutorial.record_forced_dir_match()
 					break
 			
 		if forced_dir_exists and not able_to_match_forced_dir:
@@ -508,6 +596,7 @@ func place_room_according_to_params(params):
 	
 	rect.set_previous_room(params.room)
 	rect.set_dir(params.dir)
+	rect.set_path_position(total_rooms_created)
 	
 	var handout_terrains = (not tutorial.is_active())
 	if handout_terrains:
@@ -517,11 +606,21 @@ func place_room_according_to_params(params):
 	cur_path.append(params.pos)
 	set_room_at(params.pos, rect)
 	
-	var grown_rect = rect.copy_and_grow(1)
-	check_for_slopes(grown_rect)
+	# NOTE: We check slopes on the PREVIOUS room
+	# Because NOW we know the connections and can make a sensible placement
 	
+	if params.room:
+		var grown_rect = params.room
+		check_for_slopes(grown_rect)
+
 	if params.overlapping_rooms_were_allowed:
 		rect.create_border_around_us()
+	
+	var wanted_tut = tutorial.wanted_tutorial_placement
+	if wanted_tut:
+		var can_place_it = params.require_large_size
+		if can_place_it:
+			tutorial.place_image(rect, tilemap)
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return
@@ -639,14 +738,17 @@ func get_pos_just_ahead():
 	if not leading_player or not is_instance_valid(leading_player): return null
 	
 	var index = get_cur_room_index(leading_player)
-	if index == (cur_path.size()-1): return null
+	if index == (cur_path.size()-1): return leading_player.get_global_position()
 	
 	var coming_positions : Vector2 = Vector2.ZERO
 	var num_positions_considered : float = 0
 	
-	for i in range(index+1, cur_path.size()):
+	var max_rooms_to_look_ahead = 4
+	var max_bound = min(cur_path.size(), index+max_rooms_to_look_ahead+15)
+	
+	for i in range(index+1, max_bound):
 		var ratio : float = 1.0 / float(i-index)
-		coming_positions += ratio * cur_path[index]*TILE_SIZE
+		coming_positions += ratio * cur_path[i]*TILE_SIZE
 		num_positions_considered += ratio
 	
 	coming_positions /= num_positions_considered
@@ -655,8 +757,7 @@ func get_pos_just_ahead():
 
 func delete_all_rooms():
 	# delete all the rooms
-	var num_rooms = cur_path.size()
-	for i in range(num_rooms):
+	while cur_path.size() > 0:
 		delete_oldest_room()
 	
 	# delete all the edges

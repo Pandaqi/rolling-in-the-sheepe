@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -10,7 +10,8 @@
 [ext_resource path="res://scripts/module_map_painter.gd" type="Script" id=8]
 [ext_resource path="res://scripts/module_glue.gd" type="Script" id=9]
 [ext_resource path="res://scripts/module_tutorial.gd" type="Script" id=10]
-[ext_resource path="res://assets/ui/tutorials.png" type="Texture" id=11]
+[ext_resource path="res://scenes/ui/tutorial_sprite.tscn" type="PackedScene" id=11]
+[ext_resource path="res://scenes/ui/module_clinger.gd" type="Script" id=12]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -45,7 +46,10 @@ texture = ExtResource( 5 )
 centered = false
 offset = Vector2( 0, -32 )
 
-[node name="ClingVec" type="Sprite" parent="Mover"]
+[node name="Clinger" type="Node2D" parent="."]
+script = ExtResource( 12 )
+
+[node name="ClingVec" type="Sprite" parent="Clinger"]
 modulate = Color( 1, 0, 0, 1 )
 scale = Vector2( 0.5, 0.1 )
 texture = ExtResource( 5 )
@@ -64,11 +68,7 @@ script = ExtResource( 9 )
 [node name="Tutorial" type="Node2D" parent="."]
 script = ExtResource( 10 )
 
-[node name="Sprite" type="Sprite" parent="Tutorial"]
-scale = Vector2( 0.25, 0.25 )
-texture = ExtResource( 11 )
-hframes = 5
-vframes = 3
+[node name="Sprite" parent="Tutorial" instance=ExtResource( 11 )]
 
 [node name="Timer" type="Timer" parent="Tutorial"]
 wait_time = 5.0

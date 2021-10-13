@@ -54,7 +54,9 @@ func player_finished(b):
 		return { 'already_finished': true, 'rank': -1 }
 	
 	var raw_time = (OS.get_ticks_msec() - game_start) / 1000.0
-	var time_modifiers = 0 # TO DO (powerups that give time penalties or something)
+	
+	# TO DO (powerups that give time penalties or something)
+	var time_modifiers = b.get_node("Status").time_penalty
 	
 	var final_time = raw_time + time_modifiers
 	player_times[player_num] = final_time
