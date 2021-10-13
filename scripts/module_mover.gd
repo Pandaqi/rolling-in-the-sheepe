@@ -66,7 +66,7 @@ func _on_Input_double_button():
 	
 	last_input_time = OS.get_ticks_msec()
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	reset_gravity_strength()
 	
 	determine_normal_vec()

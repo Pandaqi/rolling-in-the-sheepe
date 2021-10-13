@@ -11,12 +11,19 @@ const MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT : float = 1500.0
 const TIME_PENALTY_TOO_FAR_BEHIND : float = 10.0
 
 onready var main_node = get_node("/root/Main")
+onready var GUI = get_node("/root/Main/GUI")
+
 onready var map = get_node("/root/Main/Map")
+onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
+onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
+
 onready var player_manager = get_node("/root/Main/PlayerManager")
+
 onready var body = get_parent()
 onready var status = get_node("../Status")
+onready var room_tracker = get_node("../RoomTracker")
 
-onready var GUI = get_node("/root/Main/GUI")
+
 var player_gui_scene = preload("res://scenes/player_gui.tscn")
 var gui
 
@@ -24,7 +31,7 @@ var has_finished : bool = false
 
 var last_cell
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	position_gui_above_us()
 	
 	if has_finished: return
@@ -43,7 +50,7 @@ func read_map():
 
 func do_effect_of_cell(cell):
 	var terrain = cell.terrain
-	var room = map.get_room_at(cell.pos) # can be null??
+	var room = room_tracker.get_cur_room()
 	
 	match terrain:
 		"finish":
@@ -163,15 +170,15 @@ func disable_everything():
 	body.modulate.a = 0.5
 
 func check_if_too_far_behind():
-	if map.leading_player == self: return
+	if player_progression.get_leading_player() == self: return
 	
 	var too_far_behind = false
-	var my_room = map.get_cur_room(body)
+	#var my_room = body.get_node("RoomTracker").get_cur_room()
 	
-	var next_player = map.get_next_best_player(body)
+	var next_player = route_generator.get_next_best_player(body)
 	if not next_player: return
 	
-	var next_player_room = map.get_cur_room(next_player)
+	var next_player_room = next_player.get_node("RoomTracker").get_cur_room()
 	
 	# if we're still perfectly in view (because very close to next best player)
 	# ignore this whole thing, we don't (yet) need to teleport
@@ -192,14 +199,13 @@ func check_if_too_far_behind():
 func get_forward_boost_pos(pick_next_best_player = false):
 	var target_room
 	if pick_next_best_player:
-		var next_player = map.get_next_best_player(body)
+		var next_player = route_generator.get_next_best_player(body)
 		
-		target_room = map.get_cur_room(next_player)
+		target_room = next_player.get_node("RoomTracker").get_cur_room()
 	else:
-		var cur_room_index = map.get_cur_room_index(body)
+		var cur_room_index = body.get_node("RoomTracker").get_cur_room().index
 		var target_room_index = (cur_room_index + 1)
-		
-		target_room = map.get_room_at(map.cur_path[target_room_index])
+		target_room = route_generator.cur_path[target_room_index]
 	
 	return player_manager.get_spread_out_position(target_room)
 

@@ -21,7 +21,7 @@ func get_key(key : String):
 func set_player_num(num : int):
 	player_num = num
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	if Input.is_action_pressed(get_key("right")):
 		if reverse:
 			emit_signal("move_left")

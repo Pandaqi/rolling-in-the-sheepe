@@ -3,6 +3,7 @@ extends Node2D
 const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
 
 onready var map = get_node("/root/Main/Map")
+onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 var body_scene = preload("res://scenes/body.tscn")
 
 var start_point
@@ -80,7 +81,7 @@ func slice_body(b, p1, p2):
 	
 	# destroy the old body
 	var original_player_num = b.get_node("Status").player_num
-	map.on_body_sliced(b)
+	player_progression.on_body_sliced(b)
 	b.remove_from_group("Players")
 	b.queue_free()
 	
@@ -97,7 +98,7 @@ func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
 	
 	# initialize all to "no layer"
-	for i in range(new_shapes.size()):
+	for _i in range(new_shapes.size()):
 		saved_layers.append(-1)
 	
 	# move through shapes left to right
@@ -204,7 +205,7 @@ func area_too_small(shapes):
 	return (area < MIN_AREA_FOR_VALID_SHAPE)
 
 func create_body_from_shape_list(player_num : int, shapes : Array, allow_deletion : bool = true) -> RigidBody2D:
-	if area_too_small(shapes): return null
+	if area_too_small(shapes) and allow_deletion: return null
 	
 	var body = body_scene.instance()
 	

@@ -12,6 +12,8 @@ var forced_dir_has_matched : bool = false
 
 var wanted_tutorial_placement : String = ""
 
+onready var tilemap = get_node("/root/Main/Map/TileMap")
+
 var tutorial_sprite = preload("res://scenes/ui/tutorial_sprite.tscn")
 
 func _ready():
@@ -62,9 +64,17 @@ func perform_switch():
 		forced_dir = -1
 		wanted_tutorial_placement = "jump"
 
-# TO DO:
-# => use an ARRAY to loop through images in order, instead of hardcoding it
-func place_image(rect, parent):
+func placed_a_new_room(rect):
+	if not wanted_tutorial_placement: return
+	
+	# TO DO: Look at the SIZE of the rect (and perhaps if it has a LOCK/TERRAIN), and use that to determine if we can place a tutorial here
+	var can_place_it = false
+	if not can_place_it: return
+	
+	place_image(rect)
+
+# TO DO: use an ARRAY to loop through images in order, instead of hardcoding it, so I can allow ANY level to have a specific set of tutorials
+func place_image(rect):
 	var sprite = tutorial_sprite.instance()
 	sprite.set_scale(Vector2(1,1))
 	var new_tut = wanted_tutorial_placement
@@ -75,7 +85,7 @@ func place_image(rect, parent):
 		sprite.set_frame(11)
 	
 	sprite.set_position(rect.get_center())
-	parent.add_child(sprite)
+	tilemap.add_child(sprite)
 	
 	wanted_tutorial_placement = ""
 	if new_tut == "jump":

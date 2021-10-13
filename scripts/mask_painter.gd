@@ -15,26 +15,22 @@ onready var map = get_parent()
 func _ready():
 	var world_size : Vector2 = map.WORLD_SIZE * map.TILE_SIZE
 	
-	image_size = world_size / resolution
-	surface_image.create(image_size.x, image_size.y,false,Image.FORMAT_RGBAH)
+	image_size = (world_size / resolution).floor()
+	surface_image.create(int(image_size.x), int(image_size.y), false,Image.FORMAT_RGBAH)
 	
 	paint_image.load("res://assets/paint_mask.png")
 	paint_image.convert(Image.FORMAT_RGBAH)
 
 	$Sprite.texture = surface_texture
 
+func set_texture_size(new_size):
+	$TilemapTexture.size = new_size
+
 func out_of_mask_bounds(pos):
 	return pos.x < 0 or pos.x >= image_size.x or pos.y < 0 or pos.y >= image_size.y
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	surface_texture.create_from_image(surface_image)
-
-func _input(ev):
-	if (ev is InputEventMouseButton) and (not ev.pressed):
-		paint_on_mask(get_global_mouse_position().round(), 0)
-		
-		print("Painted at position")
-		print(get_global_mouse_position().round())
 
 func clear_mask():
 	surface_image.lock()

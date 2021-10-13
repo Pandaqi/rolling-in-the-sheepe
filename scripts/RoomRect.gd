@@ -2,6 +2,9 @@ extends Node
 
 const TILE_SIZE : float = 64.0
 
+var players_inside = []
+
+var index : int
 var pos : Vector2
 var size : Vector2
 
@@ -40,13 +43,16 @@ var lock_module
 # Default properties: position and size
 #
 #####
-func init(map_reference, tm, tm_terrain):
+func init(map_reference):
 	set_pos(Vector2.ZERO)
 	set_random_size()
 	
 	map = map_reference
-	tilemap = tm
-	tilemap_terrain = tm_terrain
+	tilemap = map_reference.tilemap
+	tilemap_terrain = map_reference.tilemap_terrain
+
+func set_index(num):
+	index = num
 
 func set_pos(new_pos):
 	pos = new_pos
@@ -86,7 +92,18 @@ func make_local(p):
 
 #####
 #
-# For workig with our (relative) position within the current route
+# Keeping track of the players inside
+#
+#####
+func add_player(p):
+	players_inside.append(p)
+
+func remove_player(p):
+	players_inside.erase(p)
+
+#####
+#
+# For working with our (relative) position within the current route
 #
 #####
 func set_dir(d):
@@ -114,7 +131,7 @@ func delete_edges_inside():
 				var link = edge_links_to(edge)
 				if not link or link != self: continue
 				
-				map.remove_edge_at(edge.pos, edge.dir_index)
+				map.edges.remove_at(edge.pos, edge.dir_index)
 
 func open_connection_to_previous_room():
 	if not prev_room: return
@@ -124,7 +141,7 @@ func open_connection_to_previous_room():
 	for edge in outline:
 		if not edge_links_to_previous_room(edge): continue
 
-		map.remove_edge_at(edge.pos, edge.dir_index)
+		map.edges.remove_at(edge.pos, edge.dir_index)
 
 func create_border_around_us(params = {}):
 	var outline = determine_outline()
@@ -142,14 +159,14 @@ func create_border_around_us(params = {}):
 				continue
 		
 		# @params => position, index (which direction), type of edge
-		map.set_edge_at(edge.pos, edge.dir_index, type)
+		map.edges.set_at(edge.pos, edge.dir_index, type)
 	
 	has_border = true
 
 func remove_border_around_us():
 	var outline = determine_outline()
 	for edge in outline:
-		map.remove_edge_at(edge.pos, edge.dir_index)
+		map.edges.remove_at(edge.pos, edge.dir_index)
 
 func edge_links_to(edge):
 	var opposite_grid_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
@@ -257,7 +274,7 @@ func change_tiles_to(tile_id : int = -1):
 
 func copy_and_grow(val, keep_within_bounds = false):
 	var copy = get_script().new()
-	copy.init(map, tilemap, tilemap_terrain)
+	copy.init(map)
 	
 	copy.set_pos(pos - Vector2(1,1)*val)
 	copy.set_size(size+Vector2(1,1)*2*val)
@@ -299,7 +316,7 @@ func remove_lock():
 	
 	print("Should remove lock now")
 
-func determine_outline(params = {}):
+func determine_outline():
 	var arr = []
 	
 	# top and bottom cells
@@ -344,7 +361,7 @@ func turn_into_teleporter():
 	map.add_child(lock_module)
 
 func update_map_to_new_rect():
-	map.set_room_at(pos, self)
+	map.set_all_cells_to_room(self)
 	erase_tiles()
 
 #####

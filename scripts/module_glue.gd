@@ -9,7 +9,7 @@ onready var body = get_parent()
 func set_player_num(num):
 	player_num = num
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	check_glue()
 	check_spikes()
 

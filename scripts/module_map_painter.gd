@@ -7,7 +7,7 @@ var last_paint_pos : Vector2
 onready var mask_painter = get_node("/root/Main/Map/MaskPainter")
 onready var body = get_parent()
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	for obj in body.contact_data:
 		if not (obj.body is TileMap): continue
 		if (obj.pos - last_paint_pos).length() < MIN_DIST_BETWEEN_PAINTS: continue

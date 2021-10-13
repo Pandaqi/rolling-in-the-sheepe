@@ -12,7 +12,7 @@ var debug_cling_raycasts = []
 onready var body = get_parent()
 onready var shaper = get_node("../Shaper")
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	if not active: return
 	execute_wall_cling()
 
@@ -31,7 +31,6 @@ func execute_wall_cling():
 	var considered_vectors = 0
 	
 	var moving_dir = body.get_linear_velocity()
-	var moving_dir_norm = moving_dir.normalized()
 	if moving_dir.length() <= 5.0:
 		cling_vec = Vector2.ZERO
 		return

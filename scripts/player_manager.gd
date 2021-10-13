@@ -5,6 +5,7 @@ const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
 var player_scene = preload("res://scenes/body.tscn")
 
 onready var map = get_node("/root/Main/Map")
+onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 
 var num_players : int = 0
 var player_colors = []
@@ -65,7 +66,7 @@ func create_player(player_num : int):
 	player_shapes[player_num] = rand_shape
 	player.get_node("Shaper").create_from_shape(shape_list[rand_shape].points)
 	
-	var room = map.get_room_at(map.cur_path[0])
+	var room = route_generator.cur_path[0]
 	player.set_position(get_spread_out_position(room))
 	map.add_child(player)
 	

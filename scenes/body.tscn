@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -12,6 +12,7 @@
 [ext_resource path="res://scripts/module_tutorial.gd" type="Script" id=10]
 [ext_resource path="res://scenes/ui/tutorial_sprite.tscn" type="PackedScene" id=11]
 [ext_resource path="res://scenes/ui/module_clinger.gd" type="Script" id=12]
+[ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -30,6 +31,9 @@ script = ExtResource( 7 )
 
 [node name="Status" type="Node2D" parent="."]
 script = ExtResource( 6 )
+
+[node name="RoomTracker" type="Node2D" parent="."]
+script = ExtResource( 13 )
 
 [node name="Shaper" type="Node2D" parent="."]
 script = ExtResource( 3 )

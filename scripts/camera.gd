@@ -3,10 +3,11 @@ extends Camera2D
 const MIN_ZOOM : float = 0.75
 const MAX_ZOOM : float = 4.0
 
-const ZOOM_MARGIN : Vector2 = Vector2(600.0, 600.0) #Vector2(250.0, 150.0)
+const ZOOM_MARGIN : Vector2 = Vector2(250.0, 150.0)
 
 var players
 onready var map = get_node("/root/Main/Map")
+onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 
 # TO DO: Test if this even works AND if it's a good idea (focusing on the look ahead this much)
 var look_ahead : bool = true
@@ -37,7 +38,7 @@ func focus_on_average_player_pos(dt):
 	for p in players:
 		avg_pos += p.get_global_position()
 	
-	var coming_pos = map.get_pos_just_ahead()
+	var coming_pos = route_generator.get_pos_just_ahead()
 	if coming_pos and look_ahead:
 		var coming_pos_weight = 2.0
 		avg_pos += coming_pos_weight * coming_pos
@@ -64,7 +65,7 @@ func zoom_to_show_all_players(dt):
 		player_bounds.y = max(y_dist, player_bounds.y)
 	
 	# check that position up ahead, to include it as well
-	var pos_ahead = map.get_pos_just_ahead()
+	var pos_ahead = route_generator.get_pos_just_ahead()
 	if pos_ahead and look_ahead:
 		player_bounds.x = max(abs(pos_ahead.x - cam_pos.x), player_bounds.x)
 		player_bounds.y = max(abs(pos_ahead.y - cam_pos.y), player_bounds.y)

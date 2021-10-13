@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=1]
 [ext_resource path="res://scripts/slicer.gd" type="Script" id=2]
@@ -10,6 +10,11 @@
 [ext_resource path="res://scripts/mask_painter.gd" type="Script" id=8]
 [ext_resource path="res://scripts/tutorial.gd" type="Script" id=9]
 [ext_resource path="res://scripts/fog_of_war.gd" type="Script" id=10]
+[ext_resource path="res://scripts/map/route_generator.gd" type="Script" id=11]
+[ext_resource path="res://scripts/map/player_progression.gd" type="Script" id=12]
+[ext_resource path="res://scripts/map/room_picker.gd" type="Script" id=13]
+[ext_resource path="res://scripts/map/edges.gd" type="Script" id=14]
+[ext_resource path="res://scripts/map/slope_painter.gd" type="Script" id=15]
 
 [sub_resource type="Shader" id=1]
 resource_local_to_scene = true
@@ -145,6 +150,21 @@ collision_layer = 3
 collision_mask = 3
 format = 1
 tile_data = PoolIntArray( 131072, 0, 8, 131073, 0, 10, 131074, 0, 11, 131077, 0, 8, 131078, 0, 11, 196608, 0, 196616, 196609, 0, 131077, 196610, 0, 65542, 196611, 0, 6, 196612, 0, 196610, 196613, 0, 131080, 196614, 0, 131083, 262145, 0, 65544, 262146, 0, 131081, 262147, 0, 131083, 262149, 0, 196616, 262150, 0, 131082, 262151, 0, 11, 327681, 0, 65544, 327682, 0, 131078, 327683, 0, 196619, 327686, 0, 131076, 327687, 0, 196614, 327688, 0, 196611, 393217, 0, 196616, 393218, 0, 196619, 393222, 0, 131072 )
+
+[node name="RouteGenerator" type="Node2D" parent="Map"]
+script = ExtResource( 11 )
+
+[node name="RoomPicker" type="Node2D" parent="Map"]
+script = ExtResource( 13 )
+
+[node name="PlayerProgression" type="Node2D" parent="Map"]
+script = ExtResource( 12 )
+
+[node name="Edges" type="Node2D" parent="Map"]
+script = ExtResource( 14 )
+
+[node name="SlopePainter" type="Node2D" parent="Map"]
+script = ExtResource( 15 )
 
 [node name="MaskPainter" type="Node2D" parent="Map"]
 position = Vector2( 0, -1 )

@@ -5,6 +5,7 @@ const MIN_DIST_TO_NEW_ROOM = 10 # in terms of grid tiles, Manhattan distance rad
 
 onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var map = get_node("/root/Main/Map")
+onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 
 var my_room
 
@@ -37,7 +38,7 @@ func _on_Timer_timeout():
 func update_label():
 	$Label/Label.set_text(str(time_left))
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	var wanted_num_players = GlobalInput.get_player_count()
 	num_players_here = count_players_here()
 	
@@ -100,7 +101,7 @@ func perform_teleport():
 	for i in range(GlobalInput.get_player_count()):
 		unteleported_players.append(i)
 	
-	var teleport_target_pos = map.place_inside_room(map.cur_path[0])
+	var teleport_target_pos = route_generator.cur_path[0].get_center()
 	for key in players_here:
 		for body in players_here[key]:
 			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)

@@ -35,7 +35,7 @@ func load_next_step():
 	
 	pause_listening_for_changes()
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	check_for_progression()
 	position_sprite_above_player()
 

@@ -11,8 +11,6 @@ var color : Color = Color(1.0, 0.0, 0.0)
 #
 #####
 func create_from_shape_list(shapes):
-	var col_node = get_parent().get_node("CollisionPolygon2D")
-	
 	for i in range(shapes.size()):
 		var shp = make_local(shapes[i])
 		var shape_node = ConvexPolygonShape2D.new()
@@ -134,10 +132,7 @@ func recalculate_bounding_box():
 			bounds.y.max = max(bounds.y.max, p.y)
 	
 	bounding_box = bounds
-	
-	print(bounding_box)
 
-# TO DO: Check if these calculations are even correct
 func get_bounding_box_along_vec(vec):
 	# convert bounding box to vectors (from centroid)
 	var bounding_box_vectors = [
