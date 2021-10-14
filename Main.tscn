@@ -43,6 +43,9 @@ shader_param/viewport_tex = SubResource( 3 )
 [sub_resource type="Shader" id=4]
 code = "shader_type canvas_item;
 
+uniform vec4 base_color : hint_color;
+uniform float base_alpha = 1.0;
+
 uniform vec2 p0;
 uniform vec2 p1;
 uniform vec2 p2;
@@ -68,10 +71,10 @@ uniform float sight_radius = 300;
 uniform vec2 vp_size = vec2(1920.0, 1080.0);
 
 void fragment() {
-	vec4 col = vec4(0,0,0,1.0);
+	vec4 col = base_color;
 	vec2 pos = UV*vp_size;
 	
-	float alpha = 0.9;
+	float alpha = base_alpha;
 	alpha *= min(length(p0 - pos) / sight_radius, 1.0);
 	alpha *= min(length(p1 - pos) / sight_radius, 1.0);
 	alpha *= min(length(p2 - pos) / sight_radius, 1.0);
@@ -102,6 +105,8 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id=5]
 shader = SubResource( 4 )
+shader_param/base_color = Color( 0.607843, 0.301961, 0.235294, 1 )
+shader_param/base_alpha = 1.0
 shader_param/p0 = null
 shader_param/p1 = null
 shader_param/p2 = Vector2( 500, 500 )

@@ -353,12 +353,12 @@ func turn_into_teleporter():
 	
 	update_map_to_new_rect()
 
-	paint_terrain("teleporter")
-	create_border_around_us({ 'open_all_linked_edges': true })
-	
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = self
 	map.add_child(lock_module)
+
+	paint_terrain("teleporter")
+	create_border_around_us({ 'open_all_linked_edges': true })
 
 func update_map_to_new_rect():
 	map.set_all_cells_to_room(self)

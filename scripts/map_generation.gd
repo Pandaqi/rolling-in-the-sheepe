@@ -139,6 +139,7 @@ func get_cell_from_node(node):
 	return get_cell(grid_pos)
 
 func get_room_at(pos):
+	if out_of_bounds(pos): return null
 	return get_cell(pos).room
 
 func set_all_cells_to_room(r):
@@ -153,6 +154,23 @@ func dist_to_bounds(pos):
 	var x = max(0 - pos.x, pos.x - (WORLD_SIZE.x - 1))
 	var y = max(0 - pos.y, pos.y - (WORLD_SIZE.y - 1))
 	return max(x,y)
+
+func dir_index_to_bounds(pos):
+	if pos.x < 0.5*WORLD_SIZE.x:
+		var x_dist = pos.x
+		if pos.y < x_dist:
+			return 3
+		elif (WORLD_SIZE.y - pos.y) < x_dist:
+			return 1
+		return 2
+	
+	else:
+		var x_dist = (WORLD_SIZE.x - pos.x)
+		if pos.y < x_dist:
+			return 3
+		elif (WORLD_SIZE.y - pos.y) < x_dist:
+			return 1
+		return 0
 
 func out_of_bounds(pos):
 	return pos.x < 0 or pos.x >= WORLD_SIZE.x or pos.y < 0 or pos.y >= WORLD_SIZE.y

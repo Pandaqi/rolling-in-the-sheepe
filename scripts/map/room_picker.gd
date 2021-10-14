@@ -2,6 +2,9 @@ extends Node2D
 
 const MAX_BACKTRACK_ROOMS : int = 5
 
+# [0,1] => 0 = only largest rooms possible, 1 = only smallest rooms posible
+const ROUTE_TIGHTNESS : float = 0.4
+
 var default_starting_pos = Vector2(0.5,0)
 var default_starting_room_size = Vector2(5,5)
 var default_room_size_for_tutorial = Vector2(2,2)
@@ -26,31 +29,13 @@ func _ready():
 # The only functionality it has: create newest room
 #
 func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
-	var room = route_generator.get_furthest_room()
-	
-	var params = {
-		'pos': default_starting_pos,
-		'dir': 0,
-		'room': room,
-		
-		'overlapping_rooms_were_allowed': false,
-		'forced_dir': -1,
-	}
-	
-	if tutorial.is_active(): params.forced_dir = tutorial.get_forced_dir()
-	if proposed_location: params.pos = proposed_location
-	
-	initialize_new_room_rect(params)
+	var params = initialize_new_room_rect(proposed_location)
 	set_wanted_room_parameters(params)
 	
-	if room: 
-		# allow backtracking = trying earlier and earlier rooms if the others yield nothing
-		for i in range(MAX_BACKTRACK_ROOMS):
-			params.room = route_generator.get_path_from_front(i)
-			find_valid_configuration(params)
-			
-			if not params.no_valid_placement: break
-	
+	# if we have a previous room, take it into account when placing the next
+	# (allow backtracking if we keep failing)
+	backtrack_and_find_good_room(params)
+
 	if params.no_valid_placement:
 		route_generator.pause_room_generation = true
 		route_generator.get_furthest_room().turn_into_teleporter()
@@ -64,13 +49,32 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 #
 # Implementation of the "create new room" functionality
 #
-func initialize_new_room_rect(params):
-	var rand_rect = RoomRect.new()
+func initialize_new_room_rect(proposed_location):
+	var room = route_generator.get_furthest_room()
 	
-	rand_rect.init(map)
-	rand_rect.set_size(default_starting_room_size)
+	var params = {
+		'dir': 0,
+		'room': room,
+		
+		'overlapping_rooms_were_allowed': false,
+		'forced_dir': -1,
+	}
 	
-	params.rect = rand_rect
+	if tutorial.is_active(): params.forced_dir = tutorial.get_forced_dir()
+	
+	var pos = default_starting_pos
+	if proposed_location: pos = proposed_location
+	params.base_pos = pos
+	
+	var rect = RoomRect.new()
+	
+	rect.init(map)
+	rect.set_pos(pos)
+	rect.set_size(default_starting_room_size)
+	
+	params.rect = rect
+	
+	return params
 
 # "Optional requirements" means that we WANT to do something at the earliest moment possible
 # but if we're barely able to place rooms, just place a fitting room and postpone it until later
@@ -85,143 +89,152 @@ func set_wanted_room_parameters(params):
 	params.ignore_optional_requirements = false
 	params.no_valid_placement = false
 
-func find_valid_configuration(params):
-	# Keep trying to find an open spot
-	# changing room SIZE and DISPLACEMENT ( = exact position) every time
-	var final_candidate
+func backtrack_and_find_good_room(params):
+	if not params.room: return # no previous room? no need to do all this
 	
-	var num_tries = 0
-	var smaller_room_try_threshold = 150
-	var check_against_grown_rect_threshold = 150
-	var forced_dir_try_threshold = 190 #NOTE: Must be HIGHER than the others, otherwise it's very hard to do a zigzag and go back early (just too little space)
-	var max_tries = 200
+	params.base_pos = params.room.pos
 	
-	var base_pos = params.room.pos
-	var bad_choice = true
+	var found_something = false
+	for i in range(MAX_BACKTRACK_ROOMS):
+		params.room = route_generator.get_path_from_front(i)
+		
+		var new_rect = find_valid_configuration_better(params)
+		if not new_rect: continue
+		
+		found_something = true
+		params.rect.set_pos(new_rect.pos)
+		params.rect.set_size(new_rect.size)
+		break
+	
+	if not found_something:
+		params.no_valid_placement = true
 
-	var rect = params.rect
+func generate_all_1x1_rooms_in_dir(params):
+	var dir_vertical = (params.dir == 1 or params.dir == 3)
+	var arr = []
 	
-	params.disallow_going_back = true
-	params.overlapping_rooms_were_allowed = false
-	params.disallow_long_verticals = true
+	if dir_vertical:
+		var y_offset = -1 if params.dir == 3 else params.room.size.y
+		for x in range(params.room.size.x):
+			var temp_pos = params.base_pos + Vector2(x,y_offset)
+			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
-	var forced_dir_exists = (params.forced_dir >= 0)
+	else:
+		var x_offset = -1 if params.dir == 2 else params.room.size.x
+		for y in range(params.room.size.y):
+			var temp_pos = params.base_pos + Vector2(x_offset, y)
+			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
-	if tutorial.wanted_tutorial_placement:
-		params.require_large_size = true
-	
-	while bad_choice and num_tries < max_tries:
-		bad_choice = false
-		
-		rect.set_random_size(params.require_large_size)
-		
-		if forced_dir_exists and tutorial.is_active():
-			rect.set_size(default_room_size_for_tutorial)
-		
-		# when we're out of space (mostly)
-		# try 1-wide, very long rooms for a while
-		# (they'll most likely fit AND get us out of trouble)
-		if num_tries > smaller_room_try_threshold:
-			var ratio = 1.0 - (num_tries - smaller_room_try_threshold) / float(max_tries - smaller_room_try_threshold)
-			var long_side = round( max(5 * ratio, 1) )
-			
-			rect.set_size(Vector2(1,long_side))
-			if randf() <= 0.5:
-				rect.set_size(Vector2(long_side,1))
-			
-			params.disallow_going_back = false
-			params.ignore_optional_requirements = true
-			params.require_large_size = false
+	return arr
 
-		var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
+func find_valid_configuration_better(params):
+	# UPGRADE: controlled variation; determine our maximum size
+	# (the path tries to stay varied: never too many small or large rooms after each other)
+	var average_size_over_path : float = route_generator.get_average_room_size_over_last(7)
+	var total_max_room_size : float = 7.0
+	var rand_max : int = 0
+	for i in range(1, total_max_room_size):
+		rand_max = i
+		if randf() <= ROUTE_TIGHTNESS * (average_size_over_path/total_max_room_size): break
+	
+	var max_room_size = Vector2(1,1)*rand_max
+	
+	# determine the preferred order in which to check directions
+	# (it's a rolling game, so continuing horizontal is always best)
+	var last_dir = params.room.dir
+	var last_step_was_vertical = (last_dir == 1 or last_dir == 3)
+	if last_step_was_vertical:
+		last_dir = 0 if randf() < 0.5 else 2
+	
+	# UPGRADE: remove the direction towards edge, if we're close to it
+	var preferred_dir_order = [last_dir, (last_dir + 2) % 4, 1, 3]
+	if abs(map.dist_to_bounds(params.base_pos)) < total_max_room_size:
+		preferred_dir_order.erase(map.dir_index_to_bounds(params.base_pos))
+	
+	# find the valid rooms in each dir, until we have a direction with results
+	while preferred_dir_order.size() > 0:
 		
-		var candidates = []
+		params.dir = preferred_dir_order.pop_front()
+		var is_horizontal = (params.dir == 0 or params.dir == 2)
+		var is_back_room = (params.dir == 2 or params.dir == 3)
 		
-		var last_dir = params.room.dir
-		var opposite_to_last_dir = ((last_dir + 2) % 4)
+		# UPGRADE: sneak peek
+		# (try one big room in the direction)
+		var sneak_room = { 'pos': params.base_pos, 'size': max_room_size }
+		if is_back_room:
+			if params.dir == 2: sneak_room.pos -= Vector2(max_room_size.x,0)
+			else: sneak_room.pos -= Vector2(0, max_room_size.y)
 		
-		for i in range(dirs.size()):
-			if params.disallow_going_back:
-				if i == opposite_to_last_dir: 
-					continue
-			
-			if params.disallow_long_verticals:
-				if last_dir == 1 or last_dir == 3:
-					if i == 1 or i == 3:
-						continue
-			
-			var random_displacement = get_random_displacement(params.room, rect, i)
-
-			var dir = dirs[i]
-			var temp_pos = base_pos + dir * params.room.size + random_displacement
-			
-			if dir.x < 0 or dir.y < 0:
-				temp_pos = base_pos + dir * rect.size + random_displacement
-			
-			rect.set_pos(temp_pos)
-			
-			var rect_to_check_against = rect
-			var ignore_index = -1
-			var growth_val = 0
-			if num_tries < check_against_grown_rect_threshold:
-				rect_to_check_against = rect.copy_and_grow(1)
-				ignore_index = params.room.index
-				growth_val = 1
-			else:
-				# NOTE: if we don't grow the rectangle, we should NOT ignore
-				# overlaps with ANY room, as that means an ACTUAL OVERLAP
-				params.overlapping_rooms_were_allowed = true
-			
-			if not route_generator.can_place_rectangle(rect_to_check_against, ignore_index, growth_val): 
+		sneak_room.pos += get_random_displacement(params.room.size, max_room_size, params.dir)
+		if not route_generator.room_overlaps_path(sneak_room, params):
+			return sneak_room
+			break
+		
+		# start with all possible 1x1 rooms
+		var valid_rooms = []
+		var rooms_to_check = generate_all_1x1_rooms_in_dir(params)
+		
+		# when a new size level has started; we only want to return rooms from the LAST size level ( = the biggest)
+		var cur_biggest_size = 0
+		var new_size_level_index = -1
+		
+		while rooms_to_check.size() > 0:
+			# if the room is bad, stop here
+			var room = rooms_to_check.pop_front()
+			if route_generator.room_overlaps_path(room, params):
 				continue
 			
-			# make horizontal movements more probable
-			var weight : int = 1
-			if i == 0 or i == 2:
-				weight = 3
+			# otherwise, record it as valid
+			valid_rooms.append(room)
 			
-			for _w in range(weight):
-				candidates.append({ 'dir': dir, 'pos': temp_pos, 'dir_index': i })
-		
-		if candidates.size() <= 0:
-			bad_choice = true
-			num_tries += 1
-			continue
-		
-		final_candidate = candidates[randi() % candidates.size()]
-		
-		# if a forced direction was specified
-		# search for a candidate that matches and pick that one
-		var able_to_match_forced_dir = false
-		if forced_dir_exists:
-			for c in candidates:
-				if c.dir_index == params.forced_dir:
-					final_candidate = c
-					able_to_match_forced_dir = true
-					tutorial.record_forced_dir_match()
-					break
+			var total_size = room.size.x * room.size.y
+			if total_size > cur_biggest_size:
+				cur_biggest_size = total_size
+				new_size_level_index = valid_rooms.size() - 1
 			
-		if forced_dir_exists and not able_to_match_forced_dir:
-			if num_tries < forced_dir_try_threshold:
-				bad_choice = true
-				num_tries += 1
+			# if it's already maximum size, don't create any grown versions anymore
+			if room.size.x >= max_room_size.x or room.size.y >= max_room_size.y:
 				continue
+			
+			# and now add a GROWN version to the future rooms to check
+			# (rooms grown in parallel to side need no further modification)
+			# (rooms grown orthogonally also need an offset variant, as MORE displacement is possible)
+			var extra_offset = Vector2.ZERO
+			if is_horizontal:
+				if is_back_room:
+					extra_offset = Vector2(-1,0)
+				
+				rooms_to_check.append({ 'pos': room.pos + extra_offset, 'size': room.size + Vector2(1,0) })
+				rooms_to_check.append({ 'pos': room.pos, 'size': room.size + Vector2(0,1) })
+				
+				if (room.pos.y == params.base_pos.y):
+					rooms_to_check.append({ 'pos': room.pos - Vector2(0,1), 'size': room.size + Vector2(0,1) })
+			
 			else:
-				tutorial.forced_dir_exhausted()
+				if is_back_room:
+					extra_offset = Vector2(0,-1)
+				
+				rooms_to_check.append({ 'pos': room.pos + extra_offset, 'size': room.size + Vector2(0,1) })
+				rooms_to_check.append({ 'pos': room.pos, 'size': room.size + Vector2(1,0) })
+				
+				if (room.pos.x == params.base_pos.x):
+					rooms_to_check.append({ 'pos': room.pos - Vector2(1,0), 'size': room.size + Vector2(1,0) })
 		
-		params.pos = final_candidate.pos
-		params.dir = final_candidate.dir_index
+		if valid_rooms.size() <= 0: continue
+		
+		# pick randomly from the LAST part of the array, as those are the BIGGER rooms, and then we're done
+		var min_index = new_size_level_index
+		var max_index = valid_rooms.size()
+		var rand_index = randi() % (max_index - min_index) + min_index
+		
+		return valid_rooms[rand_index]
 	
-	params.no_valid_placement = (num_tries >= max_tries)
+	return null
 
 func place_room_according_to_params(params):
 	var rect = params.rect
-	
-	# NOTE: VERY IMPORTANT to do this first, before doing anything else
-	# Otherwise the rect still has the default position and all calculations are wrong
+
 	rect.set_index(route_generator.get_new_room_index())
-	rect.set_pos(params.pos)
-	
 	rect.set_previous_room(params.room)
 	rect.set_dir(params.dir)
 	rect.set_path_position(route_generator.total_rooms_created)
@@ -234,12 +247,9 @@ func place_room_according_to_params(params):
 	route_generator.cur_path.append(rect)
 	map.set_all_cells_to_room(rect)
 	
-	# NOTE: We check slopes on the PREVIOUS room
-	# Because NOW we know the connections and can make a sensible placement
-	
-	if params.room:
-		var grown_rect = params.room
-		slope_painter.check_for_slopes(grown_rect)
+	slope_painter.recalculate_room(params.room)
+	slope_painter.place_slopes(rect)
+	slope_painter.fill_room(rect)
 
 	if params.overlapping_rooms_were_allowed:
 		rect.create_border_around_us()
@@ -261,26 +271,27 @@ func update_global_generation_parameters(params):
 	route_generator.total_rooms_created += params.rect.get_longest_side()
 	route_generator.rooms_in_current_section += params.rect.get_longest_side()
 
-# TO DO: Function can be simplified, as 0 == 2 and 1 == 3
-func get_random_displacement(old_r, new_r, dir_index):
-	if tutorial.is_active():
-		return Vector2.ZERO
-	
-	var ortho_dir = Vector2(0,1)
-	if dir_index == 1 or dir_index == 3:
-		ortho_dir = Vector2(1,0)
-	
+# TO DO: Can function be simplified, as 0 == 2 and 1 == 3???
+func get_displacement_bounds(old_r, new_r, dir_index):
 	# horizontal placement of rooms,
 	# so displace vertically
 	var bounds = { 'min': 0, 'max': 0 }
 	if dir_index == 0 or dir_index == 2:
-		bounds.min = -(new_r.size.y-1)
-		bounds.max = old_r.size.y - 1
+		bounds.min = -(new_r.y-1)
+		bounds.max = old_r.y - 1
 	
 	else:
-		bounds.min = -(new_r.size.x-1)
-		bounds.max = old_r.size.x-1
+		bounds.min = -(new_r.x-1)
+		bounds.max = old_r.x-1
 	
+	return bounds
+
+func get_random_displacement(old_r, new_r, dir_index):
+	var ortho_dir = Vector2(0,1)
+	if dir_index == 1 or dir_index == 3:
+		ortho_dir = Vector2(1,0)
+	
+	var bounds = get_displacement_bounds(old_r, new_r, dir_index)
 	var rand_bound = randi() % int(bounds.max - bounds.min + 1) + bounds.min
 	
 	return ortho_dir * rand_bound

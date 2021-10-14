@@ -21,7 +21,7 @@ func _physics_process(_dt):
 	var screen_size = get_viewport().size
 	mat.set_shader_param("vp_size", screen_size)
 	
-	var sight_radius = 200
+	var sight_radius = 250
 	sight_radius /= camera.zoom.x
 	mat.set_shader_param("sight_radius", sight_radius)
 	

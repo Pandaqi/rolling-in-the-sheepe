@@ -115,20 +115,21 @@ func should_place_lock():
 func get_new_room_index():
 	return cur_path.size()
 
-func can_place_rectangle(r, ignore_room_index, growth_area : int = 0):
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var my_pos = r.pos + Vector2(x,y)
+# TO DO: 
+# On big rooms, it might be faster to check against ROOMS, not individual cells???? Not sure if that is the case. (So check overlap with the other room rect, AABB, for all rooms on path.)
+func room_overlaps_path(rect, params):
+	for x in range(-1, rect.size.x+1):
+		for y in range(-1, rect.size.y+1):
+			var my_pos = rect.pos + Vector2(x,y)
+			if map.out_of_bounds(my_pos): return true
 			
-			# if the rectangle was GROWN, the REAL rectangle might still be inside the bounds, so ignore if the pos is inside this buffer
-			if map.dist_to_bounds(my_pos) > growth_area: 
-				return false
+			var cur_room = map.get_room_at(my_pos)
 			
-			for i in range(cur_path.size()):
-				if i == ignore_room_index: continue
-				if r.overlaps(cur_path[i]): return false
-	
-	return true
+			if not cur_room: continue
+			if cur_room.index == params.room.index: continue
+			
+			return true
+	return false
 
 func get_cur_room(p : RigidBody2D):
 	var pos = p.get_global_position()
@@ -149,6 +150,20 @@ func get_path_from_front(offset : int = 0):
 	if index < 0: return null
 	
 	return cur_path[index]
+
+func get_average_room_size_over_last(offset : int):
+	var start = max(cur_path.size() - offset, 0)
+	var end = cur_path.size()
+	
+	offset = (end-start)
+	if offset <= 0: return 0.0
+	
+	var sum : float = 0.0
+	for i in range(start, end):
+		var room = cur_path[i]
+		sum += room.size.x * room.size.y
+	
+	return sum / offset
 
 func get_pos_just_ahead():
 	if not player_progression.has_leading_player(): return null
@@ -171,7 +186,12 @@ func get_pos_just_ahead():
 	
 	coming_positions /= num_positions_considered
 	
-	return coming_positions
+	var max_look_ahead_euclidian = 400
+	var vec = (coming_positions - lead.get_global_position())
+	var norm_vec = vec.normalized()
+	var dist = min(vec.length(), max_look_ahead_euclidian)
+	
+	return lead.get_global_position() + norm_vec*dist
 
 func get_next_best_player(p):
 	var my_index = p.get_node("RoomTracker").get_cur_room().index

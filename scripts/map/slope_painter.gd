@@ -1,7 +1,7 @@
 extends Node2D
 
 # list of tiles (in autotile) that represent a SLOPE and not a FILLED BLOCK
-var allowed_slopes = [Vector2(0,0), Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), Vector2(0,2), Vector2(1,2), Vector2(3,2), Vector2(1,3), Vector2(3,3), Vector2(8,3), Vector2(11,3)]
+var allowed_slopes = [Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), Vector2(1,2), Vector2(3,2), Vector2(8,3), Vector2(11,3)]
 var allowed_slope_indices = []
 
 onready var map = get_node("/root/Main/Map")
@@ -10,6 +10,79 @@ onready var tilemap = get_node("/root/Main/Map/TileMap")
 func _ready():
 	for slope in allowed_slopes:
 		allowed_slope_indices.append(slope.x + 12*slope.y)
+
+func placement_allowed(pos, own_room, consider_empty_room = true):
+	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
+	var epsilon = Vector2(1,1)*0.2
+	for nb in nbs:
+		var room_here = map.get_room_at((pos + nb + epsilon).floor())
+		if not room_here and not consider_empty_room: continue
+		if room_here == own_room: continue
+		return false
+	
+	return true
+
+func recalculate_room(r):
+	if not r: return
+	
+	var slopes = get_slopes(r)
+	
+	# TO DO: This has become redundant; we already loop through the WHOLE rectangle below
+	# TO DO: However, isn't it better to SAVE exactly which tiles we filled inside the rectangle? Then we have a fixed, short list (instead of going through the WHOLE rectangle)
+	for pos in get_slopes(r):
+		if not placement_allowed(pos, r, false): 
+			map.change_cell(pos, -1)
+	
+	for x in range(r.size.x):
+		for y in range(r.size.y):
+			var temp_pos = r.pos + Vector2(x,y)
+			
+			if tilemap.get_cellv(temp_pos) == -1: continue
+			if placement_allowed(temp_pos, r): continue
+			
+			map.change_cell(temp_pos, -1)
+	
+	map.update_bitmask(r.pos, r.size)
+
+####
+# Islands
+####
+func fill_room(r):
+	if not r: return
+	if r.size.x < 3 or r.size.y < 3: return
+	
+	var area = r.size.x * r.size.y
+	var num_islands = area
+	
+	for _i in range(num_islands):
+		var rand_pos = r.pos + (Vector2(randf(), randf()) * r.size).floor()
+		if not placement_allowed(rand_pos, r): continue
+		
+		map.change_cell(rand_pos, 0)
+	
+	map.update_bitmask(r.pos, r.size)
+
+####
+# Slopes
+####
+func get_slopes(r):
+	var slopes_created = []
+	
+	# add slopes in all four corner
+	if r.size.x > 2 and r.size.y > 2:
+		slopes_created.append(r.pos + Vector2(0,0))
+		slopes_created.append(r.pos + Vector2(r.size.x-1,0))
+		slopes_created.append(r.pos + Vector2(r.size.x-1,r.size.y-1))
+		slopes_created.append(r.pos + Vector2(0, r.size.y-1))
+	
+	return slopes_created
+
+func place_slopes(r):
+	for pos in get_slopes(r):
+		if not placement_allowed(pos, r, false): continue
+		map.change_cell(pos, 0)
+	
+	map.update_bitmask(r.pos, r.size)
 
 # TO DO: Shouldn't these be functions on the RECTANGLES themselves? Or at least partly?
 func should_be_slope(pos):
@@ -27,36 +100,26 @@ func should_be_slope(pos):
 	# slope!
 	return true
 
-func check_for_slopes(r):
-	var slopes_to_create = []
+func check_slope_validity(r):
+	if not r: return
 	
-	# plan the creation of new slopes
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var pos = r.pos + Vector2(x,y)
-			if not should_be_slope(pos): continue
-			
-			slopes_to_create.append(pos)
-	
-	for pos in slopes_to_create:
-		#if randf() <= 0.5: continue
-		map.change_cell(pos, 0)
-
-	map.update_bitmask(r.pos, r.size)
-
+	var slopes_created = get_slopes(r)
 	var something_changed = false
-	for pos in slopes_to_create:
+	
+	# now check which tiles we need to remove
+	for pos in slopes_created:
 		var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
 		var tile_index = tile_coord.x + 12*tile_coord.y
 		
 		var good_slope = (tile_index in allowed_slope_indices)
+		if good_slope: continue
 		
-		if not good_slope:
-			map.change_cell(pos, -1)
-			something_changed = true
+		map.change_cell(pos, -1)
+		something_changed = true
 	
-	if something_changed:
-		map.update_bitmask(r.pos, r.size)
+	if not something_changed: return
+	
+	map.update_bitmask(r.pos, r.size)
 
 func get_neighbor_tiles(pos, params):
 	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]

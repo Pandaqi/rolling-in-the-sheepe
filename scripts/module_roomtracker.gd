@@ -13,6 +13,10 @@ func _ready():
 func _physics_process(_dt):
 	check_current_room()
 
+func get_room_after_forced_update():
+	check_current_room()
+	return cur_room
+
 func check_current_room():
 	var new_room = route_generator.get_cur_room(body)
 	if not new_room: return

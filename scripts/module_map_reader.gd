@@ -57,6 +57,7 @@ func do_effect_of_cell(cell):
 			finish()
 	
 		"teleporter":
+			room = room_tracker.get_room_after_forced_update()
 			room.lock_module.register_player(body)
 		
 		"reverse_gravity":
