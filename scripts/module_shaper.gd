@@ -10,6 +10,13 @@ var color : Color = Color(1.0, 0.0, 0.0)
 # Creation (from given shape/parameters
 #
 #####
+func append_shape(shape):
+	var shape_node = ConvexPolygonShape2D.new()
+	shape_node.points = shape
+	get_parent().shape_owner_add_shape(0, shape_node)
+	
+	on_shape_updated()
+
 func create_from_shape_list(shapes):
 	for i in range(shapes.size()):
 		var shp = make_local(shapes[i])
@@ -74,6 +81,24 @@ func make_local(shp):
 	
 	return shp
 
+func make_local_external(shp):
+	shp = shp + []
+	
+	var trans = get_parent().get_global_transform()
+	for i in range(shp.size()):
+		shp[i] = trans.xform_inv(shp[i])
+	
+	return shp
+
+func make_global(shp):
+	shp = shp + []
+	
+	var trans = get_parent().get_global_transform()
+	for i in range(shp.size()):
+		shp[i] = trans.xform(shp[i])
+	
+	return shp
+
 func reposition_around_centroid(shp):
 	shp = shp + []
 	
@@ -98,6 +123,7 @@ func calculate_centroid(shp):
 func on_shape_updated():
 	update() # => updates the visual drawing of the shape
 	recalculate_bounding_box() 
+	get_node("../Face").update_size(bounding_box)
 
 func _draw():
 	var num_shapes = get_parent().shape_owner_get_shape_count(0)

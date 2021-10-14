@@ -30,7 +30,7 @@ func _draw():
 	
 	draw_line(a, b, Color(0,0,0), 2)
 
-func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2):
+func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 	var max_radius = max( abs(p1.x - p2.x), abs(p1.y - p2.y) )
 	var avg_pos = (p2 + p1)*0.5
 	
@@ -50,11 +50,14 @@ func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2):
 		
 		if not (body is RigidBody2D): continue
 		if not (body.has_node("Shaper")): continue
+		if mask.size() > 0 and not (body in mask): continue
 		
 		if not body in bodies:
 			bodies.append(body)
 	
+	print("BODIES FOUND")
 	for b in bodies:
+		print(b)
 		slice_body(b, p1, p2)
 
 func slice_body(b, p1, p2):
@@ -89,10 +92,8 @@ func slice_body(b, p1, p2):
 	var shape_layers = determine_shape_layers(new_shapes, p1, p2)
 
 	# create bodies for each set of points left over
-	var success = true
 	for key in shape_layers:
-		var body = create_body_from_shape_list(original_player_num, shape_layers[key], success)
-		success = (body != null)
+		var body = create_body_from_shape_list(original_player_num, shape_layers[key])
 
 func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []

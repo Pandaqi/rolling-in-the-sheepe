@@ -1,6 +1,8 @@
 extends Node2D
 
 onready var body = get_parent()
+onready var face = get_node("../Face")
+onready var glue = get_node("../Glue")
 onready var player_manager = get_node("/root/Main/PlayerManager")
 
 var player_num : int = -1
@@ -46,3 +48,11 @@ func undo_ghost():
 	body.collision_mask = 1 + 4
 	
 	body.modulate.a = 1.0
+
+func make_wolf():
+	glue.make_wolf()
+	face.make_wolf()
+
+func make_sheep():
+	glue.make_sheep()
+	face.make_sheep()

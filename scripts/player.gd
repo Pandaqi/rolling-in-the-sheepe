@@ -11,7 +11,8 @@ func _integrate_forces(state):
 	for i in range(state.get_contact_count()):
 		contact_data.append({
 			'body': state.get_contact_collider_object(i),
-			'pos': state.get_contact_local_position(i)
+			'pos': state.get_contact_local_position(i),
+			'normal': state.get_contact_local_normal(i)
 		})
 	
 	if not teleport_pos: return

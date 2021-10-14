@@ -30,8 +30,11 @@ func _physics_process(_dt):
 		if i < num_players:
 			screen_pos = players[i].get_global_transform_with_canvas().origin
 		elif i == num_players:
-			var target = lerp(look_ahead.position, route_generator.get_pos_just_ahead(), 0.1)
-			look_ahead.set_position(target)
-			screen_pos = look_ahead.get_global_transform_with_canvas().origin
+			var ahead_pos = ( route_generator.get_pos_just_ahead() )
+			
+			if ahead_pos:
+				var target = lerp(look_ahead.position, ahead_pos, 0.1)
+				look_ahead.set_position(target)
+				screen_pos = look_ahead.get_global_transform_with_canvas().origin
 	
 		mat.set_shader_param("p" + str(i), screen_pos)

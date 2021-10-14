@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -13,6 +13,8 @@
 [ext_resource path="res://scenes/ui/tutorial_sprite.tscn" type="PackedScene" id=11]
 [ext_resource path="res://scenes/ui/module_clinger.gd" type="Script" id=12]
 [ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
+[ext_resource path="res://scripts/module_face.gd" type="Script" id=14]
+[ext_resource path="res://assets/faces.png" type="Texture" id=15]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -37,6 +39,12 @@ script = ExtResource( 13 )
 
 [node name="Shaper" type="Node2D" parent="."]
 script = ExtResource( 3 )
+
+[node name="EarSprite" type="Sprite" parent="Shaper"]
+show_behind_parent = true
+scale = Vector2( 0.25, 0.25 )
+texture = ExtResource( 15 )
+hframes = 2
 
 [node name="Input" type="Node2D" parent="."]
 script = ExtResource( 1 )
@@ -69,6 +77,13 @@ script = ExtResource( 8 )
 [node name="Glue" type="Node2D" parent="."]
 script = ExtResource( 9 )
 
+[node name="SpikeTimer" type="Timer" parent="Glue"]
+one_shot = true
+
+[node name="GlueTimer" type="Timer" parent="Glue"]
+wait_time = 0.1
+one_shot = true
+
 [node name="Tutorial" type="Node2D" parent="."]
 script = ExtResource( 10 )
 
@@ -78,9 +93,19 @@ script = ExtResource( 10 )
 wait_time = 5.0
 one_shot = true
 
+[node name="Face" type="Node2D" parent="."]
+script = ExtResource( 14 )
+
+[node name="FaceSprite" type="Sprite" parent="Face"]
+scale = Vector2( 0.25, 0.25 )
+texture = ExtResource( 15 )
+hframes = 2
+
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]
+[connection signal="timeout" from="Glue/SpikeTimer" to="Glue" method="_on_SpikeTimer_timeout"]
+[connection signal="timeout" from="Glue/GlueTimer" to="Glue" method="_on_GlueTimer_timeout"]
 [connection signal="timeout" from="Tutorial/Timer" to="Tutorial" method="_on_Timer_timeout"]

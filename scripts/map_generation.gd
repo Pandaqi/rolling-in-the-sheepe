@@ -10,9 +10,9 @@ var map = []
 
 onready var tilemap = $TileMap
 onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
-onready var tilemap_terrain = $TileMapTerrain
 onready var mask_painter = $MaskPainter
 onready var edges = $Edges
+onready var terrain = $Terrain
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 
@@ -94,10 +94,10 @@ func change_terrain_at(pos, type):
 
 func get_full_dimensions():
 	return {
-		'x': -BORDER_THICKNESS * TILE_SIZE,
-		'y': -BORDER_THICKNESS * TILE_SIZE,
-		'width': (WORLD_SIZE.x+(BORDER_THICKNESS*2)) * TILE_SIZE,
-		'height': (WORLD_SIZE.y+(BORDER_THICKNESS*2)) * TILE_SIZE
+		'x': -BORDER_THICKNESS*0.5 * TILE_SIZE,
+		'y': -BORDER_THICKNESS*0.5 * TILE_SIZE,
+		'width': (WORLD_SIZE.x+(BORDER_THICKNESS*2)*0.5) * TILE_SIZE,
+		'height': (WORLD_SIZE.y+(BORDER_THICKNESS*2)*0.5) * TILE_SIZE
 	}
 
 ####
@@ -146,7 +146,23 @@ func set_all_cells_to_room(r):
 	for x in range(r.size.x):
 		for y in range(r.size.y):
 			var new_pos = r.pos + Vector2(x,y)
+			if out_of_bounds(new_pos): continue
+			
+			var already_has_room = get_room_at(new_pos)
+			if already_has_room: continue
+			
 			get_cell(new_pos).room = r
+
+func remove_cells_from_room(r):
+	for x in range(r.size.x):
+		for y in range(r.size.y):
+			var temp_pos = r.pos + Vector2(x,y)
+			if out_of_bounds(temp_pos): continue
+			
+			var cur_room = get_room_at(temp_pos)
+			if cur_room != self: continue
+			
+			get_cell(temp_pos).room = null
 
 # If negative or 0, we're inside the world area (and not out of bounds)
 # If positive, gives us the number of tiles we're out of bounds

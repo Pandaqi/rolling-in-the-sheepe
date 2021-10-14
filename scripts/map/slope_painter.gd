@@ -25,17 +25,15 @@ func placement_allowed(pos, own_room, consider_empty_room = true):
 func recalculate_room(r):
 	if not r: return
 	
-	var slopes = get_slopes(r)
-	
 	# TO DO: This has become redundant; we already loop through the WHOLE rectangle below
 	# TO DO: However, isn't it better to SAVE exactly which tiles we filled inside the rectangle? Then we have a fixed, short list (instead of going through the WHOLE rectangle)
-	for pos in get_slopes(r):
+	for pos in get_slopes(r.shrunk):
 		if not placement_allowed(pos, r, false): 
 			map.change_cell(pos, -1)
 	
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var temp_pos = r.pos + Vector2(x,y)
+	for x in range(r.shrunk.size.x):
+		for y in range(r.shrunk.size.y):
+			var temp_pos = r.shrunk.pos + Vector2(x,y)
 			
 			if tilemap.get_cellv(temp_pos) == -1: continue
 			if placement_allowed(temp_pos, r): continue
@@ -49,13 +47,14 @@ func recalculate_room(r):
 ####
 func fill_room(r):
 	if not r: return
-	if r.size.x < 3 or r.size.y < 3: return
 	
-	var area = r.size.x * r.size.y
+	if r.shrunk.size.x < 3 or r.shrunk.size.y < 3: return
+	
+	var area = r.get_area()
 	var num_islands = area
 	
 	for _i in range(num_islands):
-		var rand_pos = r.pos + (Vector2(randf(), randf()) * r.size).floor()
+		var rand_pos = r.shrunk.pos + (Vector2(randf(), randf()) * r.shrunk.size).floor()
 		if not placement_allowed(rand_pos, r): continue
 		
 		map.change_cell(rand_pos, 0)
@@ -65,6 +64,8 @@ func fill_room(r):
 ####
 # Slopes
 ####
+
+# NOTE: r is a SHRUNK rectangle
 func get_slopes(r):
 	var slopes_created = []
 	
@@ -78,7 +79,7 @@ func get_slopes(r):
 	return slopes_created
 
 func place_slopes(r):
-	for pos in get_slopes(r):
+	for pos in get_slopes(r.shrunk):
 		if not placement_allowed(pos, r, false): continue
 		map.change_cell(pos, 0)
 	

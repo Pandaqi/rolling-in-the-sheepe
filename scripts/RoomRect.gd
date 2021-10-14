@@ -8,33 +8,19 @@ var index : int
 var pos : Vector2
 var size : Vector2
 
+# a shrunken version of ourselves (by 1), which is the "real" room
+# (the original grown version is used for better terrain painting and overlap checking)
+var shrunk = {}
+
 var prev_room
 var dir : int
 
 var num_tiles_before_us : int
+var terrain : String = ""
 
 var has_border : bool = false
 
-var tilemap : TileMap
-var tilemap_terrain : TileMap
 var map
-
-var terrain_types = {
-	"finish": { "frame": 0, 'unpickable': true },
-	"lock": { "frame": 1, 'unpickable': true },
-	"teleporter": { "frame": 2, 'unpickable': true },
-	"reverse_gravity": { "frame": 3 },
-	"no_gravity": { "frame": 4 },
-	"ice": { "frame": 5 },
-	"bouncy": { "frame": 6 },
-	"spiderman": { "frame": 7 },
-	"speed_boost": { "frame": 8 },
-	"speed_slowdown": { "frame": 9 },
-	"glue": { "frame": 10 },
-	"reverse_controls": { "frame": 11 },
-	"spikes": { "frame": 12 },
-	"ghost": { "frame": 13 }
-}
 
 var lock_module
 
@@ -48,8 +34,6 @@ func init(map_reference):
 	set_random_size()
 	
 	map = map_reference
-	tilemap = map_reference.tilemap
-	tilemap_terrain = map_reference.tilemap_terrain
 
 func set_index(num):
 	index = num
@@ -62,6 +46,9 @@ func get_real_pos():
 
 func set_size(new_size):
 	size = new_size
+
+func get_area():
+	return shrunk.size.x*shrunk.size.y
 
 func get_real_size():
 	return size*TILE_SIZE
@@ -206,27 +193,9 @@ func get_free_real_pos_inside():
 	
 	while bad_choice:
 		rand_pos = pos + Vector2(randi() % int(size.x), randi() % int(size.y))
-		bad_choice = (tilemap.get_cellv(rand_pos) != -1)
+		bad_choice = (map.tilemap.get_cellv(rand_pos) != -1)
 	
 	return (rand_pos + Vector2(0.5, 0.5))*TILE_SIZE
-
-#####
-#
-# Terrain stuff
-#
-#####
-func get_random_terrain_type():
-	var key = "finish"
-	var all_keys = terrain_types.keys()
-	while terrain_types[key].has('unpickable'):
-		key = all_keys[randi() % all_keys.size()]
-	
-	return key
-
-func give_terrain_if_wanted():
-	if size.x <= 1 and size.y <= 1: return
-	
-	paint_terrain(get_random_terrain_type())
 
 #####
 #
@@ -237,36 +206,22 @@ func delete():
 	if lock_module: lock_module.delete()
 	
 	fill_tiles()
-	clear_area_in_paint_mask()
-	remove_references_in_map()
-
-# NOTE: I add half size here because the "paint circles" of course will EXTEND slightly beyond the room borders, as they are circles
-func clear_area_in_paint_mask():
+	map.terrain.erase(self)
+	map.remove_cells_from_room(self)
+	
+	# NOTE: I add half size here because the "paint circles" of course will EXTEND slightly beyond the room borders, as they are circles
 	map.mask_painter.clear_rectangle((pos-Vector2(0.5,0.5))*TILE_SIZE, (size+ Vector2(1,1))*TILE_SIZE)
-
-# NOTE: It can happen that tiles inside of us do NOT belong to us anymore
-# (e.g. the teleporter overlaps older rooms), so only delete those that still DO
-func remove_references_in_map():
-	for x in range(size.x):
-		for y in range(size.y):
-			var temp_pos = pos + Vector2(x,y)
-			var cur_room = map.get_cell(temp_pos).room
-			
-			if cur_room != self: continue
-			
-			map.get_cell(temp_pos).room = null
 
 func erase_tiles():
 	change_tiles_to(-1)
 
 func fill_tiles():
 	change_tiles_to(0)
-	paint_terrain("")
 
 func change_tiles_to(tile_id : int = -1):
-	for x in range(size.x):
-		for y in range(size.y):
-			var temp_pos = pos + Vector2(x,y)
+	for x in range(shrunk.size.x):
+		for y in range(shrunk.size.y):
+			var temp_pos = shrunk.pos + Vector2(x,y)
 			if map.out_of_bounds(temp_pos): continue
 			map.change_cell(temp_pos, tile_id)
 	
@@ -287,6 +242,17 @@ func copy_and_grow(val, keep_within_bounds = false):
 
 #####
 #
+# Special items ( = any special elements inside)
+#
+#####
+func add_special_item():
+	# TO DO: find actual good requirements for this
+	var fit_for_special_item = (get_area() >= 9)
+	
+	if not fit_for_special_item: return
+
+#####
+#
 # Section locks
 #
 #####
@@ -297,7 +263,7 @@ func add_lock():
 	if not has_border:
 		create_border_around_us()
 	
-	paint_terrain("lock")
+	map.terrain.paint(self, "lock")
 	
 	# TO DO: actually select random lock type from list (once we have more)
 	var rand_type = "coin"
@@ -320,14 +286,14 @@ func determine_outline():
 	var arr = []
 	
 	# top and bottom cells
-	for x in range(size.x):
-		arr.append({ 'pos': pos + Vector2(x,0), 'dir_index': 3 })
-		arr.append({ 'pos': pos + Vector2(x,size.y-1), 'dir_index': 1 })
+	for x in range(shrunk.size.x):
+		arr.append({ 'pos': shrunk.pos + Vector2(x,0), 'dir_index': 3 })
+		arr.append({ 'pos': shrunk.pos + Vector2(x,shrunk.size.y-1), 'dir_index': 1 })
 	
 	# left and right cells
-	for y in range(size.y):
-		arr.append({ 'pos': pos + Vector2(size.x-1,y), 'dir_index': 0 })
-		arr.append({ 'pos': pos + Vector2(0,y), 'dir_index': 2 })
+	for y in range(shrunk.size.y):
+		arr.append({ 'pos': shrunk.pos + Vector2(shrunk.size.x-1,y), 'dir_index': 0 })
+		arr.append({ 'pos': shrunk.pos + Vector2(0,y), 'dir_index': 2 })
 	
 	return arr
 
@@ -337,60 +303,15 @@ func determine_outline():
 #
 #####
 func turn_into_teleporter():
-	# grow room if it's too small (to hold players)
-	# TO DO: go via the GROW function, don't allow extending past bounds
-	var num_tries = 0
-	var max_tries = 2
-	
-	while size.x < 3 or size.y < 3:
-		var grown = copy_and_grow(1, true)
-		
-		pos = grown.pos
-		size = grown.size
-		
-		num_tries += 1
-		if num_tries >= max_tries: break
-	
 	update_map_to_new_rect()
 
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = self
 	map.add_child(lock_module)
 
-	paint_terrain("teleporter")
+	map.terrain.paint(self, "teleporter")
 	create_border_around_us({ 'open_all_linked_edges': true })
 
 func update_map_to_new_rect():
 	map.set_all_cells_to_room(self)
 	erase_tiles()
-
-#####
-#
-# Terrain painting
-# (behind the tilemap is another tilemap holding terrain, which influences how you move/operate in a certain section)
-#
-#####
-func paint_terrain(type):
-	var tile_id = -1
-	if terrain_types.has(type):
-		tile_id = terrain_types[type].frame
-	
-	var grown_rect = copy_and_grow(1, true)
-	
-	for x in range(grown_rect.size.x):
-		for y in range(grown_rect.size.y):
-			var temp_pos = grown_rect.pos + Vector2(x,y)
-			
-			var already_has_terrain = (tilemap_terrain.get_cellv(temp_pos) != -1) and map.get_room_at(temp_pos)
-			
-			if already_has_terrain:
-				var room_came_later_than_us = (map.get_room_at(temp_pos).num_tiles_before_us > self.num_tiles_before_us)
-				if room_came_later_than_us:
-					if type != "teleporter": 
-						continue
-			
-			tilemap_terrain.set_cellv(temp_pos, tile_id)
-			map.change_terrain_at(temp_pos, type)
-
-# TO DO: Create a function that paints a _specific tile/position_, 
-# 		 or under a _specific condition_, not just all of them

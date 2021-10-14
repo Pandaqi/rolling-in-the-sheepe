@@ -78,22 +78,12 @@ func perform_teleport():
 	
 	print("Everyone here; teleport!")
 	
-	# pick a new location (sufficiently far from teleporter room)
-	var last_room = map.get_furthest_room()
-	
-	var new_pos
-	var bad_choice = true
-	
-	while bad_choice:
-		new_pos = map.get_random_grid_pos() 
-		bad_choice = ((new_pos - last_room.pos).length() < MIN_DIST_TO_NEW_ROOM)
-	
 	# destroy all old rooms
 	map.delete_all_rooms()
 	
 	# create the new one
 	map.pause_room_generation = false
-	map.create_new_room(new_pos)
+	map.create_new_room( map.get_random_grid_pos() )
 	
 	# teleport all players there
 	var unteleported_players = []

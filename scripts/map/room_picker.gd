@@ -64,8 +64,7 @@ func initialize_new_room_rect(proposed_location):
 	
 	var pos = default_starting_pos
 	if proposed_location: pos = proposed_location
-	params.base_pos = pos
-	
+
 	var rect = RoomRect.new()
 	
 	rect.init(map)
@@ -92,8 +91,6 @@ func set_wanted_room_parameters(params):
 func backtrack_and_find_good_room(params):
 	if not params.room: return # no previous room? no need to do all this
 	
-	params.base_pos = params.room.pos
-	
 	var found_something = false
 	for i in range(MAX_BACKTRACK_ROOMS):
 		params.room = route_generator.get_path_from_front(i)
@@ -112,17 +109,18 @@ func backtrack_and_find_good_room(params):
 func generate_all_1x1_rooms_in_dir(params):
 	var dir_vertical = (params.dir == 1 or params.dir == 3)
 	var arr = []
+	var prev_room = params.room.shrunk
 	
 	if dir_vertical:
-		var y_offset = -1 if params.dir == 3 else params.room.size.y
-		for x in range(params.room.size.x):
-			var temp_pos = params.base_pos + Vector2(x,y_offset)
+		var y_offset = -1 if params.dir == 3 else prev_room.size.y
+		for x in range(prev_room.size.x):
+			var temp_pos = prev_room.pos + Vector2(x,y_offset)
 			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
 	else:
-		var x_offset = -1 if params.dir == 2 else params.room.size.x
-		for y in range(params.room.size.y):
-			var temp_pos = params.base_pos + Vector2(x_offset, y)
+		var x_offset = -1 if params.dir == 2 else prev_room.size.x
+		for y in range(prev_room.size.y):
+			var temp_pos = prev_room.pos + Vector2(x_offset, y)
 			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
 	return arr
@@ -141,6 +139,8 @@ func find_valid_configuration_better(params):
 	
 	# determine the preferred order in which to check directions
 	# (it's a rolling game, so continuing horizontal is always best)
+	var last_pos = params.room.shrunk.pos
+	var last_size = params.room.shrunk.size
 	var last_dir = params.room.dir
 	var last_step_was_vertical = (last_dir == 1 or last_dir == 3)
 	if last_step_was_vertical:
@@ -148,24 +148,25 @@ func find_valid_configuration_better(params):
 	
 	# UPGRADE: remove the direction towards edge, if we're close to it
 	var preferred_dir_order = [last_dir, (last_dir + 2) % 4, 1, 3]
-	if abs(map.dist_to_bounds(params.base_pos)) < total_max_room_size:
-		preferred_dir_order.erase(map.dir_index_to_bounds(params.base_pos))
+	if abs(map.dist_to_bounds(last_pos)) < total_max_room_size:
+		preferred_dir_order.erase(map.dir_index_to_bounds(last_pos))
 	
 	# find the valid rooms in each dir, until we have a direction with results
 	while preferred_dir_order.size() > 0:
 		
 		params.dir = preferred_dir_order.pop_front()
+		
 		var is_horizontal = (params.dir == 0 or params.dir == 2)
 		var is_back_room = (params.dir == 2 or params.dir == 3)
 		
 		# UPGRADE: sneak peek
 		# (try one big room in the direction)
-		var sneak_room = { 'pos': params.base_pos, 'size': max_room_size }
+		var sneak_room = { 'pos': last_pos, 'size': max_room_size }
 		if is_back_room:
 			if params.dir == 2: sneak_room.pos -= Vector2(max_room_size.x,0)
 			else: sneak_room.pos -= Vector2(0, max_room_size.y)
 		
-		sneak_room.pos += get_random_displacement(params.room.size, max_room_size, params.dir)
+		sneak_room.pos += get_random_displacement(last_size, max_room_size, params.dir)
 		if not route_generator.room_overlaps_path(sneak_room, params):
 			return sneak_room
 			break
@@ -187,6 +188,7 @@ func find_valid_configuration_better(params):
 			# otherwise, record it as valid
 			valid_rooms.append(room)
 			
+			# and remember if we reached a new height (we only pick the biggest selection of rooms at the end)
 			var total_size = room.size.x * room.size.y
 			if total_size > cur_biggest_size:
 				cur_biggest_size = total_size
@@ -207,7 +209,7 @@ func find_valid_configuration_better(params):
 				rooms_to_check.append({ 'pos': room.pos + extra_offset, 'size': room.size + Vector2(1,0) })
 				rooms_to_check.append({ 'pos': room.pos, 'size': room.size + Vector2(0,1) })
 				
-				if (room.pos.y == params.base_pos.y):
+				if (room.pos.y == last_pos.y):
 					rooms_to_check.append({ 'pos': room.pos - Vector2(0,1), 'size': room.size + Vector2(0,1) })
 			
 			else:
@@ -217,7 +219,7 @@ func find_valid_configuration_better(params):
 				rooms_to_check.append({ 'pos': room.pos + extra_offset, 'size': room.size + Vector2(0,1) })
 				rooms_to_check.append({ 'pos': room.pos, 'size': room.size + Vector2(1,0) })
 				
-				if (room.pos.x == params.base_pos.x):
+				if (room.pos.x == last_pos.x):
 					rooms_to_check.append({ 'pos': room.pos - Vector2(1,0), 'size': room.size + Vector2(1,0) })
 		
 		if valid_rooms.size() <= 0: continue
@@ -233,31 +235,45 @@ func find_valid_configuration_better(params):
 
 func place_room_according_to_params(params):
 	var rect = params.rect
+	
+	# we AUTO-GROW rooms by 1 when saving them in the map (and painting terrain)
+	# This ensures we also get a good background on slopes and other "transparent" autotiles
+	# And also (hopefully) ensures betters separation of rooms
+	rect.shrunk = { 'pos': rect.pos, 'size': rect.size }
+	rect.set_pos(rect.pos - Vector2(1,1))
+	rect.set_size(rect.size + Vector2(1,1)*2)
+	
+#	print("RECT PLACED")
+#	print({ 'pos': rect.pos, 'size': rect.size })
+#	print(rect.shrunk)
 
 	rect.set_index(route_generator.get_new_room_index())
 	rect.set_previous_room(params.room)
 	rect.set_dir(params.dir)
 	rect.set_path_position(route_generator.total_rooms_created)
 	
-	var handout_terrains = (not tutorial.is_active())
-	if handout_terrains:
-		rect.give_terrain_if_wanted()
+	map.terrain.on_new_rect_created(rect)
 	rect.erase_tiles()
 	
 	route_generator.cur_path.append(rect)
 	map.set_all_cells_to_room(rect)
 	
-	slope_painter.recalculate_room(params.room)
-	slope_painter.place_slopes(rect)
-	slope_painter.fill_room(rect)
+	# DEBUGGING
+	#slope_painter.recalculate_room(params.room)
+	#slope_painter.place_slopes(rect)
+	#slope_painter.fill_room(rect)
 
-	if params.overlapping_rooms_were_allowed:
-		rect.create_border_around_us()
+	#rect.create_border_around_us()
 	
 	tutorial.placed_a_new_room(rect)
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return
+	
+	var room_area = params.rect.get_area()
+	if room_area < 9:
+		params.place_finish = false
+		params.place_lock = false
 	
 	if params.place_finish:
 		route_generator.placed_finish()
@@ -266,6 +282,9 @@ func handle_optional_requirements(params):
 	elif params.place_lock:
 		route_generator.placed_lock()
 		params.rect.add_lock()
+	
+	else:
+		params.rect.add_special_item()
 
 func update_global_generation_parameters(params):
 	route_generator.total_rooms_created += params.rect.get_longest_side()

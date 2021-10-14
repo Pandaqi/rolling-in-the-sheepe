@@ -1,10 +1,10 @@
 extends Node2D
 
  # how many back rooms should stay on screen until they are DELETED
-const NUM_ROOMS_BACK_BUFFER : int = 5
+const NUM_ROOMS_BACK_BUFFER : int = 4
 
 # how many rooms should be CREATED in front of the leading player
-const NUM_ROOMS_FRONT_BUFFER : int = 5
+const NUM_ROOMS_FRONT_BUFFER : int = 25
 
 # with how many pre-created rooms we start each game
 const NUM_STARTING_ROOMS : int = 5
@@ -33,12 +33,16 @@ onready var player_progression = get_node("../PlayerProgression")
 onready var edges = get_node("../Edges")
 onready var mask_painter = get_node("../MaskPainter")
 
+var create_phase : bool = false
+
 #
 # Initialization
 #
 func initialize_rooms():
 	for _i in range(NUM_STARTING_ROOMS):
 		room_picker.create_new_room()
+	
+	$Timer.start()
 
 func set_global_parameters():
 	rooms_until_finish = int( floor(rand_range(level_size_bounds.x, level_size_bounds.y)))
@@ -47,9 +51,14 @@ func set_global_parameters():
 #
 # Every frame update; core of algorithm (delete old rooms, add new)
 #
-func _physics_process(_dt):
-	check_for_new_room()
-	check_for_old_room_deletion()
+func _on_Timer_timeout():
+	if create_phase:
+		check_for_new_room()
+		create_phase = false
+	
+	else:
+		check_for_old_room_deletion()
+		create_phase = true
 
 func check_for_new_room():
 	if not player_progression.has_leading_player(): return
@@ -118,8 +127,8 @@ func get_new_room_index():
 # TO DO: 
 # On big rooms, it might be faster to check against ROOMS, not individual cells???? Not sure if that is the case. (So check overlap with the other room rect, AABB, for all rooms on path.)
 func room_overlaps_path(rect, params):
-	for x in range(-1, rect.size.x+1):
-		for y in range(-1, rect.size.y+1):
+	for x in range(rect.size.x):
+		for y in range(rect.size.y):
 			var my_pos = rect.pos + Vector2(x,y)
 			if map.out_of_bounds(my_pos): return true
 			
@@ -133,13 +142,8 @@ func room_overlaps_path(rect, params):
 
 func get_cur_room(p : RigidBody2D):
 	var pos = p.get_global_position()
-	for i in range(cur_path.size()-1,-1,-1):
-		var room = cur_path[i]
-		
-		if room.has_real_point(pos):
-			return room
-
-	return null
+	var grid_pos = (pos / map.TILE_SIZE).floor()
+	return map.get_room_at(grid_pos)
 
 func get_furthest_room():
 	if cur_path.size() == 0: return null
@@ -161,7 +165,7 @@ func get_average_room_size_over_last(offset : int):
 	var sum : float = 0.0
 	for i in range(start, end):
 		var room = cur_path[i]
-		sum += room.size.x * room.size.y
+		sum += room.get_area()
 	
 	return sum / offset
 
