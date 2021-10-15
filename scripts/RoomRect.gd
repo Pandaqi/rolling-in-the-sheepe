@@ -11,6 +11,7 @@ var size : Vector2
 # a shrunken version of ourselves (by 1), which is the "real" room
 # (the original grown version is used for better terrain painting and overlap checking)
 var shrunk = {}
+var outline = []
 
 var prev_room
 var dir : int
@@ -19,6 +20,9 @@ var num_tiles_before_us : int
 var terrain : String = ""
 
 var has_border : bool = false
+
+var tiles_inside = []
+var special_elements = []
 
 var map
 
@@ -104,17 +108,15 @@ func tiled_dist_to(other_room):
 
 func set_previous_room(r):
 	prev_room = r
-	delete_edges_inside()
-	open_connection_to_previous_room()
 
 func get_previous_room():
 	return prev_room
 
 func delete_edges_inside():
-	for x in range(size.x):
-		for y in range(size.y):
+	for x in range(shrunk.size.x):
+		for y in range(shrunk.size.y):
 			for i in range(4):
-				var edge = { 'pos': pos + Vector2(x,y), 'dir_index': i }
+				var edge = { 'pos': shrunk.pos + Vector2(x,y), 'dir_index': i }
 				var link = edge_links_to(edge)
 				if not link or link != self: continue
 				
@@ -123,16 +125,13 @@ func delete_edges_inside():
 func open_connection_to_previous_room():
 	if not prev_room: return
 	if prev_room.has_lock(): return
-	
-	var outline = determine_outline()
+
 	for edge in outline:
 		if not edge_links_to_previous_room(edge): continue
 
 		map.edges.remove_at(edge.pos, edge.dir_index)
 
 func create_border_around_us(params = {}):
-	var outline = determine_outline()
-	
 	var type = "lock"
 	if params.has('type'): type = params.type
 	
@@ -140,9 +139,11 @@ func create_border_around_us(params = {}):
 		var other_side = edge_links_to(edge)
 		if params.has('open_all_linked_edges'):
 			if other_side and not (other_side == self): 
+				map.edges.remove_at(edge.pos, edge.dir_index)
 				continue
 		elif prev_room:
-			if other_side == prev_room and (not prev_room.has_lock()): 
+			if other_side == prev_room and (not prev_room.has_lock()):
+				map.edges.remove_at(edge.pos, edge.dir_index) 
 				continue
 		
 		# @params => position, index (which direction), type of edge
@@ -151,7 +152,6 @@ func create_border_around_us(params = {}):
 	has_border = true
 
 func remove_border_around_us():
-	var outline = determine_outline()
 	for edge in outline:
 		map.edges.remove_at(edge.pos, edge.dir_index)
 
@@ -185,14 +185,14 @@ func get_random_real_position_inside(params = {}):
 	if params.has('empty'):
 		return get_free_real_pos_inside() + 0.8*Vector2(randf()-0.5, randf()-0.5*TILE_SIZE)
 	
-	return (pos + Vector2(randf(), randf()) * size)*TILE_SIZE
+	return (shrunk.pos + Vector2(randf(), randf()) * shrunk.size)*TILE_SIZE
 
 func get_free_real_pos_inside():
 	var rand_pos
 	var bad_choice = true
 	
 	while bad_choice:
-		rand_pos = pos + Vector2(randi() % int(size.x), randi() % int(size.y))
+		rand_pos = shrunk.pos + Vector2(randi() % int(shrunk.size.x), randi() % int(shrunk.size.y))
 		bad_choice = (map.tilemap.get_cellv(rand_pos) != -1)
 	
 	return (rand_pos + Vector2(0.5, 0.5))*TILE_SIZE
@@ -245,11 +245,50 @@ func copy_and_grow(val, keep_within_bounds = false):
 # Special items ( = any special elements inside)
 #
 #####
+func determine_tiles_inside():
+	tiles_inside = []
+	
+	for x in range(size.x):
+		for y in range(size.y):
+			var temp_pos = pos + Vector2(x,y)
+			if map.tilemap.get_cellv(temp_pos) == -1: continue
+			
+			tiles_inside.append(temp_pos)
+
+func get_free_tile_inside():
+	tiles_inside.shuffle()
+	for tile in tiles_inside:
+		if map.get_cell(tile).special: continue
+		
+		return tile
+
 func add_special_item():
 	# TO DO: find actual good requirements for this
 	var fit_for_special_item = (get_area() >= 9)
 	
 	if not fit_for_special_item: return
+	
+	# determine type (if possible; if not, abort)
+	var type = map.special_elements.get_random_type()
+	if not type: return
+	
+	# create the actual item
+	var item = load("res://scenes/elements/" + type + ".tscn").instance()
+	
+	# determine location
+	var location = get_free_tile_inside()
+	item.set_position(location * map.TILE_SIZE)
+	
+	# TO DO: determine rotation (based on neighbors OR slope dir)
+	
+	# ask map to place and remember us
+	var item_obj = { 'item': item, 'type': type, 'pos': location }
+	map.special_elements.place(item_obj)
+	special_elements.append(item_obj)
+
+func clear_special_items():
+	for item in special_elements:
+		map.special_elements.clear(item)
 
 #####
 #
@@ -295,7 +334,12 @@ func determine_outline():
 		arr.append({ 'pos': shrunk.pos + Vector2(shrunk.size.x-1,y), 'dir_index': 0 })
 		arr.append({ 'pos': shrunk.pos + Vector2(0,y), 'dir_index': 2 })
 	
-	return arr
+	outline = arr
+	
+	# DEBUGGING
+	#delete_edges_inside()
+	
+	open_connection_to_previous_room()
 
 #####
 #

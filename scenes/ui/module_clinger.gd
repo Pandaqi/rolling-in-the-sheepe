@@ -1,12 +1,13 @@
 extends Node2D
 
 const CLING_GRAVITY_REDUCTION : float = 0.35
-const CLING_FORCE : float = 30.0
+const CLING_FORCE : float = 60.0
 var active : bool = false
 
 const EXTRA_RAYCAST_MARGIN : float = 8.0
 
 var cling_vec : Vector2
+var size_force_multiplier : float = 1.0
 var debug_cling_raycasts = []
 
 onready var body = get_parent()
@@ -14,6 +15,8 @@ onready var shaper = get_node("../Shaper")
 
 func _physics_process(_dt):
 	if not active: return
+	
+	size_force_multiplier = shaper.approximate_radius_as_ratio()
 	execute_wall_cling()
 
 # TO DO: Now I reset the clinging vector (to zero) if you're not moving (quickly enough)
@@ -70,7 +73,9 @@ func execute_wall_cling():
 		return
 
 	cling_vec = avg_cling_vec / float(considered_vectors)
-	body.apply_central_impulse(cling_vec * CLING_FORCE)
+	
+	var my_cling_force = CLING_FORCE*size_force_multiplier
+	body.apply_central_impulse(cling_vec * my_cling_force)
 	
 	if cling_vec.y < 0:
 		body.get_node("Mover").modify_gravity_strength(CLING_GRAVITY_REDUCTION)

@@ -29,3 +29,18 @@ func check_current_room():
 
 func get_cur_room():
 	return cur_room
+
+# TO DO: Probably a way to streamline this, instead of the if-statement
+func get_dist_in_room():
+	if not cur_room: return 0
+	
+	var d = cur_room.dir
+	var diff = (body.get_global_position() - cur_room.get_real_pos())
+	if d == 0:
+		return diff.x
+	elif d == 1:
+		return diff.y
+	elif d == 2:
+		return cur_room.get_real_size().x - diff.x
+	elif d == 3:
+		return cur_room.get_real_size().y - diff.y

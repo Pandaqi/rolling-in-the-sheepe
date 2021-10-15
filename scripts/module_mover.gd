@@ -1,8 +1,11 @@
 extends Node2D
 
 const MAX_VELOCITY : float = 220.0
+const MAX_VELOCITY_AIR : float = 150.0
+
 const VELOCITY_DAMPING : float = 0.995
 var speed_multiplier : float = 1.0
+var size_speed_multiplier : float = 1.0
 
 const MAX_ANG_VELOCITY : float = 35.0
 const ANG_VELOCITY_DAMPING : float = 0.995
@@ -14,7 +17,7 @@ const JUMP_FORCE : float = 90.0
 const EXTRA_RAYCAST_MARGIN : float = 8.0
 
 # NOTE: This force is applied _constantly_, each frame, so it should be quite low
-const AIR_RESISTANCE_FORCE : float = 10.0
+const AIR_RESISTANCE_FORCE : float = 8.0
 
 const STANDSTILL_THRESHOLD : float = 10.0 # in seconds
 const TIME_PENALTY_STANDSTILL_TELEPORT : float = 6.0
@@ -41,19 +44,25 @@ func _ready():
 
 func _on_Input_move_left():
 	keys_down.left = true
-	body.apply_torque_impulse(-ANGULAR_IMPULSE_STRENGTH*speed_multiplier)
+	
+	var torque = -ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
+	body.apply_torque_impulse(torque)
 	
 	if in_air:
-		body.apply_central_impulse(Vector2.LEFT*AIR_RESISTANCE_FORCE*speed_multiplier)
+		var air_force = Vector2.LEFT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
+		body.apply_central_impulse(air_force)
 	
 	last_input_time = OS.get_ticks_msec()
 
 func _on_Input_move_right():
-	keys_down.right = true
-	body.apply_torque_impulse(ANGULAR_IMPULSE_STRENGTH*speed_multiplier)
+	keys_down.right = false
+	
+	var torque = ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
+	body.apply_torque_impulse(torque)
 	
 	if in_air:
-		body.apply_central_impulse(Vector2.RIGHT*AIR_RESISTANCE_FORCE*speed_multiplier)
+		var air_force = Vector2.RIGHT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
+		body.apply_central_impulse(air_force)
 	
 	last_input_time = OS.get_ticks_msec()
 
@@ -61,12 +70,14 @@ func _on_Input_double_button():
 	var grav_scale_absolute = abs(body.gravity_scale)
 	if grav_scale_absolute == 0: grav_scale_absolute = 1.0
 	
-	var jump_vec = normal_vec * JUMP_FORCE * grav_scale_absolute
+	var jump_vec = normal_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
 	body.apply_central_impulse(jump_vec)
 	
 	last_input_time = OS.get_ticks_msec()
 
 func _physics_process(_dt):
+	size_speed_multiplier = shaper.approximate_radius_as_ratio()
+	
 	reset_gravity_strength()
 	
 	determine_normal_vec()
@@ -78,6 +89,7 @@ func _physics_process(_dt):
 
 func check_for_standstill():
 	if map_reader.last_cell_has_lock(): return
+	if status.has_finished: return
 	
 	var cur_time = OS.get_ticks_msec()
 	var time_since_last_input = (cur_time - last_input_time)/1000.0
@@ -93,7 +105,10 @@ func cap_speed():
 	var vel = body.linear_velocity
 	var ang_vel = body.angular_velocity
 	
-	if vel.length() > MAX_VELOCITY*speed_multiplier:
+	var cur_max = MAX_VELOCITY
+	if in_air: cur_max = MAX_VELOCITY_AIR
+	
+	if vel.length() > cur_max*speed_multiplier:
 		vel *= VELOCITY_DAMPING
 		body.set_linear_velocity(vel)
 
@@ -135,9 +150,9 @@ func determine_normal_vec():
 		normal_vec += result.normal
 		num_hits += 1
 	
+	in_air = (num_hits <= 0)
+	
 	if num_hits == 0 or not should_modify_jump_normal():
-		in_air = true
-		
 		# NOTE: Need to do it this way
 		# (Otherwise, if gravity_dir = 0, we'd have no normal vec)
 		var jump_dir = 1
@@ -145,8 +160,7 @@ func determine_normal_vec():
 		
 		normal_vec = Vector2.UP*jump_dir
 		return
-	
-	in_air = false
+
 	normal_vec /= float(num_hits)
 
 func debug_draw():

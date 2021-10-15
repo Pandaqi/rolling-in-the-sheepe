@@ -13,6 +13,7 @@ onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
 onready var mask_painter = $MaskPainter
 onready var edges = $Edges
 onready var terrain = $Terrain
+onready var special_elements = $SpecialElements
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 
@@ -108,6 +109,9 @@ func get_full_dimensions():
 func get_random_grid_pos():
 	return Vector2(randi() % int(WORLD_SIZE.x), randi() % int(WORLD_SIZE.y))
 
+func get_grid_pos(real_pos):
+	return (real_pos / TILE_SIZE).floor()
+
 func get_real_pos(pos):
 	return pos*TILE_SIZE
 
@@ -148,8 +152,9 @@ func set_all_cells_to_room(r):
 			var new_pos = r.pos + Vector2(x,y)
 			if out_of_bounds(new_pos): continue
 			
+			var inside_growth_area = (x == 0 or x == (r.size.x-1) or y == 0 or y == (r.size.y - 1))
 			var already_has_room = get_room_at(new_pos)
-			if already_has_room: continue
+			if already_has_room and inside_growth_area: continue
 			
 			get_cell(new_pos).room = r
 

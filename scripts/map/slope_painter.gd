@@ -15,12 +15,20 @@ func placement_allowed(pos, own_room, consider_empty_room = true):
 	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
 	var epsilon = Vector2(1,1)*0.2
 	for nb in nbs:
-		var room_here = map.get_room_at((pos + nb + epsilon).floor())
+		var grid_pos = (pos + nb + epsilon).floor()
+		
+		if in_growth_area(grid_pos, own_room): 
+			return false
+		
+		var room_here = map.get_room_at(grid_pos)
 		if not room_here and not consider_empty_room: continue
 		if room_here == own_room: continue
 		return false
 	
 	return true
+
+func in_growth_area(pos, rect):
+	return (pos.x == 0 or pos.x == (rect.size.x-1)) or (pos.y == 0 or pos.y == (rect.size.y-1))
 
 func recalculate_room(r):
 	if not r: return
@@ -54,7 +62,7 @@ func fill_room(r):
 	var num_islands = area
 	
 	for _i in range(num_islands):
-		var rand_pos = r.shrunk.pos + (Vector2(randf(), randf()) * r.shrunk.size).floor()
+		var rand_pos = r.shrunk.pos+Vector2(1,1) + (Vector2(randf(), randf()) * (r.shrunk.size-Vector2(1,1)*2)).floor()
 		if not placement_allowed(rand_pos, r): continue
 		
 		map.change_cell(rand_pos, 0)

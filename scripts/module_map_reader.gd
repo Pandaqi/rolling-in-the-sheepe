@@ -139,12 +139,13 @@ func undo_effect_of_cell(cell):
 func finish():
 	has_finished = true
 	
+	status.has_finished = true
+	status.make_ghost()
+	
 	var finish_data = main_node.player_finished(body)
 	if not finish_data.already_finished: 
 		show_gui()
 		set_gui_rank(finish_data.rank)
-	
-	disable_everything()
 
 func has_gui():
 	return gui != null
@@ -163,12 +164,6 @@ func position_gui_above_us():
 	var offset = Vector2.UP * 50
 	
 	gui.set_position(pos + offset)
-
-func disable_everything():
-	body.collision_layer = 2
-	body.collision_mask = 2
-	
-	body.modulate.a = 0.5
 
 func check_if_too_far_behind():
 	if player_progression.get_leading_player() == self: return

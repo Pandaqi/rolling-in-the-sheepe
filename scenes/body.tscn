@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -15,8 +15,38 @@
 [ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
 [ext_resource path="res://scripts/module_face.gd" type="Script" id=14]
 [ext_resource path="res://assets/faces.png" type="Texture" id=15]
+[ext_resource path="res://animations/wolf_highlight.tres" type="Animation" id=16]
+[ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
+[ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
 
 [sub_resource type="PhysicsMaterial" id=1]
+
+[sub_resource type="Animation" id=2]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("FaceSprite:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath(".:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 1, 1 ) ]
+}
 
 [node name="Body" type="RigidBody2D" groups=[
 "Players",
@@ -74,10 +104,20 @@ script = ExtResource( 4 )
 [node name="MapPainter" type="Node2D" parent="."]
 script = ExtResource( 8 )
 
+[node name="ItemReader" type="Node2D" parent="."]
+script = ExtResource( 18 )
+
+[node name="OngoingTimer" type="Timer" parent="ItemReader"]
+one_shot = true
+
+[node name="TimeoutTimer" type="Timer" parent="ItemReader"]
+one_shot = true
+
 [node name="Glue" type="Node2D" parent="."]
 script = ExtResource( 9 )
 
 [node name="SpikeTimer" type="Timer" parent="Glue"]
+wait_time = 1.75
 one_shot = true
 
 [node name="GlueTimer" type="Timer" parent="Glue"]
@@ -101,11 +141,24 @@ scale = Vector2( 0.25, 0.25 )
 texture = ExtResource( 15 )
 hframes = 2
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Face"]
+anims/RESET = SubResource( 2 )
+anims/WolfHighlight = ExtResource( 16 )
+
+[node name="Rounder" type="Node2D" parent="."]
+script = ExtResource( 17 )
+
+[node name="Timer" type="Timer" parent="Rounder"]
+wait_time = 0.75
+
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]
+[connection signal="timeout" from="ItemReader/OngoingTimer" to="ItemReader" method="_on_OngoingTimer_timeout"]
+[connection signal="timeout" from="ItemReader/TimeoutTimer" to="ItemReader" method="_on_TimeoutTimer_timeout"]
 [connection signal="timeout" from="Glue/SpikeTimer" to="Glue" method="_on_SpikeTimer_timeout"]
 [connection signal="timeout" from="Glue/GlueTimer" to="Glue" method="_on_GlueTimer_timeout"]
 [connection signal="timeout" from="Tutorial/Timer" to="Tutorial" method="_on_Timer_timeout"]
+[connection signal="timeout" from="Rounder/Timer" to="Rounder" method="_on_Timer_timeout"]

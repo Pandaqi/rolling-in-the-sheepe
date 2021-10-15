@@ -55,9 +55,7 @@ func glue_object_to_me(obj):
 		var local_points = shaper.make_local_external(points)
 		shaper.append_shape(local_points)
 	
-	obj.body.get_node("Glue").disable_glue()
-	obj.body.queue_free()
-	player_progression.on_body_sliced(obj.body)
+	obj.body.get_node("Status").delete()
 	
 	disable_glue()
 

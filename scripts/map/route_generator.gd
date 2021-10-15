@@ -15,7 +15,7 @@ var cur_path = []
 # keep track of total room count, so we know when to finish
 var total_rooms_created : int = 0
 var rooms_until_finish : int = 0
-var level_size_bounds : Vector2 = Vector2(200, 300)
+var level_size_bounds : Vector2 = Vector2(50, 60) #Vector2(200, 300)
 var has_finished : bool = false
 
 # another tracker for when to place locks

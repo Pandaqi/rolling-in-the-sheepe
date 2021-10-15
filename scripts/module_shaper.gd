@@ -1,9 +1,14 @@
 extends Node2D
 
+const MIN_RADIUS : float = 6.0
+const MAX_RADIUS : float = 20.0
 const SIZE : float = 20.0
 
+var area : float
 var bounding_box
 var color : Color = Color(1.0, 0.0, 0.0)
+
+onready var body = get_parent()
 
 #####
 #
@@ -13,7 +18,7 @@ var color : Color = Color(1.0, 0.0, 0.0)
 func append_shape(shape):
 	var shape_node = ConvexPolygonShape2D.new()
 	shape_node.points = shape
-	get_parent().shape_owner_add_shape(0, shape_node)
+	body.shape_owner_add_shape(0, shape_node)
 	
 	on_shape_updated()
 
@@ -99,10 +104,26 @@ func make_global(shp):
 	
 	return shp
 
-func reposition_around_centroid(shp):
-	shp = shp + []
+func reposition_all_around_centroid():
+	var num_shapes = body.shape_owner_get_shape_count(0)
+	var avg_centroid : Vector2 = Vector2.ZERO
+	for i in range(num_shapes):
+		var shape = body.shape_owner_get_shape(0, i)
+		avg_centroid += calculate_centroid(shape.points)
 	
-	var centroid = calculate_centroid(shp)
+	avg_centroid / num_shapes
+	
+	for i in range(num_shapes):
+		var shape = body.shape_owner_get_shape(0, i)
+		shape.points = reposition_around_centroid(shape.points, avg_centroid)
+
+func reposition_around_centroid(shp, given_centroid = null):
+	var centroid
+	if given_centroid:
+		centroid = given_centroid
+	else:
+		centroid = calculate_centroid(shp)
+	
 	for i in range(shp.size()):
 		shp[i] -= centroid
 	
@@ -121,8 +142,11 @@ func calculate_centroid(shp):
 #
 #####
 func on_shape_updated():
+	body = get_parent()
+	
 	update() # => updates the visual drawing of the shape
 	recalculate_bounding_box() 
+	recalculate_area()
 	get_node("../Face").update_size(bounding_box)
 
 func _draw():
@@ -134,7 +158,7 @@ func _draw():
 
 #####
 #
-# Bounding box management
+# Bounding box management (area, radius, etc.)
 #
 #####
 func recalculate_bounding_box():
@@ -158,6 +182,39 @@ func recalculate_bounding_box():
 			bounds.y.max = max(bounds.y.max, p.y)
 	
 	bounding_box = bounds
+
+func recalculate_area():
+	area = 0
+	
+	var num_shapes = body.shape_owner_get_shape_count(0)
+	for i in range(num_shapes):
+		var shape = body.shape_owner_get_shape(0, i)
+		area += calculate_shape_area_shoelace(shape.points)
+
+func calculate_shape_area_shoelace(shp):
+	var A = 0
+	
+	for i in range(shp.size()):
+		var next_index = (i+1) % int(shp.size())
+		var p1 = shp[i]
+		var p2 = shp[next_index]
+		
+		A += p1.x * p2.y - p1.y * p2.x
+	
+	return A * 0.5
+
+#func approximate_radius():
+#	var x_length = abs(bounding_box.x.min) + abs(bounding_box.x.max)
+#	var y_length = abs(bounding_box.y.min) + abs(bounding_box.y.max)
+#	var approx =  0.5 * (Vector2(x_length, 0) - Vector2(0, y_length)).length()
+#
+#	return clamp(approx, MIN_RADIUS, MAX_RADIUS)
+
+func approximate_radius():
+	return sqrt(area / PI)
+
+func approximate_radius_as_ratio():
+	return approximate_radius() / float(MAX_RADIUS)
 
 func get_bounding_box_along_vec(vec):
 	# convert bounding box to vectors (from centroid)

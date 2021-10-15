@@ -1,8 +1,12 @@
 extends Node2D
 
-const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
+const MAX_BODIES_PER_PLAYER : int = 5
+
+const MIN_AREA_FOR_VALID_SHAPE : float = 200.0
+const MIN_SIZE_PER_SIDE : float = 6.0
 
 onready var map = get_node("/root/Main/Map")
+onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 var body_scene = preload("res://scenes/body.tscn")
 
@@ -32,16 +36,17 @@ func _draw():
 
 func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 	var max_radius = max( abs(p1.x - p2.x), abs(p1.y - p2.y) )
+	var angle = (p2 - p1).angle()
 	var avg_pos = (p2 + p1)*0.5
 	
-	var shape = CircleShape2D.new()
-	shape.radius = max_radius
+	var shape = RectangleShape2D.new()
+	shape.extents.x = 0.5*(p2-p1).length()
+	shape.extents.y = 5
 	
 	var physics := get_world_2d().direct_space_state
 	var query = Physics2DShapeQueryParameters.new()
 	query.set_shape(shape)
-	
-	query.transform = Transform2D(0, avg_pos)
+	query.transform = Transform2D(angle, avg_pos)
 
 	var results = physics.intersect_shape(query)
 	var bodies = []
@@ -54,13 +59,18 @@ func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 		
 		if not body in bodies:
 			bodies.append(body)
-	
-	print("BODIES FOUND")
+
 	for b in bodies:
-		print(b)
 		slice_body(b, p1, p2)
 
 func slice_body(b, p1, p2):
+	
+	var original_player_num = b.get_node("Status").player_num
+	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
+	if player_is_at_body_limit: 
+		print("Player already has too many bodies")
+		return
+	
 	var num_shapes = b.shape_owner_get_shape_count(0)
 	var cur_shapes = []
 	var new_shapes = []
@@ -82,18 +92,38 @@ func slice_body(b, p1, p2):
 		print("Slicing didn't change anything")
 		return
 	
-	# destroy the old body
-	var original_player_num = b.get_node("Status").player_num
-	player_progression.on_body_sliced(b)
-	b.remove_from_group("Players")
-	b.queue_free()
-	
 	# determine which shapes belong together ("are in the same layer")
 	var shape_layers = determine_shape_layers(new_shapes, p1, p2)
+	
+	# now check if this slice will do something ugly we don't want
+	# (body too small or too narrow, will glitch physics and look bad)
+	var slice_too_small = false
+	for key in shape_layers:
+		if area_too_small(shape_layers[key]): 
+			slice_too_small = true
+			break
 
+		if bounding_box_too_small(shape_layers[key]):
+			slice_too_small = true
+			break
+	
+	if slice_too_small:
+		print("Slicing returned a body too small")
+		return
+	
+	# destroy the old body
+	b.get_node("Status").delete()
+	
 	# create bodies for each set of points left over
+	var vec = (p2 - p1)
+	var ortho_vec = vec.rotated(PI)
+	
+	var result_bodies = []
 	for key in shape_layers:
 		var body = create_body_from_shape_list(original_player_num, shape_layers[key])
+		
+		body.plan_shoot_away(ortho_vec)
+		result_bodies.append(body)
 
 func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
@@ -196,18 +226,35 @@ func slice_shape(shp, slice_start : Vector2, slice_end : Vector2) -> Array:
 	
 	return [shape1, shape2]
 
+func bounding_box_too_small(shapes):
+	var x = { 'min': INF, 'max': -INF }
+	var y = { 'min': INF, 'max': -INF }
+	
+	# try the default AND the shape rotated 45 degrees (which will always yield a BIGGER result)
+	# to ensure we also catch thin slices that just happen to be rotated
+	for shp in shapes:
+		for p in shp:
+			x.min = min(x.min, p.x)
+			x.max = max(x.max, p.x)
+			
+			y.min = min(y.min, p.y)
+			y.max = max(y.max, p.y)
+	
+	var size = Vector2(x.max - x.min, y.max - y.min)
+	if size.x < MIN_SIZE_PER_SIDE or size.y < MIN_SIZE_PER_SIDE:
+		return true
+	
+	return false
+
 func area_too_small(shapes):
 	var area = 0
 	for shp in shapes:
-		var extra_area = calculate_area(shp)
+		var extra_area = calculate_area_shoelace(shp)
 		area += extra_area
-		
-	area /= float(shapes.size())
+
 	return (area < MIN_AREA_FOR_VALID_SHAPE)
 
-func create_body_from_shape_list(player_num : int, shapes : Array, allow_deletion : bool = true) -> RigidBody2D:
-	if area_too_small(shapes) and allow_deletion: return null
-	
+func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	# the average centroid of all centroids will be the center of the new body
@@ -229,9 +276,6 @@ func create_body_from_shape_list(player_num : int, shapes : Array, allow_deletio
 	return body
 
 func create_body_from_shape(shp : Array) -> RigidBody2D:
-	var area = calculate_area(shp)
-	if area < MIN_AREA_FOR_VALID_SHAPE: return null
-	
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
@@ -313,6 +357,18 @@ func point_is_between(a, b, c):
 		return false
 	
 	return true
+
+func calculate_area_shoelace(shp):
+	var area = 0
+	
+	for i in range(shp.size()):
+		var next_index = (i+1) % int(shp.size())
+		var p1 = shp[i]
+		var p2 = shp[next_index]
+		
+		area += p1.x * p2.y - p1.y * p2.x
+	
+	return area * 0.5
 
 func calculate_area(shp):
 	var x_bounds = Vector2(INF, -INF)

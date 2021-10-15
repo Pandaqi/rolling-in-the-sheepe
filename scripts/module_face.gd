@@ -1,6 +1,8 @@
 extends Node2D
 
 var sprite_size : float = 256.0
+
+onready var animation_player = $AnimationPlayer
 onready var face_sprite = $FaceSprite
 onready var ear_sprite = get_node("../Shaper/EarSprite")
 
@@ -24,7 +26,11 @@ func update_size(bounds):
 func make_wolf():
 	face_sprite.set_frame(1)
 	ear_sprite.set_frame(1)
+	
+	animation_player.play("WolfHighlight")
 
 func make_sheep():
 	face_sprite.set_frame(0)
 	ear_sprite.set_frame(0)
+	
+	animation_player.stop(true)

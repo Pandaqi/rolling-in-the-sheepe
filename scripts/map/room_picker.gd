@@ -1,6 +1,6 @@
 extends Node2D
 
-const MAX_BACKTRACK_ROOMS : int = 5
+const MAX_BACKTRACK_ROOMS : int = 10
 
 # [0,1] => 0 = only largest rooms possible, 1 = only smallest rooms posible
 const ROUTE_TIGHTNESS : float = 0.4
@@ -114,7 +114,7 @@ func generate_all_1x1_rooms_in_dir(params):
 	if dir_vertical:
 		var y_offset = -1 if params.dir == 3 else prev_room.size.y
 		for x in range(prev_room.size.x):
-			var temp_pos = prev_room.pos + Vector2(x,y_offset)
+			var temp_pos = prev_room.pos + Vector2(x, y_offset)
 			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
 	else:
@@ -162,9 +162,14 @@ func find_valid_configuration_better(params):
 		# UPGRADE: sneak peek
 		# (try one big room in the direction)
 		var sneak_room = { 'pos': last_pos, 'size': max_room_size }
-		if is_back_room:
-			if params.dir == 2: sneak_room.pos -= Vector2(max_room_size.x,0)
-			else: sneak_room.pos -= Vector2(0, max_room_size.y)
+		if params.dir == 0:
+			sneak_room.pos += Vector2(last_size.x, 0)
+		elif params.dir == 1:
+			sneak_room.pos += Vector2(0, last_size.y)
+		elif params.dir == 2: 
+			sneak_room.pos -= Vector2(max_room_size.x,0)
+		else: 
+			sneak_room.pos -= Vector2(0, max_room_size.y)
 		
 		sneak_room.pos += get_random_displacement(last_size, max_room_size, params.dir)
 		if not route_generator.room_overlaps_path(sneak_room, params):
@@ -248,6 +253,7 @@ func place_room_according_to_params(params):
 #	print(rect.shrunk)
 
 	rect.set_index(route_generator.get_new_room_index())
+	
 	rect.set_previous_room(params.room)
 	rect.set_dir(params.dir)
 	rect.set_path_position(route_generator.total_rooms_created)
@@ -259,11 +265,13 @@ func place_room_according_to_params(params):
 	map.set_all_cells_to_room(rect)
 	
 	# DEBUGGING
-	#slope_painter.recalculate_room(params.room)
-	#slope_painter.place_slopes(rect)
-	#slope_painter.fill_room(rect)
+	slope_painter.recalculate_room(params.room)
+	slope_painter.place_slopes(rect)
+	slope_painter.fill_room(rect)
 
-	#rect.create_border_around_us()
+	rect.determine_outline()
+	rect.determine_tiles_inside()
+	# rect.create_border_around_us()
 	
 	tutorial.placed_a_new_room(rect)
 
@@ -277,7 +285,7 @@ func handle_optional_requirements(params):
 	
 	if params.place_finish:
 		route_generator.placed_finish()
-		params.rect.paint_terrain("finish")
+		map.terrain.paint(params.rect, "finish")
 		
 	elif params.place_lock:
 		route_generator.placed_lock()

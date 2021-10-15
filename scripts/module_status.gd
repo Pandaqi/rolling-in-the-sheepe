@@ -3,12 +3,28 @@ extends Node2D
 onready var body = get_parent()
 onready var face = get_node("../Face")
 onready var glue = get_node("../Glue")
+
+onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 onready var player_manager = get_node("/root/Main/PlayerManager")
 
 var player_num : int = -1
 var shape_name : String = ""
 
 var time_penalty : float = 0.0
+var has_finished : bool = false
+
+# Deletes the whole body, but not before (re)setting all sorts of other properties
+# that _should_ be properly reset
+func delete():
+	player_progression.on_body_removed(body)
+	player_manager.deregister_body(body)
+	
+	body.get_node("Glue").disable_glue()
+	
+	body.remove_from_group("Players")
+	get_node("../RoomTracker").get_cur_room().remove_player(body)
+	
+	body.queue_free()
 
 func set_shape_name(nm : String):
 	shape_name = nm
@@ -32,6 +48,8 @@ func set_player_num(num : int):
 			module_tutorial.activate()
 		else:
 			module_tutorial.queue_free()
+	
+	player_manager.register_body(body)
 
 func modify_time_penalty(val):
 	time_penalty += val

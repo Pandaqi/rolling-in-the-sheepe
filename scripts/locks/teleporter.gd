@@ -121,4 +121,4 @@ func perform_teleport():
 	# clean up all remaining pieces (that didn't make it at all)
 	for body in all_bodies:
 		if (body in teleported_bodies): continue
-		body.queue_free()
+		body.get_node("Status").delete()

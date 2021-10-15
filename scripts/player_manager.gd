@@ -1,6 +1,7 @@
 extends Node2D
 
 const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
+const PREDEFINED_SHAPE_SCALE : float = 1.5
 
 var player_scene = preload("res://scenes/body.tscn")
 
@@ -10,6 +11,8 @@ onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 var num_players : int = 0
 var player_colors = []
 var player_shapes = []
+
+var bodies_per_player = []
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
 var shape_list = {
@@ -51,6 +54,11 @@ func activate():
 func create_players():
 	player_shapes = []
 	player_shapes.resize(num_players)
+	
+	bodies_per_player = []
+	bodies_per_player.resize(num_players)
+	for i in range(num_players):
+		bodies_per_player[i] = []
 	
 	for i in range(num_players):
 		create_player(i)
@@ -119,9 +127,25 @@ func load_predefined_shapes():
 		if not (child is CollisionPolygon2D): continue
 		
 		var key = child.name.to_lower()
-		var val = Array(child.polygon)
-		
+		var val = scale_shape( Array(child.polygon) )
+
 		shape_list[key].points = val
 		available_shapes.append(key)
 	
 	available_shapes.shuffle()
+
+# NOTE: Points are already around centroid, and shaper node will do that again anyway, so just scale only
+func scale_shape(points):
+	var new_points = []
+	for p in points:
+		new_points.append(p * PREDEFINED_SHAPE_SCALE)
+	return new_points
+
+func count_bodies_of_player(num):
+	return bodies_per_player[num].size()
+
+func register_body(p):
+	bodies_per_player[p.get_node("Status").player_num].append(p)
+
+func deregister_body(p):
+	bodies_per_player[p.get_node("Status").player_num].erase(p)

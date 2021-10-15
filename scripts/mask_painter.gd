@@ -44,13 +44,12 @@ func clear_rectangle(pos, size):
 	pos = pos.floor()
 	size = size.floor()
 	
-	var col = Color(0.0,0.0,0.0,0.0)
-	for x in range(size.x):
-		for y in range(size.y):
-			var temp_pos = pos + Vector2(x,y)
-			if out_of_mask_bounds(temp_pos): continue
-			surface_image.set_pixelv(temp_pos, col)
-
+	var img = Image.new()
+	img.create(size.x, size.y, false, Image.FORMAT_RGBAH)
+	img.fill(Color(0,0,0,0))
+	
+	surface_image.blit_rect(img, Rect2(Vector2.ZERO, size), pos)
+	
 	surface_image.unlock()
 
 func paint_on_mask(pos : Vector2, player_num : int):
