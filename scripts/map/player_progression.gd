@@ -1,7 +1,15 @@
 extends Node2D
 
-var leading_player
-var trailing_player
+const DELAY_BETWEEN_SWITCH : float = 1.0 # in seconds
+
+var leading_player = null
+var trailing_player = null
+
+var wanted_leading_player = null
+var wanted_trailing_player = null
+
+var time_since_leader_switch : float = -1
+var time_since_trail_switch : float = -1
 
 func _physics_process(_dt):
 	determine_leading_and_trailing_player()
@@ -41,8 +49,39 @@ func determine_leading_and_trailing_player():
 				min_dist_in_room = dist_in_room
 				new_trailing_player = p
 	
-	set_leading_player(new_leading_player)
-	set_trailing_player(new_trailing_player)
+	var cur_time = OS.get_ticks_msec()
+	if new_leading_player != wanted_leading_player:
+		time_since_leader_switch = OS.get_ticks_msec()
+		wanted_leading_player = new_leading_player
+		
+		# NOTE: this makes the switch instant, if currently nothing is set
+		if leading_player == null:
+			time_since_leader_switch = -INF
+	
+	if (cur_time - time_since_leader_switch)/1000.0 > DELAY_BETWEEN_SWITCH:
+		set_leading_player(wanted_leading_player)
+	
+	if new_trailing_player != wanted_trailing_player:
+		time_since_trail_switch = OS.get_ticks_msec()
+		wanted_trailing_player = new_trailing_player
+		
+		if trailing_player == null:
+			time_since_trail_switch = -INF
+	
+	if (cur_time - time_since_trail_switch)/1000.0 > DELAY_BETWEEN_SWITCH:
+		set_trailing_player(wanted_trailing_player)
+	
+	# change new one to a wolf
+	check_wolf()
+
+func check_wolf():
+	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().index > 1)
+	if not wolf_creation_is_allowed: return
+	
+	var already_is_wolf = trailing_player.get_node("Status").is_wolf
+	if already_is_wolf: return
+	
+	trailing_player.get_node("Status").make_wolf()
 
 func set_leading_player(p):
 	if p == leading_player: return
@@ -56,9 +95,7 @@ func set_trailing_player(p):
 	if has_trailing_player():
 		trailing_player.get_node("Status").make_sheep()
 	
-	# change new one to a wolf
 	trailing_player = p
-	trailing_player.get_node("Status").make_wolf()
 	
 func has_leading_player():
 	return leading_player and is_instance_valid(leading_player)

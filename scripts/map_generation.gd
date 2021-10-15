@@ -14,6 +14,7 @@ onready var mask_painter = $MaskPainter
 onready var edges = $Edges
 onready var terrain = $Terrain
 onready var special_elements = $SpecialElements
+onready var slope_painter = $SlopePainter
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 
@@ -53,6 +54,7 @@ func initialize_grid():
 				'terrain': null,
 				'edges': [null, null, null, null],
 				'room': null,
+				'special': null
 			}
 
 func create_border_around_world():
@@ -67,6 +69,29 @@ func create_border_around_world():
 		for x in range(border_size):
 			change_cell(Vector2(-1-x,y), 0)
 			change_cell(Vector2(WORLD_SIZE.x + x,y), 0)
+
+####
+#
+# Checking neighbors/surroundings
+#
+####
+func get_neighbor_tiles(pos, params):
+	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
+	var res = []
+	for i in range(nbs.size()):
+		var new_pos = pos + nbs[i]
+		var tile_data = tilemap.get_cellv(new_pos)
+		
+		if params.has('empty'):
+			if tile_data >= 0: continue
+		
+		var obj = new_pos
+		if params.has('return_with_dir'):
+			obj = { 'pos': new_pos, 'dir': i }
+		
+		res.append(obj)
+	
+	return res
 
 ####
 #

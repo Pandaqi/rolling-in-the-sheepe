@@ -3,6 +3,7 @@ extends Node2D
 onready var body = get_parent()
 onready var face = get_node("../Face")
 onready var glue = get_node("../Glue")
+onready var rounder = get_node("../Rounder")
 
 onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 onready var player_manager = get_node("/root/Main/PlayerManager")
@@ -12,6 +13,8 @@ var shape_name : String = ""
 
 var time_penalty : float = 0.0
 var has_finished : bool = false
+
+var is_wolf : bool = false
 
 # Deletes the whole body, but not before (re)setting all sorts of other properties
 # that _should_ be properly reset
@@ -50,6 +53,8 @@ func set_player_num(num : int):
 			module_tutorial.queue_free()
 	
 	player_manager.register_body(body)
+	
+	make_sheep()
 
 func modify_time_penalty(val):
 	time_penalty += val
@@ -68,9 +73,15 @@ func undo_ghost():
 	body.modulate.a = 1.0
 
 func make_wolf():
+	is_wolf = true
+	
 	glue.make_wolf()
 	face.make_wolf()
+	rounder.start_grow_mode("shrink")
 
 func make_sheep():
+	is_wolf = false
+	
 	glue.make_sheep()
 	face.make_sheep()
+	rounder.end_grow_mode()

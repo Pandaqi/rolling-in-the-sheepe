@@ -1,6 +1,6 @@
 extends Node2D
 
-const MIN_RADIUS : float = 6.0
+const MIN_RADIUS : float = 9.0
 const MAX_RADIUS : float = 20.0
 const SIZE : float = 20.0
 
@@ -215,6 +215,12 @@ func approximate_radius():
 
 func approximate_radius_as_ratio():
 	return approximate_radius() / float(MAX_RADIUS)
+
+func at_max_size():
+	return approximate_radius() >= MAX_RADIUS
+
+func at_min_size():
+	return approximate_radius() <= MIN_RADIUS
 
 func get_bounding_box_along_vec(vec):
 	# convert bounding box to vectors (from centroid)

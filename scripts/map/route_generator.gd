@@ -174,14 +174,13 @@ func get_pos_just_ahead():
 	
 	var lead = player_progression.get_leading_player()
 	var index = lead.get_node("RoomTracker").get_cur_room().index
-	if index == (cur_path.size()-1): 
-		return lead.get_global_position()
+	if index == (cur_path.size()-1): return null
 	
 	var coming_positions : Vector2 = Vector2.ZERO
 	var num_positions_considered : float = 0
 	
-	var max_rooms_to_look_ahead = 4
-	var max_bound = min(cur_path.size(), index+max_rooms_to_look_ahead+15)
+	var max_rooms_to_look_ahead = 3
+	var max_bound = min(cur_path.size(), index+max_rooms_to_look_ahead)
 	
 	for i in range(index+1, max_bound):
 		var ratio : float = 1.0 / float(i-index)

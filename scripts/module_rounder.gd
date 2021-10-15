@@ -12,14 +12,20 @@ var average_airtime : float = 0.0
 var is_round : float = false
 var is_malformed : float = false
 
+var grow_mode = ""
+
 onready var body = get_parent()
+onready var status = get_node("../Status")
 onready var shaper = get_node("../Shaper")
 onready var mover = get_node("../Mover")
 
+onready var round_algo_timer = $Timer
+onready var grow_timer = $GrowTimer
+
 func _ready():
 	final_timer_duration = (1.0 + 0.2*(randf()-0.5))*BASE_TIMER_DURATION
-	$Timer.wait_time = final_timer_duration
-	$Timer.start()
+	round_algo_timer.wait_time = final_timer_duration
+	round_algo_timer.start()
 
 func _physics_process(dt):
 	if mover.in_air: average_airtime += dt
@@ -36,6 +42,10 @@ func _on_Timer_timeout():
 	
 	average_airtime = 0.0
 
+#
+# Deforming
+#
+
 # TO DO: Ensure minimum dimensions here as well
 # (Maybe just require all points to be some distance away from Vector2.ZERO?)
 
@@ -44,6 +54,7 @@ func become_more_malformed(ratio):
 	print("MALFORM!")
 	
 	if is_malformed: return
+	if status.is_wolf: return
 	
 	# DEBUGGING => have to figure this out first
 	return 
@@ -62,8 +73,12 @@ func move_points_randomly(shp):
 	
 	return shp
 
+#
+# Rounding
+#
 func become_more_round(ratio):
 	if is_round: return
+	if status.is_wolf: return
 	
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	var shapes_to_add = []
@@ -97,7 +112,7 @@ func become_more_round(ratio):
 	var offset = avg_pos/float(total_points_considered)
 	for shp in shapes_to_add:
 		for i in range(shp.size()):
-			shp[i] -= offset
+			shp[i] = (shp[i] - offset).rotated(-body.rotation)
 	
 	for shp in shapes_to_add:
 		var new_shape = ConvexPolygonShape2D.new()
@@ -149,3 +164,55 @@ func enrich_shape(shp):
 		i += 2 # skip the point we just inserted
 	
 	return shp
+
+#
+# Growing/Shrinking
+# (basically a heavily simplified version of the round/deform algorithms)
+#
+func start_grow_mode(mode):
+	grow_mode = mode
+	grow_timer.start()
+
+func end_grow_mode():
+	grow_mode = ""
+	grow_timer.stop()
+
+func grow(val):
+	if shaper.at_max_size(): return
+	change_size(1.0 + val)
+
+func shrink(val):
+	if shaper.at_min_size(): return
+	change_size(1.0 - val)
+
+func change_size(factor):
+	var num_shapes = body.shape_owner_get_shape_count(0)
+	var shapes_to_add = []
+	
+	var center = body.get_global_position()
+	var trans = body.get_global_transform()
+	for i in range(num_shapes):
+		var shape = body.shape_owner_get_shape(0, i)
+
+		var pts = Array(shape.points)
+		
+		for a in range(pts.size()):
+			pts[a] = ((trans.xform(pts[a]) - center) * factor).rotated(-body.rotation)
+		
+		shapes_to_add.append(pts)
+	
+	for shp in shapes_to_add:
+		var new_shape = ConvexPolygonShape2D.new()
+		new_shape.points = shp
+		body.shape_owner_remove_shape(0, 0)
+		body.shape_owner_add_shape(0, new_shape)
+
+	shaper.on_shape_updated()
+
+func _on_GrowTimer_timeout():
+	if grow_mode == "": return
+	
+	if grow_mode == "grow":
+		grow(0.1)
+	elif grow_mode == "shrink":
+		shrink(0.1)

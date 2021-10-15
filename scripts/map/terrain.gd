@@ -35,7 +35,8 @@ func read_terrain_list_from_campaign():
 	available_terrains = terrain_types.keys()
 
 func on_new_rect_created(rect):
-	var handout_terrains = (not tutorial.is_active())
+	var first_room = (rect.index <= 0)
+	var handout_terrains = (not tutorial.is_active()) and (not first_room)
 	if not handout_terrains: return
 	
 	var rect_too_small = rect.get_area() < 4

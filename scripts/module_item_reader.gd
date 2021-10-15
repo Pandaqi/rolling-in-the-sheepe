@@ -30,7 +30,10 @@ func _physics_process(_dt):
 	do_something_with_items()
 
 func register_contact(obj):
-	var cell = map.get_cell(map.get_grid_pos(obj.pos))
+	var grid_pos = map.get_grid_pos(obj.pos)
+	if map.out_of_bounds(grid_pos): return
+	
+	var cell = map.get_cell(grid_pos)
 	if not cell.special: return
 	
 	var type = cell.special.type

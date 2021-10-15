@@ -55,6 +55,7 @@ func recalculate_room(r):
 ####
 func fill_room(r):
 	if not r: return
+	if r.index <= 0: return
 	
 	if r.shrunk.size.x < 3 or r.shrunk.size.y < 3: return
 	
@@ -117,11 +118,7 @@ func check_slope_validity(r):
 	
 	# now check which tiles we need to remove
 	for pos in slopes_created:
-		var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
-		var tile_index = tile_coord.x + 12*tile_coord.y
-		
-		var good_slope = (tile_index in allowed_slope_indices)
-		if good_slope: continue
+		if tile_is_slope(pos): continue
 		
 		map.change_cell(pos, -1)
 		something_changed = true
@@ -129,6 +126,12 @@ func check_slope_validity(r):
 	if not something_changed: return
 	
 	map.update_bitmask(r.pos, r.size)
+
+func tile_is_slope(pos):
+	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
+	var tile_index = tile_coord.x + 12*tile_coord.y
+	
+	return (tile_index in allowed_slope_indices)
 
 func get_neighbor_tiles(pos, params):
 	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]

@@ -2,8 +2,8 @@ extends Node2D
 
 const MAX_BODIES_PER_PLAYER : int = 5
 
-const MIN_AREA_FOR_VALID_SHAPE : float = 200.0
-const MIN_SIZE_PER_SIDE : float = 6.0
+const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
+const MIN_SIZE_PER_SIDE : float = 3.0 # TO DO: need to fix this anyway
 
 onready var map = get_node("/root/Main/Map")
 onready var player_manager = get_node("/root/Main/PlayerManager")

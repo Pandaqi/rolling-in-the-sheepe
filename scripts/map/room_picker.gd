@@ -23,7 +23,7 @@ func _ready():
 	default_starting_pos *= map.WORLD_SIZE
 	
 	if tutorial.is_active():
-		default_starting_room_size = Vector2(6, 2)
+		default_starting_room_size = Vector2(6, 4)
 
 #
 # The only functionality it has: create newest room

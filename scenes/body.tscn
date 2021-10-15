@@ -151,6 +151,9 @@ script = ExtResource( 17 )
 [node name="Timer" type="Timer" parent="Rounder"]
 wait_time = 0.75
 
+[node name="GrowTimer" type="Timer" parent="Rounder"]
+wait_time = 3.0
+
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
@@ -162,3 +165,4 @@ wait_time = 0.75
 [connection signal="timeout" from="Glue/GlueTimer" to="Glue" method="_on_GlueTimer_timeout"]
 [connection signal="timeout" from="Tutorial/Timer" to="Tutorial" method="_on_Timer_timeout"]
 [connection signal="timeout" from="Rounder/Timer" to="Rounder" method="_on_Timer_timeout"]
+[connection signal="timeout" from="Rounder/GrowTimer" to="Rounder" method="_on_GrowTimer_timeout"]

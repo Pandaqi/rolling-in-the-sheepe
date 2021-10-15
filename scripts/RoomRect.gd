@@ -268,23 +268,10 @@ func add_special_item():
 	
 	if not fit_for_special_item: return
 	
-	# determine type (if possible; if not, abort)
-	var type = map.special_elements.get_random_type()
-	if not type: return
+	var elem = map.special_elements.place(self)
+	if not elem: return
 	
-	# create the actual item
-	var item = load("res://scenes/elements/" + type + ".tscn").instance()
-	
-	# determine location
-	var location = get_free_tile_inside()
-	item.set_position(location * map.TILE_SIZE)
-	
-	# TO DO: determine rotation (based on neighbors OR slope dir)
-	
-	# ask map to place and remember us
-	var item_obj = { 'item': item, 'type': type, 'pos': location }
-	map.special_elements.place(item_obj)
-	special_elements.append(item_obj)
+	special_elements.append(elem)
 
 func clear_special_items():
 	for item in special_elements:

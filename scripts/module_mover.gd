@@ -5,6 +5,8 @@ const MAX_VELOCITY_AIR : float = 150.0
 
 const VELOCITY_DAMPING : float = 0.995
 var speed_multiplier : float = 1.0
+
+const WOLF_BONUS_SPEED : float = 2.0
 var size_speed_multiplier : float = 1.0
 
 const MAX_ANG_VELOCITY : float = 35.0
@@ -77,6 +79,8 @@ func _on_Input_double_button():
 
 func _physics_process(_dt):
 	size_speed_multiplier = shaper.approximate_radius_as_ratio()
+	if status.is_wolf:
+		size_speed_multiplier *= WOLF_BONUS_SPEED
 	
 	reset_gravity_strength()
 	
