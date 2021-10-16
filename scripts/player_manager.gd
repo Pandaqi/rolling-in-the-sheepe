@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
 const PREDEFINED_SHAPE_SCALE : float = 1.5
@@ -145,7 +145,9 @@ func count_bodies_of_player(num):
 	return bodies_per_player[num].size()
 
 func register_body(p):
+	p.add_to_group("Players")
 	bodies_per_player[p.get_node("Status").player_num].append(p)
 
 func deregister_body(p):
+	p.remove_from_group("Players")
 	bodies_per_player[p.get_node("Status").player_num].erase(p)

@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 # NOTE: "_active" is a permanent state
 #       "_disabled" simply means it's temporarily not available (because it was recently used)
@@ -82,24 +82,40 @@ func check_spikes():
 		spike_object(obj)
 		break
 
-func spike_object(obj):
+func get_realistic_slice_line(obj):
 	var extended_normal = -obj.normal * 100
 	var start = obj.pos - extended_normal
 	var end = obj.pos + extended_normal
 	
-	# Wolfs just SLICE someone in half (somewhat perfectly)
-	# TO DO: Make this code general?
-	if is_wolf:
-		var bb = obj.body.get_node("Shaper").bounding_box
-		var center_pos = obj.body.get_global_position()
-		start = center_pos - 100*Vector2(1,1)
-		end = center_pos + 100*Vector2(1,1)
-	
-	slicer.slice_bodies_hitting_line(start, end, [obj.body])
-
+	# DEBUGGING
 	slicer.start_point = start
 	slicer.end_point = end
 	slicer.update()
+	
+	return { 'start': start, 'end': end }
+
+func get_halfway_slice_line(obj):
+	#var bb = obj.body.get_node("Shaper").bounding_box
+	
+	var center_pos = obj.body.get_global_position()
+	var start = center_pos - 100*Vector2(1,1)
+	var end = center_pos + 100*Vector2(1,1)
+	
+	# DEBUGGING
+	slicer.start_point = start
+	slicer.end_point = end
+	slicer.update()
+	
+	return { 'start': start, 'end': end }
+
+func spike_object(obj):
+	# Wolfs just SLICE someone in half (somewhat perfectly)
+	# TO DO: Make this code general?
+	var slice_line = get_realistic_slice_line(obj)
+	if is_wolf: 
+		slice_line = get_halfway_slice_line(obj)
+	
+	slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [obj.body])
 	
 	disable_spikes()
 

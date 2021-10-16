@@ -1,5 +1,6 @@
-extends Node2D
+extends Node
 
+const GROW_FACTOR : float = 0.2
 const BASE_TIMER_DURATION : float = 5.0
 var final_timer_duration
 
@@ -11,6 +12,8 @@ const RADIUS_INCREASE_FOR_ROUNDING : float = 3.0
 var average_airtime : float = 0.0
 var is_round : float = false
 var is_malformed : float = false
+
+var grow_instead_of_rounding : float = false
 
 var grow_mode = ""
 
@@ -53,8 +56,12 @@ func _on_Timer_timeout():
 func become_more_malformed(ratio):
 	print("MALFORM!")
 	
-	if is_malformed: return
 	if status.is_wolf: return
+	
+	if grow_instead_of_rounding:
+		shrink(GROW_FACTOR)
+		return
+	if is_malformed: return
 	
 	# DEBUGGING => have to figure this out first
 	return 
@@ -77,8 +84,12 @@ func move_points_randomly(shp):
 # Rounding
 #
 func become_more_round(ratio):
-	if is_round: return
 	if status.is_wolf: return
+	
+	if grow_instead_of_rounding:
+		grow(GROW_FACTOR)
+		return
+	if is_round: return
 	
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	var shapes_to_add = []

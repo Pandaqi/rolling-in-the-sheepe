@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 var surface_image : Image = Image.new()
 var surface_texture : ImageTexture = ImageTexture.new()

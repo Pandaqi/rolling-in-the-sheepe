@@ -3,7 +3,7 @@ extends Camera2D
 const MIN_ZOOM : float = 0.75
 const MAX_ZOOM : float = 4.0
 
-const ZOOM_MARGIN : Vector2 = Vector2(250.0, 150.0)
+const ZOOM_MARGIN : Vector2 = Vector2(100.0, 100.0)
 
 var players
 onready var map = get_node("/root/Main/Map")
@@ -70,11 +70,12 @@ func zoom_to_show_all_players(dt):
 		player_bounds.x = max(abs(pos_ahead.x - cam_pos.x), player_bounds.x)
 		player_bounds.y = max(abs(pos_ahead.y - cam_pos.y), player_bounds.y)
 	
+	# NOTE: Instead of adding our margin to the wanted_vp, we subtract it from the actual vp
+	# This means it's _independent_ of zoom level, because we just fill the whole screen, but _pretend_ the whole screen is a bit smaller than it actually is
 	var wanted_vp = 2*player_bounds
-	wanted_vp += ZOOM_MARGIN
 	
-	var x_zoom = wanted_vp.x / vp.x
-	var y_zoom = wanted_vp.y / vp.y
+	var x_zoom = wanted_vp.x / (vp.x - ZOOM_MARGIN.x)
+	var y_zoom = wanted_vp.y / (vp.y - ZOOM_MARGIN.y)
 	
 	var zoom_val = max(x_zoom, y_zoom)
 	var final_zoom = Vector2(1,1)*clamp(zoom_val, MIN_ZOOM, MAX_ZOOM)

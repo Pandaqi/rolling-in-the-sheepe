@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 var edge_scene = preload("res://scenes/edge.tscn")
 

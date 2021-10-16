@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const MIN_DIST_BETWEEN_PAINTS : float = 15.0
 

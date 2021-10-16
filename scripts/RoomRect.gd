@@ -13,6 +13,8 @@ var size : Vector2
 var shrunk = {}
 var outline = []
 
+var can_have_special_items : bool = false
+
 var prev_room
 var dir : int
 
@@ -209,6 +211,8 @@ func delete():
 	map.terrain.erase(self)
 	map.remove_cells_from_room(self)
 	
+	clear_special_items()
+	
 	# NOTE: I add half size here because the "paint circles" of course will EXTEND slightly beyond the room borders, as they are circles
 	map.mask_painter.clear_rectangle((pos-Vector2(0.5,0.5))*TILE_SIZE, (size+ Vector2(1,1))*TILE_SIZE)
 
@@ -252,6 +256,7 @@ func determine_tiles_inside():
 		for y in range(size.y):
 			var temp_pos = pos + Vector2(x,y)
 			if map.tilemap.get_cellv(temp_pos) == -1: continue
+			if map.out_of_bounds(temp_pos): continue
 			
 			tiles_inside.append(temp_pos)
 
@@ -273,9 +278,15 @@ func add_special_item():
 	
 	special_elements.append(elem)
 
+func erase_special_item(item):
+	special_elements.erase(item)
+	map.special_elements.erase(item)
+
 func clear_special_items():
 	for item in special_elements:
-		map.special_elements.clear(item)
+		map.special_elements.erase(item)
+	
+	special_elements = []
 
 #####
 #

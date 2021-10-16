@@ -27,7 +27,7 @@ func check_teleport(state):
 	state.transform.origin = teleport_pos
 	teleport_pos = Vector2.ZERO
 
-func check_shoot_away(state):
+func check_shoot_away(_state):
 	if not shoot_away_vec: return
 	
 	apply_central_impulse(shoot_away_vec * SHOOT_AWAY_FORCE)

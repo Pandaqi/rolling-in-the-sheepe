@@ -63,12 +63,33 @@ func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 	for b in bodies:
 		slice_body(b, p1, p2)
 
-func slice_body(b, p1, p2):
+func create_circle_body(b):
+	var base_pos = b.get_global_position()
+	var radius = 0.66 * b.get_node("Shaper").approximate_radius()
 	
+	var arr = []
+	for a in range(8):
+		var angle = (a / 8.0) * (2*PI)
+		var new_pos = base_pos + Vector2(cos(angle), sin(angle))*radius
+		arr.append(new_pos)
+	
+	return arr
+
+func slice_body(b, p1, p2):
 	var original_player_num = b.get_node("Status").player_num
 	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
 	if player_is_at_body_limit: 
 		print("Player already has too many bodies")
+		return
+	
+	if GlobalDict.cfg.slicing_yields_circles:
+		var new_bodies = [[],[]]
+		for i in range(2):
+			new_bodies[i] = create_circle_body(b)
+
+		b.get_node("Status").delete()
+		create_body_from_shape(original_player_num, new_bodies[0])
+		create_body_from_shape(original_player_num, new_bodies[1])
 		return
 	
 	var num_shapes = b.shape_owner_get_shape_count(0)
@@ -275,13 +296,17 @@ func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2
 	
 	return body
 
-func create_body_from_shape(shp : Array) -> RigidBody2D:
+func create_body_from_shape(player_num : int, shp : Array) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
 	
 	body.get_node("Shaper").create_from_shape(shp)
-	map.call_deferred("add_child", body)
+	
+	map.add_child(body)
+	
+	# and we make sure it has the same parent as the original body
+	body.get_node("Status").set_player_num(player_num)
 	
 	return body
 

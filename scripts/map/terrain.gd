@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const CONSECUTIVE_SAME_TERRAINS_PROB : float = 0.25
 const USE_REV_GRAVITY_ON_UP_DIR : float = 0.4
@@ -10,9 +10,9 @@ onready var route_generator = get_node("../RouteGenerator")
 
 var terrain_types = {
 	"finish": { "frame": 0, 'unpickable': true, 'category': 'essential' },
-	"lock": { "frame": 1, 'unpickable': true, 'category': 'essential', 'overwrite': true },
-	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true },
-	"reverse_gravity": { "frame": 3, 'category': 'gravity' },
+	"lock": { "frame": 1, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
+	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
+	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true },
 	"no_gravity": { "frame": 4, 'category': 'gravity' },
 	"ice": { "frame": 5, 'category': 'physics' },
 	"bouncy": { "frame": 6, 'category': 'physics' },
@@ -22,7 +22,15 @@ var terrain_types = {
 	"glue": { "frame": 10, 'category': 'slicing' },
 	"reverse_controls": { "frame": 11, 'category': 'misc' },
 	"spikes": { "frame": 12, 'category': 'slicing' },
-	"ghost": { "frame": 13, 'category': 'misc' }
+	"ghost": { "frame": 13, 'category': 'misc' },
+	"grower": { "frame": 14, "category": "slicing" },
+	"no_wolf": { "frame": 15, "category": "misc" },
+	"body_limit": { "frame": 16, "category": "slicing" },
+	"invincibility": { "frame": 17, "category": "coin" },
+	"rounder": { "frame": 18, "category": "coin" },
+	"halver": { "frame": 19, "category": "coin" },
+	"slower": { "frame": 20, "category": "coin" },
+	"bomb": { "frame": 19, "category": "coin" }
 }
 
 var available_terrains = []
@@ -50,6 +58,9 @@ func get_terrain_at_index(index):
 	return route_generator.cur_path[index].terrain
 
 func get_random_terrain_type(rect):
+	# DEBUGGING
+	return "invincibility"
+	
 	# RESTRICTION: place reverse gravity on things going up
 	if rect.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
@@ -58,7 +69,7 @@ func get_random_terrain_type(rect):
 	var last_terrain = get_terrain_at_index(rect.index - 1)
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
-	if last_terrain != "" and last_terrain != "reverse_gravity":
+	if last_terrain != "" and not terrain_types[last_terrain].has('disable_consecutive'):
 		if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
 			return last_terrain
 	
@@ -119,4 +130,12 @@ func erase(rect):
 	rect.terrain = ""
 
 # TO DO: Create a function that paints a _specific tile/position_, 
-# 		 or under a _specific condition_, not just all of them
+# 		 or under a _specific condition_, not just all of them??
+
+func someone_entered(node, terrain):
+	var is_coin_terrain = (terrain_types[terrain].category == "coin")
+	if is_coin_terrain:
+		node.get_node("Coins").show()
+
+func someone_exited(node, terrain):
+	pass

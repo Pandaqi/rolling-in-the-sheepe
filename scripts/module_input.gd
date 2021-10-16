@@ -1,9 +1,12 @@
-extends Node2D
+extends Node
 
 var player_num : int = -1
 
 signal move_right()
 signal move_left()
+
+signal move_right_released()
+signal move_left_released()
 
 signal double_button()
 
@@ -28,7 +31,7 @@ func _physics_process(_dt):
 		else:
 			emit_signal("move_right")
 	
-	elif Input.is_action_pressed(get_key("left")):
+	if Input.is_action_pressed(get_key("left")):
 		if reverse:
 			emit_signal("move_right")
 		else:
@@ -37,16 +40,22 @@ func _physics_process(_dt):
 func _input(ev):
 	if ev.is_action_pressed(get_key("right")):
 		keys_down.right = true
+		
 	elif ev.is_action_released(get_key("right")):
 		keys_down.right = false
+		
+		emit_signal("move_right_released")
 		
 		if keys_down.left:
 			emit_signal("double_button")
 	
 	if ev.is_action_pressed(get_key("left")):
 		keys_down.left = true
+
 	elif ev.is_action_released(get_key("left")):
 		keys_down.left = false
+		
+		emit_signal("move_left_released")
 		
 		if keys_down.right:
 			emit_signal("double_button")

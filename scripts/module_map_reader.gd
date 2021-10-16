@@ -1,8 +1,12 @@
-extends Node2D
+extends Node
 
 # values between 0-1, set on PhysicsMaterial of body
-const ICE_FRICTION : float = 0.0
-const BOUNCE_VAL : float = 0.9 
+const ICE_FRICTION : float = 0.1
+const BOUNCE_VAL : float = 0.8
+
+# used when repelling people from a "body_limit" terrain
+const REPEL_FORCE : float = 600.0
+const MIN_COIN_LIMIT : int = 4
 
 const MAX_TILED_DIST_BETWEEN_PLAYERS : int = 50
 const MIN_EUCLIDIAN_DIST_BEFORE_TELEPORT : float = 460.0
@@ -21,6 +25,10 @@ onready var player_manager = get_node("/root/Main/PlayerManager")
 
 onready var body = get_parent()
 onready var status = get_node("../Status")
+onready var coins = get_node("../Coins")
+onready var shaper = get_node("../Shaper")
+onready var mover = get_node("../Mover")
+onready var item_reader = get_node("../ItemReader")
 onready var room_tracker = get_node("../RoomTracker")
 
 
@@ -29,7 +37,10 @@ var gui
 
 var has_finished : bool = false
 
-var last_cell
+# a "fake object" to ensure we don't need any checks at the start if last_cell exists yet
+# TO DO => might also implement this in other locations
+var last_cell = { 'terrain': null, 'pos': Vector2.ZERO, 'room': null }
+var last_move_dir : Vector2
 
 func _physics_process(_dt):
 	position_gui_above_us()
@@ -40,8 +51,11 @@ func _physics_process(_dt):
 	check_if_too_far_behind()
 
 func read_map():
-	var cur_cell = map.get_cell_from_node(self)
+	var cur_cell = map.get_cell_from_node(body)
 	if cur_cell == last_cell: return
+	if cur_cell.terrain == last_cell.terrain: return
+	
+	last_move_dir = (cur_cell.pos - last_cell.pos).normalized()
 	
 	undo_effect_of_cell(last_cell)
 	do_effect_of_cell(cur_cell)
@@ -50,6 +64,12 @@ func read_map():
 
 func do_effect_of_cell(cell):
 	var terrain = cell.terrain
+	if not terrain: return
+	
+	map.terrain.someone_entered(body, terrain)
+	
+	# TO DO: not necessarily correct; might take a frame to update
+	# better to use => cell.room?
 	var room = room_tracker.get_cur_room()
 	
 	match terrain:
@@ -61,10 +81,10 @@ func do_effect_of_cell(cell):
 			room.lock_module.register_player(body)
 		
 		"reverse_gravity":
-			body.get_node("Mover").gravity_dir = -1
+			mover.gravity_dir = -1
 		
 		"no_gravity":
-			body.get_node("Mover").gravity_dir = 0
+			mover.gravity_dir = 0
 		
 		"ice":
 			body.physics_material_override.friction = ICE_FRICTION
@@ -76,10 +96,10 @@ func do_effect_of_cell(cell):
 			body.get_node("Clinger").active = true
 		
 		"speed_boost":
-			body.get_node("Mover").speed_multiplier = 2.0
+			mover.speed_multiplier = 2.0
 		
 		"speed_slowdown":
-			body.get_node("Mover").speed_multiplier = 0.5
+			mover.speed_multiplier = 0.5
 		
 		"glue":
 			body.get_node("Glue").glue_active = true
@@ -91,12 +111,47 @@ func do_effect_of_cell(cell):
 			body.get_node("Glue").spikes_active = true
 		
 		"ghost":
-			body.get_node("Status").make_ghost()
+			status.make_ghost()
+		
+		"grower":
+			body.get_node("Rounder").grow_instead_of_rounding = true
+		
+		"no_wolf":
+			player_progression.disable_wolf()
+		
+		"body_limit":
+			# NOTE: at this point we've already added ourself to the room, so its "size before" is 1 smaller than it is now
+			var body_max = GlobalInput.get_player_count()
+			var body_count = (cell.room.players_inside.size() - 1)
+			
+			if body_count >= body_max:
+				body.set_linear_velocity(Vector2.ZERO)
+				body.apply_central_impulse(-last_move_dir*REPEL_FORCE)
+		
+		"invincibility":
+			if coins.count() >= MIN_COIN_LIMIT:
+				status.make_invincible(false) # start no timer, so invincibility is "permanent" while in terrain
+		
+		"rounder":
+			if coins.count >= MIN_COIN_LIMIT:
+				shaper.make_circle()
+		
+		"halver":
+			coins.pay(floor(0.5*coins.count()))
+		
+		"slower":
+			mover.speed_multiplier = clamp(coins.as_ratio()*2.0, 0.2, 2.0) 
+		
+		"bomb":
+			item_reader.make_bomb()
 
 func undo_effect_of_cell(cell):
 	if not cell: return
 	
 	var terrain = cell.terrain
+	if not terrain: return
+	
+	map.terrain.someone_exited(body, terrain)
 	var room = map.get_room_at(cell.pos)
 	
 	match terrain:
@@ -104,10 +159,10 @@ func undo_effect_of_cell(cell):
 			room.lock_module.deregister_player(body)
 		
 		"reverse_gravity":
-			body.get_node("Mover").gravity_dir = 1
+			mover.gravity_dir = 1
 		
 		"no_gravity":
-			body.get_node("Mover").gravity_dir = 1
+			mover.gravity_dir = 1
 		
 		"ice":
 			body.physics_material_override.friction = 1.0
@@ -119,10 +174,10 @@ func undo_effect_of_cell(cell):
 			body.get_node("Clinger").active = false
 		
 		"speed_boost":
-			body.get_node("Mover").speed_multiplier = 1.0
+			mover.speed_multiplier = 1.0
 		
 		"speed_slowdown":
-			body.get_node("Mover").speed_multiplier = 1.0
+			mover.speed_multiplier = 1.0
 		
 		"glue":
 			body.get_node("Glue").glue_active = false
@@ -131,10 +186,25 @@ func undo_effect_of_cell(cell):
 			body.get_node("Input").reverse = false
 		
 		"spikes":
-			body.get_node("Glue").spikes_active = true
+			body.get_node("Glue").spikes_active = false
 		
 		"ghost":
-			body.get_node("Status").undo_ghost()
+			status.undo_ghost()
+		
+		"grower":
+			body.get_node("Rounder").grow_instead_of_rounding = false
+		
+		"no_wolf":
+			player_progression.enable_wolf()
+		
+		"invincibility":
+			status.make_vincible()
+		
+		"slower":
+			mover.speed_multiplier = 1.0
+		
+		"bomb":
+			item_reader.undo_bomb()
 
 func finish():
 	has_finished = true

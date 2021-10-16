@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const MAX_EXHAUSTIONS_BEFORE_SWITCH : int = 0
 const MAX_USAGE_BEFORE_SWITCH : int = 5

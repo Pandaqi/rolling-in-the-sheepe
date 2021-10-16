@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 onready var map = get_node("/root/Main/Map")
 onready var GUI = get_node("/root/Main/GUI")

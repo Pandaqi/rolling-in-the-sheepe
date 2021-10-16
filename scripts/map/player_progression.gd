@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const DELAY_BETWEEN_SWITCH : float = 1.0 # in seconds
 
@@ -10,6 +10,8 @@ var wanted_trailing_player = null
 
 var time_since_leader_switch : float = -1
 var time_since_trail_switch : float = -1
+
+var wolf_disabled : bool = false
 
 func _physics_process(_dt):
 	determine_leading_and_trailing_player()
@@ -74,8 +76,13 @@ func determine_leading_and_trailing_player():
 	# change new one to a wolf
 	check_wolf()
 
+#
+# Wolf handling
+#
 func check_wolf():
-	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().index > 1)
+	if not has_trailing_player(): return
+	
+	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().index > 1) and (not wolf_disabled)
 	if not wolf_creation_is_allowed: return
 	
 	var already_is_wolf = trailing_player.get_node("Status").is_wolf
@@ -83,6 +90,20 @@ func check_wolf():
 	
 	trailing_player.get_node("Status").make_wolf()
 
+func enable_wolf():
+	wolf_disabled = false
+	check_wolf()
+
+func disable_wolf():
+	wolf_disabled = true
+	if not has_trailing_player(): return
+	
+	trailing_player.get_node("Status").make_sheep()
+
+#
+# Helper functions (for ourself but also all other nodes accesssing us)
+# for leading/trailing players
+#
 func set_leading_player(p):
 	if p == leading_player: return
 	

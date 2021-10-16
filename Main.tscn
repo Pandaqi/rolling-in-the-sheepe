@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=1]
 [ext_resource path="res://scripts/slicer.gd" type="Script" id=2]
@@ -107,7 +107,7 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id=5]
 shader = SubResource( 4 )
-shader_param/base_color = Color( 0.368627, 0.133333, 0.0823529, 1 )
+shader_param/base_color = Color( 0.184314, 0.0352941, 0, 1 )
 shader_param/base_alpha = 1.0
 shader_param/p0 = null
 shader_param/p1 = null
@@ -132,8 +132,6 @@ shader_param/p19 = null
 shader_param/sight_radius = 300.0
 shader_param/vp_size = Vector2( 1920, 1080 )
 
-[sub_resource type="RectangleShape2D" id=6]
-
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
 
@@ -143,10 +141,10 @@ current = true
 limit_smoothed = true
 script = ExtResource( 4 )
 
-[node name="Map" type="Node2D" parent="."]
+[node name="Map" type="Node" parent="."]
 script = ExtResource( 5 )
 
-[node name="Terrain" type="Node2D" parent="Map"]
+[node name="Terrain" type="Node" parent="Map"]
 script = ExtResource( 16 )
 
 [node name="TileMapTerrain" type="TileMap" parent="Map/Terrain"]
@@ -160,26 +158,25 @@ collision_mask = 3
 format = 1
 tile_data = PoolIntArray( 131072, 0, 8, 131073, 0, 10, 131074, 0, 11, 131077, 0, 8, 131078, 0, 11, 196608, 0, 196616, 196609, 0, 131077, 196610, 0, 65542, 196611, 0, 6, 196612, 0, 196610, 196613, 0, 131080, 196614, 0, 131083, 262145, 0, 65544, 262146, 0, 131081, 262147, 0, 131083, 262149, 0, 196616, 262150, 0, 131082, 262151, 0, 11, 327681, 0, 65544, 327682, 0, 131078, 327683, 0, 196619, 327686, 0, 131076, 327687, 0, 196614, 327688, 0, 196611, 393217, 0, 196616, 393218, 0, 196619, 393222, 0, 131072 )
 
-[node name="RouteGenerator" type="Node2D" parent="Map"]
+[node name="RouteGenerator" type="Node" parent="Map"]
 script = ExtResource( 11 )
 
 [node name="Timer" type="Timer" parent="Map/RouteGenerator"]
 wait_time = 0.5
 
-[node name="RoomPicker" type="Node2D" parent="Map"]
+[node name="RoomPicker" type="Node" parent="Map"]
 script = ExtResource( 13 )
 
-[node name="PlayerProgression" type="Node2D" parent="Map"]
+[node name="PlayerProgression" type="Node" parent="Map"]
 script = ExtResource( 12 )
 
-[node name="Edges" type="Node2D" parent="Map"]
+[node name="Edges" type="Node" parent="Map"]
 script = ExtResource( 14 )
 
-[node name="SlopePainter" type="Node2D" parent="Map"]
+[node name="SlopePainter" type="Node" parent="Map"]
 script = ExtResource( 15 )
 
-[node name="MaskPainter" type="Node2D" parent="Map"]
-position = Vector2( 0, -1 )
+[node name="MaskPainter" type="Node" parent="Map"]
 script = ExtResource( 8 )
 
 [node name="TilemapTexture" type="Viewport" parent="Map/MaskPainter"]
@@ -201,13 +198,13 @@ material = SubResource( 2 )
 position = Vector2( 0, 1 )
 centered = false
 
-[node name="SpecialElements" type="Node2D" parent="Map"]
+[node name="SpecialElements" type="Node" parent="Map"]
 script = ExtResource( 17 )
 
-[node name="PlayerManager" type="Node2D" parent="."]
+[node name="PlayerManager" type="Node" parent="."]
 script = ExtResource( 7 )
 
-[node name="Tutorial" type="Node2D" parent="."]
+[node name="Tutorial" type="Node" parent="."]
 script = ExtResource( 9 )
 
 [node name="Slicer" type="Node2D" parent="."]
@@ -217,6 +214,7 @@ script = ExtResource( 2 )
 script = ExtResource( 10 )
 
 [node name="ColorRect" type="ColorRect" parent="FogOfWar"]
+visible = false
 material = SubResource( 5 )
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -227,8 +225,5 @@ __meta__ = {
 [node name="LookAhead" type="Node2D" parent="FogOfWar"]
 
 [node name="GUI" type="CanvasLayer" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource( 6 )
 
 [connection signal="timeout" from="Map/RouteGenerator/Timer" to="Map/RouteGenerator" method="_on_Timer_timeout"]

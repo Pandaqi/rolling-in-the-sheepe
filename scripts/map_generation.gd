@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 # basic world parameters
 const TILE_SIZE : float = 64.0
@@ -69,6 +69,12 @@ func create_border_around_world():
 		for x in range(border_size):
 			change_cell(Vector2(-1-x,y), 0)
 			change_cell(Vector2(WORLD_SIZE.x + x,y), 0)
+
+
+# not sure if this should be here, but where else? SlopePainter? (rename to Tiles?)
+func explode_cell(attacker, cell):
+	tilemap.set_cellv(cell.pos, -1)
+	attacker.get_node("Coins").get_paid(1)
 
 ####
 #

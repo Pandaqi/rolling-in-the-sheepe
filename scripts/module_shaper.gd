@@ -9,12 +9,21 @@ var bounding_box
 var color : Color = Color(1.0, 0.0, 0.0)
 
 onready var body = get_parent()
+onready var slicer = get_node("/root/Main/Slicer")
 
 #####
 #
 # Creation (from given shape/parameters
 #
 #####
+func make_circle():
+	var arr = slicer.create_circle_body()
+	var num_shapes = body.shape_owner_get_shape_count(0)
+	for i in range(num_shapes):
+		body.shape_owner_remove_shape(0, i)
+	
+	append_shape(arr)
+
 func append_shape(shape):
 	var shape_node = ConvexPolygonShape2D.new()
 	shape_node.points = shape
@@ -103,19 +112,6 @@ func make_global(shp):
 		shp[i] = trans.xform(shp[i])
 	
 	return shp
-
-func reposition_all_around_centroid():
-	var num_shapes = body.shape_owner_get_shape_count(0)
-	var avg_centroid : Vector2 = Vector2.ZERO
-	for i in range(num_shapes):
-		var shape = body.shape_owner_get_shape(0, i)
-		avg_centroid += calculate_centroid(shape.points)
-	
-	avg_centroid / num_shapes
-	
-	for i in range(num_shapes):
-		var shape = body.shape_owner_get_shape(0, i)
-		shape.points = reposition_around_centroid(shape.points, avg_centroid)
 
 func reposition_around_centroid(shp, given_centroid = null):
 	var centroid

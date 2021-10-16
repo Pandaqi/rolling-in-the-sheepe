@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -18,6 +18,7 @@
 [ext_resource path="res://animations/wolf_highlight.tres" type="Animation" id=16]
 [ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
 [ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
+[ext_resource path="res://scripts/module_coins.gd" type="Script" id=19]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -61,10 +62,15 @@ contact_monitor = true
 can_sleep = false
 script = ExtResource( 7 )
 
-[node name="Status" type="Node2D" parent="."]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
+[node name="Status" type="Node" parent="."]
 script = ExtResource( 6 )
 
-[node name="RoomTracker" type="Node2D" parent="."]
+[node name="InvincibilityTimer" type="Timer" parent="Status"]
+one_shot = true
+
+[node name="RoomTracker" type="Node" parent="."]
 script = ExtResource( 13 )
 
 [node name="Shaper" type="Node2D" parent="."]
@@ -76,7 +82,7 @@ scale = Vector2( 0.25, 0.25 )
 texture = ExtResource( 15 )
 hframes = 2
 
-[node name="Input" type="Node2D" parent="."]
+[node name="Input" type="Node" parent="."]
 script = ExtResource( 1 )
 
 [node name="Mover" type="Node2D" parent="."]
@@ -98,13 +104,17 @@ texture = ExtResource( 5 )
 centered = false
 offset = Vector2( 0, -32 )
 
-[node name="MapReader" type="Node2D" parent="."]
+[node name="DisableTimer" type="Timer" parent="Clinger"]
+wait_time = 0.3
+one_shot = true
+
+[node name="MapReader" type="Node" parent="."]
 script = ExtResource( 4 )
 
-[node name="MapPainter" type="Node2D" parent="."]
+[node name="MapPainter" type="Node" parent="."]
 script = ExtResource( 8 )
 
-[node name="ItemReader" type="Node2D" parent="."]
+[node name="ItemReader" type="Node" parent="."]
 script = ExtResource( 18 )
 
 [node name="OngoingTimer" type="Timer" parent="ItemReader"]
@@ -113,7 +123,7 @@ one_shot = true
 [node name="TimeoutTimer" type="Timer" parent="ItemReader"]
 one_shot = true
 
-[node name="Glue" type="Node2D" parent="."]
+[node name="Glue" type="Node" parent="."]
 script = ExtResource( 9 )
 
 [node name="SpikeTimer" type="Timer" parent="Glue"]
@@ -124,7 +134,7 @@ one_shot = true
 wait_time = 0.1
 one_shot = true
 
-[node name="Tutorial" type="Node2D" parent="."]
+[node name="Tutorial" type="Node" parent="."]
 script = ExtResource( 10 )
 
 [node name="Sprite" parent="Tutorial" instance=ExtResource( 11 )]
@@ -145,7 +155,7 @@ hframes = 2
 anims/RESET = SubResource( 2 )
 anims/WolfHighlight = ExtResource( 16 )
 
-[node name="Rounder" type="Node2D" parent="."]
+[node name="Rounder" type="Node" parent="."]
 script = ExtResource( 17 )
 
 [node name="Timer" type="Timer" parent="Rounder"]
@@ -154,11 +164,21 @@ wait_time = 0.75
 [node name="GrowTimer" type="Timer" parent="Rounder"]
 wait_time = 3.0
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+[node name="Coins" type="Node" parent="."]
+script = ExtResource( 19 )
 
+[node name="GUI" type="Node2D" parent="Coins"]
+position = Vector2( 435, 200 )
+
+[node name="Tween" type="Tween" parent="Coins"]
+
+[connection signal="timeout" from="Status/InvincibilityTimer" to="Status" method="_on_InvincibilityTimer_timeout"]
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
+[connection signal="move_left_released" from="Input" to="Mover" method="_on_Input_move_left_released"]
 [connection signal="move_right" from="Input" to="Mover" method="_on_Input_move_right"]
+[connection signal="move_right_released" from="Input" to="Mover" method="_on_Input_move_right_released"]
+[connection signal="timeout" from="Clinger/DisableTimer" to="Clinger" method="_on_DisableTimer_timeout"]
 [connection signal="timeout" from="ItemReader/OngoingTimer" to="ItemReader" method="_on_OngoingTimer_timeout"]
 [connection signal="timeout" from="ItemReader/TimeoutTimer" to="ItemReader" method="_on_TimeoutTimer_timeout"]
 [connection signal="timeout" from="Glue/SpikeTimer" to="Glue" method="_on_SpikeTimer_timeout"]
@@ -166,3 +186,4 @@ wait_time = 3.0
 [connection signal="timeout" from="Tutorial/Timer" to="Tutorial" method="_on_Timer_timeout"]
 [connection signal="timeout" from="Rounder/Timer" to="Rounder" method="_on_Timer_timeout"]
 [connection signal="timeout" from="Rounder/GrowTimer" to="Rounder" method="_on_GrowTimer_timeout"]
+[connection signal="tween_all_completed" from="Coins/Tween" to="Coins" method="_on_Tween_tween_all_completed"]

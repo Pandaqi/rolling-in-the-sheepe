@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
  # how many back rooms should stay on screen until they are DELETED
 const NUM_ROOMS_BACK_BUFFER : int = 4

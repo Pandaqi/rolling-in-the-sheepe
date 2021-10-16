@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 const MAX_BACKTRACK_ROOMS : int = 10
 
@@ -174,7 +174,6 @@ func find_valid_configuration_better(params):
 		sneak_room.pos += get_random_displacement(last_size, max_room_size, params.dir)
 		if not route_generator.room_overlaps_path(sneak_room, params):
 			return sneak_room
-			break
 		
 		# start with all possible 1x1 rooms
 		var valid_rooms = []
@@ -263,14 +262,18 @@ func place_room_according_to_params(params):
 	
 	route_generator.cur_path.append(rect)
 	map.set_all_cells_to_room(rect)
-	
-	# DEBUGGING
+
+	# first recalculate tiles/slopes on previous room, which allows us to also place special elements
 	slope_painter.recalculate_room(params.room)
+	map.special_elements.add_special_items_to_room(params.room)
+	
+	# then fill the new room
 	slope_painter.place_slopes(rect)
 	slope_painter.fill_room(rect)
 
 	rect.determine_outline()
-	rect.determine_tiles_inside()
+	
+	#rect.determine_tiles_inside() => moved to when we actually place special elements, as then we KNOW what's inside and what's not
 	# rect.create_border_around_us()
 	
 	tutorial.placed_a_new_room(rect)
@@ -292,7 +295,7 @@ func handle_optional_requirements(params):
 		params.rect.add_lock()
 	
 	else:
-		params.rect.add_special_item()
+		params.rect.can_have_special_items = true
 
 func update_global_generation_parameters(params):
 	route_generator.total_rooms_created += params.rect.get_longest_side()

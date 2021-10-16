@@ -1,7 +1,8 @@
-extends Node2D
+extends Node
 
 # list of tiles (in autotile) that represent a SLOPE and not a FILLED BLOCK
 var allowed_slopes = [Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), Vector2(1,2), Vector2(3,2), Vector2(8,3), Vector2(11,3)]
+var allowed_slope_dirs = [Vector2(-1,-1), Vector2(1,-1), Vector2(-1,-1), Vector2(1,-1), Vector2(-1,1),Vector2(1,1), Vector2(-1,1), Vector2(1,1)]
 var allowed_slope_indices = []
 
 onready var map = get_node("/root/Main/Map")
@@ -132,6 +133,15 @@ func tile_is_slope(pos):
 	var tile_index = tile_coord.x + 12*tile_coord.y
 	
 	return (tile_index in allowed_slope_indices)
+
+func get_slope_dir(pos):
+	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
+	var tile_index = tile_coord.x + 12*tile_coord.y
+	
+	var array_idx = allowed_slope_indices.find(tile_index)
+	if array_idx < 0: return Vector2.ZERO
+	
+	return allowed_slope_dirs[array_idx]
 
 func get_neighbor_tiles(pos, params):
 	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]

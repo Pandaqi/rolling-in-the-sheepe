@@ -29,6 +29,10 @@ var in_air : bool = false
 
 var gravity_dir : int = 1
 
+var air_break : bool = false
+var air_break_start : float = -1
+var air_break_time_limit : float = 230.0
+
 onready var body = get_parent()
 onready var shaper = get_node("../Shaper")
 onready var map_reader = get_node("../MapReader")
@@ -46,6 +50,9 @@ func _ready():
 
 func _on_Input_move_left():
 	keys_down.left = true
+	last_input_time = OS.get_ticks_msec()
+	
+	if air_break: return
 	
 	var torque = -ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
 	body.apply_torque_impulse(torque)
@@ -53,11 +60,16 @@ func _on_Input_move_left():
 	if in_air:
 		var air_force = Vector2.LEFT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
 		body.apply_central_impulse(air_force)
-	
-	last_input_time = OS.get_ticks_msec()
+
+func _on_Input_move_left_released():
+	keys_down.left = false
+	air_break = false
 
 func _on_Input_move_right():
-	keys_down.right = false
+	keys_down.right = true
+	last_input_time = OS.get_ticks_msec()
+	
+	if air_break: return
 	
 	var torque = ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
 	body.apply_torque_impulse(torque)
@@ -65,17 +77,26 @@ func _on_Input_move_right():
 	if in_air:
 		var air_force = Vector2.RIGHT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
 		body.apply_central_impulse(air_force)
-	
-	last_input_time = OS.get_ticks_msec()
+
+func _on_Input_move_right_released():
+	keys_down.right = false
+	air_break = false
 
 func _on_Input_double_button():
+	air_break = false
+	last_input_time = OS.get_ticks_msec()
+	
+	var used_input_for_airbreak = (OS.get_ticks_msec() - air_break_start) > air_break_time_limit
+	if used_input_for_airbreak: return
+	
+	# NOTE: It enables itself again after a (very) short period
+	clinger.disable()
+	
 	var grav_scale_absolute = abs(body.gravity_scale)
 	if grav_scale_absolute == 0: grav_scale_absolute = 1.0
-	
+
 	var jump_vec = normal_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
 	body.apply_central_impulse(jump_vec)
-	
-	last_input_time = OS.get_ticks_msec()
 
 func _physics_process(_dt):
 	size_speed_multiplier = shaper.approximate_radius_as_ratio()
@@ -84,12 +105,29 @@ func _physics_process(_dt):
 	
 	reset_gravity_strength()
 	
+	check_for_air_break()
 	determine_normal_vec()
 	cap_speed()
 	check_for_standstill()
-	
-	reset_keys()
+
 	debug_draw()
+
+func check_for_air_break():
+	if not keys_down.right: return
+	if not keys_down.left: return
+	
+	var used_input_for_jump = (OS.get_ticks_msec() - air_break_start) <= air_break_time_limit
+	if used_input_for_jump: return
+	
+	if not air_break:
+		air_break = true
+		air_break_start = OS.get_ticks_msec()
+		
+		var new_x_vel = body.linear_velocity.x * (1.15 + abs(body.linear_velocity.y) / float(MAX_VELOCITY))
+		body.linear_velocity.x = clamp(new_x_vel, -MAX_VELOCITY, MAX_VELOCITY)
+	
+	body.gravity_scale = 0.0
+	body.linear_velocity.y = 0.0
 
 func check_for_standstill():
 	if map_reader.last_cell_has_lock(): return
@@ -120,10 +158,6 @@ func cap_speed():
 		ang_vel *= ANG_VELOCITY_DAMPING
 		body.set_angular_velocity(ang_vel)
 
-func reset_keys():
-	keys_down.left = false
-	keys_down.right = false
-
 func reset_gravity_strength():
 	body.gravity_scale = gravity_dir*BASE_GRAVITY_SCALE
 
@@ -131,7 +165,7 @@ func modify_gravity_strength(val):
 	body.gravity_scale = gravity_dir*val*BASE_GRAVITY_SCALE
 
 func should_modify_jump_normal():
-	return clinger.active or map_reader.last_cell_has_terrain("no_gravity")
+	return clinger.has_influence() or map_reader.last_cell_has_terrain("no_gravity")
 
 func determine_normal_vec():
 	var space_state = get_world_2d().direct_space_state

@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 onready var body = get_parent()
 onready var face = get_node("../Face")
@@ -16,6 +16,9 @@ var has_finished : bool = false
 
 var is_wolf : bool = false
 
+onready var invincibility_timer = $InvincibilityTimer
+var is_invincible : bool = false
+
 # Deletes the whole body, but not before (re)setting all sorts of other properties
 # that _should_ be properly reset
 func delete():
@@ -23,9 +26,7 @@ func delete():
 	player_manager.deregister_body(body)
 	
 	body.get_node("Glue").disable_glue()
-	
-	body.remove_from_group("Players")
-	get_node("../RoomTracker").get_cur_room().remove_player(body)
+	body.get_node("RoomTracker").get_cur_room().remove_player(body)
 	
 	body.queue_free()
 
@@ -55,6 +56,7 @@ func set_player_num(num : int):
 	player_manager.register_body(body)
 	
 	make_sheep()
+	make_invincible()
 
 func modify_time_penalty(val):
 	time_penalty += val
@@ -85,3 +87,15 @@ func make_sheep():
 	glue.make_sheep()
 	face.make_sheep()
 	rounder.end_grow_mode()
+
+func make_invincible(start_timer = true):
+	is_invincible = true
+	
+	if start_timer:
+		invincibility_timer.start()
+
+func make_vincible():
+	is_invincible = false
+
+func _on_InvincibilityTimer_timeout():
+	make_vincible()
