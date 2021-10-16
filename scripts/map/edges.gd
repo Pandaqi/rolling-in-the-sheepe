@@ -4,12 +4,17 @@ var edge_scene = preload("res://scenes/edge.tscn")
 
 onready var map = get_parent()
 
+func handle_gates(room):
+	if not room: return
+	
+	room.recalculate_gates()
+
 # TO DO: Actually implement the "set_type" function on edge.gd
 func set_at(pos, dir_index, type):
 	var already_has_edge = map.get_cell(pos).edges[dir_index]
 	if already_has_edge:
 		already_has_edge.set_type(type)
-		return
+		return already_has_edge
 	
 	var e = edge_scene.instance()
 	var vec = map.get_vector_from_dir(dir_index)
@@ -24,10 +29,12 @@ func set_at(pos, dir_index, type):
 	add_child(e)
 	
 	var other_side = vec
-	if map.out_of_bounds(pos+other_side): return
+	if map.out_of_bounds(pos+other_side): return e
 	
 	var other_dir_index = (dir_index + 2) % 4
 	map.get_cell(pos+other_side).edges[other_dir_index] = e
+	
+	return e
 
 func remove_at(pos, dir_index):
 	var other_pos = pos + map.get_vector_from_dir(dir_index)

@@ -27,6 +27,7 @@ func delete():
 	
 	body.get_node("Glue").disable_glue()
 	body.get_node("RoomTracker").get_cur_room().remove_player(body)
+	body.get_node("Coins").delete()
 	
 	body.queue_free()
 

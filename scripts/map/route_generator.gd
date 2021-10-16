@@ -21,7 +21,7 @@ var has_finished : bool = false
 # another tracker for when to place locks
 var rooms_in_current_section : int = 0
 var rooms_until_section_end : int = 0
-var section_size_bounds : Vector2 = Vector2(30, 60)
+var section_size_bounds : Vector2 = Vector2(10, 20) #Vector2(30, 60)
 
 # room generation is only paused when a teleporter has been placed
 # (and we CAN'T continue, even if we wanted to

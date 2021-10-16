@@ -1,0 +1,3 @@
+extends Node
+
+# TO DO: Do I still need this module? Edges kind of handle themselves ... 

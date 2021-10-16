@@ -13,6 +13,8 @@ var time_since_trail_switch : float = -1
 
 var wolf_disabled : bool = false
 
+onready var route_generator = get_node("../RouteGenerator")
+
 func _physics_process(_dt):
 	determine_leading_and_trailing_player()
 	
@@ -75,6 +77,15 @@ func determine_leading_and_trailing_player():
 	
 	# change new one to a wolf
 	check_wolf()
+
+#
+# Helpers/Queries
+#
+func get_distance_to_generation_end():
+	if not has_leading_player(): return
+	
+	var index = leading_player.get_node("RoomTracker").get_cur_room().index
+	return (route_generator.cur_path.size() - index)
 
 #
 # Wolf handling

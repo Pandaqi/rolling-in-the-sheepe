@@ -1,7 +1,7 @@
 extends Node2D
 
 const MIN_RADIUS : float = 9.0
-const MAX_RADIUS : float = 20.0
+const MAX_RADIUS : float = 16.0 # JUST fits between gaps
 const SIZE : float = 20.0
 
 var area : float

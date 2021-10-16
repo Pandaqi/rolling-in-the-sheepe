@@ -10,6 +10,8 @@ var cling_vec : Vector2
 var size_force_multiplier : float = 1.0
 var debug_cling_raycasts = []
 
+var ceiling_clung_last_frame : bool = false
+
 onready var body = get_parent()
 onready var shaper = get_node("../Shaper")
 onready var mover = get_node("../Mover")
@@ -31,6 +33,7 @@ func _physics_process(_dt):
 		execute_ceiling_cling()
 		return
 	
+	ceiling_clung_last_frame = false
 	size_force_multiplier = shaper.approximate_radius_as_ratio()
 	execute_wall_cling()
 
@@ -46,7 +49,12 @@ func execute_ceiling_cling():
 	var start = body.get_global_position()
 	
 	var result = shoot_raycast_in_dir(Vector2.UP)
-	if not result: return
+	if not result: 
+		ceiling_clung_last_frame = false
+		return
+	
+	var also_touching_ground = shoot_raycast_in_dir(Vector2.DOWN)
+	if also_touching_ground and not ceiling_clung_last_frame: return
 
 	var movement_help_factor : float = 0.33
 	cling_vec = Vector2.UP
@@ -55,8 +63,11 @@ func execute_ceiling_cling():
 	elif mover.keys_down.right:
 		cling_vec += movement_help_factor*Vector2.LEFT
 	
+	ceiling_clung_last_frame = true
+	
 	# TESTING: smaller vector, smaller force
 	cling_vec = 0.5*cling_vec.normalized()
+	
 	
 	apply_cling_vec(cling_vec)
 

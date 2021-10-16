@@ -1,10 +1,10 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://assets/edges.png" type="Texture" id=1]
 [ext_resource path="res://scripts/edge.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 32, 4 )
+extents = Vector2( 32, 8 )
 
 [node name="Edge" type="StaticBody2D"]
 collision_layer = 3
@@ -12,9 +12,9 @@ collision_mask = 3
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]
-rotation = 1.5708
-scale = Vector2( 1, 0.125 )
+scale = Vector2( 0.5, 0.5 )
 texture = ExtResource( 1 )
+hframes = 16
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 rotation = 1.5708

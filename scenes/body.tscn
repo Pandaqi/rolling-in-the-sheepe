@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scripts/module_mover.gd" type="Script" id=2]
@@ -19,6 +19,7 @@
 [ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
 [ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
 [ext_resource path="res://scripts/module_coins.gd" type="Script" id=19]
+[ext_resource path="res://scripts/module_edge_reader.gd" type="Script" id=20]
 
 [sub_resource type="PhysicsMaterial" id=1]
 
@@ -171,6 +172,9 @@ script = ExtResource( 19 )
 position = Vector2( 435, 200 )
 
 [node name="Tween" type="Tween" parent="Coins"]
+
+[node name="EdgeReader" type="Node" parent="."]
+script = ExtResource( 20 )
 
 [connection signal="timeout" from="Status/InvincibilityTimer" to="Status" method="_on_InvincibilityTimer_timeout"]
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]

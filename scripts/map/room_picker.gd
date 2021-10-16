@@ -1,5 +1,7 @@
 extends Node
 
+const DIST_BEFORE_PLACING_TELEPORTER : int = 4
+
 const MAX_BACKTRACK_ROOMS : int = 10
 
 # [0,1] => 0 = only largest rooms possible, 1 = only smallest rooms posible
@@ -11,6 +13,7 @@ var default_room_size_for_tutorial = Vector2(2,2)
 
 onready var map = get_parent()
 onready var route_generator = get_node("../RouteGenerator")
+onready var player_progression = get_node("../PlayerProgression")
 onready var tutorial = get_node("/root/Main/Tutorial")
 onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
 
@@ -37,8 +40,10 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 	backtrack_and_find_good_room(params)
 
 	if params.no_valid_placement:
-		route_generator.pause_room_generation = true
-		route_generator.get_furthest_room().turn_into_teleporter()
+		var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
+		if should_place_teleporter:
+			route_generator.pause_room_generation = true
+			route_generator.get_furthest_room().turn_into_teleporter()
 		return
 	
 	place_room_according_to_params(params)
@@ -266,6 +271,7 @@ func place_room_according_to_params(params):
 	# first recalculate tiles/slopes on previous room, which allows us to also place special elements
 	slope_painter.recalculate_room(params.room)
 	map.special_elements.add_special_items_to_room(params.room)
+	map.edges.handle_gates(params.room)
 	
 	# then fill the new room
 	slope_painter.place_slopes(rect)

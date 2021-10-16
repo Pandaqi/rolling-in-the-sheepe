@@ -15,6 +15,7 @@ onready var edges = $Edges
 onready var terrain = $Terrain
 onready var special_elements = $SpecialElements
 onready var slope_painter = $SlopePainter
+onready var locker = $Locker
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 

@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://assets/fonts/main_small.tres" type="DynamicFont" id=1]
+[ext_resource path="res://scripts/locks/module_label.gd" type="Script" id=2]
+
+[node name="Label" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="Label" type="Label" parent="."]
+margin_left = -19.1729
+margin_top = -15.8672
+margin_right = 20.8271
+margin_bottom = 17.1328
+custom_fonts/font = ExtResource( 1 )
+text = "2/5"
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -12,6 +12,7 @@ var size : Vector2
 # (the original grown version is used for better terrain painting and overlap checking)
 var shrunk = {}
 var outline = []
+var gates = []
 
 var can_have_special_items : bool = false
 
@@ -134,7 +135,7 @@ func open_connection_to_previous_room():
 		map.edges.remove_at(edge.pos, edge.dir_index)
 
 func create_border_around_us(params = {}):
-	var type = "lock"
+	var type = "regular"
 	if params.has('type'): type = params.type
 	
 	for edge in outline:
@@ -300,11 +301,14 @@ func add_lock():
 	if not has_border:
 		create_border_around_us()
 	
+	var rand_type = map.locker.get_random_type()
+	
+	# DEBUGGING
+	rand_type = "coin_lock_gate"
+	
 	map.terrain.paint(self, "lock")
 	
-	# TO DO: actually select random lock type from list (once we have more)
-	var rand_type = "coin"
-	var scene = load("res://scenes/locks/" + rand_type + "_lock.tscn").instance()
+	var scene = load("res://scenes/locks/" + rand_type + ".tscn").instance()
 	scene.my_room = self
 	map.add_child(scene)
 	
@@ -338,6 +342,11 @@ func determine_outline():
 	#delete_edges_inside()
 	
 	open_connection_to_previous_room()
+
+func recalculate_gates():
+	if not has_lock(): return
+	
+	lock_module.convert_connection_to_gate()
 
 #####
 #

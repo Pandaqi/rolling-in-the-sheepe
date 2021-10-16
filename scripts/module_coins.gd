@@ -77,3 +77,6 @@ func position_gui_above_player():
 	var offset = Vector2.UP * 35
 	
 	my_gui.set_position(pos + offset)
+
+func delete():
+	my_gui.queue_free()
