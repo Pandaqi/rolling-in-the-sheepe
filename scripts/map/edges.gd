@@ -9,7 +9,6 @@ func handle_gates(room):
 	
 	room.recalculate_gates()
 
-# TO DO: Actually implement the "set_type" function on edge.gd
 func set_at(pos, dir_index, type):
 	var already_has_edge = map.get_cell(pos).edges[dir_index]
 	if already_has_edge:
@@ -19,7 +18,8 @@ func set_at(pos, dir_index, type):
 	var e = edge_scene.instance()
 	var vec = map.get_vector_from_dir(dir_index)
 
-	var edge_grid_pos = pos + 0.5*Vector2(1,1) + 0.5*vec
+	var half_size = 0.5*16 / map.TILE_SIZE
+	var edge_grid_pos = pos + 0.5*Vector2(1,1) + (0.5 + half_size)*vec
 	e.set_position(edge_grid_pos*map.TILE_SIZE)
 	e.set_rotation(dir_index * 0.5 * PI)
 	e.set_type(type)

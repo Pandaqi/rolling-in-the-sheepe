@@ -7,6 +7,7 @@ onready var label = $Label
 
 func _ready():
 	coins_to_grab = 5 + randi() % 3
+	spawner.give_feedback()
 
 func perform_update():
 	var val = str(spawner.coins_grabbed) + "/" + str(coins_to_grab)

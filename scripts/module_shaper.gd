@@ -17,7 +17,7 @@ onready var slicer = get_node("/root/Main/Slicer")
 #
 #####
 func make_circle():
-	var arr = slicer.create_circle_body()
+	var arr = slicer.create_circle_body(body)
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
 		body.shape_owner_remove_shape(0, i)

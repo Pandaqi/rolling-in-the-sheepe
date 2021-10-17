@@ -14,6 +14,8 @@ var shrunk = {}
 var outline = []
 var gates = []
 
+var lock_planned : bool = false
+
 var can_have_special_items : bool = false
 
 var prev_room
@@ -91,9 +93,14 @@ func make_local(p):
 #####
 func add_player(p):
 	players_inside.append(p)
+	
+	if has_lock(): lock_module.on_body_enter(p)
+	
 
 func remove_player(p):
 	players_inside.erase(p)
+	
+	if has_lock(): lock_module.on_body_exit(p)
 
 #####
 #
@@ -250,6 +257,9 @@ func copy_and_grow(val, keep_within_bounds = false):
 # Special items ( = any special elements inside)
 #
 #####
+func has_special_items():
+	return special_elements.size() > 0
+
 func determine_tiles_inside():
 	tiles_inside = []
 	
@@ -258,6 +268,7 @@ func determine_tiles_inside():
 			var temp_pos = pos + Vector2(x,y)
 			if map.tilemap.get_cellv(temp_pos) == -1: continue
 			if map.out_of_bounds(temp_pos): continue
+			if map.get_cell(temp_pos).room != self: continue
 			
 			tiles_inside.append(temp_pos)
 
@@ -268,16 +279,18 @@ func get_free_tile_inside():
 		
 		return tile
 
-func add_special_item():
+func add_special_item(params = {}):
 	# TO DO: find actual good requirements for this
 	var fit_for_special_item = (get_area() >= 9)
 	
-	if not fit_for_special_item: return
+	if not fit_for_special_item: return null
 	
-	var elem = map.special_elements.place(self)
-	if not elem: return
+	var elem = map.special_elements.place(self, params)
+	if not elem: return null
 	
 	special_elements.append(elem)
+	
+	return elem
 
 func erase_special_item(item):
 	special_elements.erase(item)
@@ -298,21 +311,22 @@ func has_lock():
 	return (lock_module != null)
 
 func add_lock():
-	if not has_border:
-		create_border_around_us()
-	
 	var rand_type = map.locker.get_random_type()
+	var data = GlobalDict.lock_types[rand_type]
 	
-	# DEBUGGING
-	rand_type = "coin_lock_gate"
+	var related_edge = "regular"
+	if data.has("edge_type"): related_edge = data.edge_type
+	create_border_around_us({ 'type': related_edge })
 	
-	map.terrain.paint(self, "lock")
+	var related_terrain = data.terrain
+	map.terrain.paint(self, related_terrain)
 	
 	var scene = load("res://scenes/locks/" + rand_type + ".tscn").instance()
 	scene.my_room = self
-	map.add_child(scene)
+	scene.coin_related = data.has("coin")
 	
 	lock_module = scene
+	map.add_child(scene)
 	
 	print("Should add lock now")
 

@@ -269,10 +269,19 @@ func place_room_according_to_params(params):
 	map.set_all_cells_to_room(rect)
 
 	# first recalculate tiles/slopes on previous room, which allows us to also place special elements
-	slope_painter.recalculate_room(params.room)
-	map.special_elements.add_special_items_to_room(params.room)
-	map.edges.handle_gates(params.room)
-	
+	if params.room:
+		slope_painter.recalculate_room(params.room)
+		params.room.determine_tiles_inside()
+		
+		# TO DO: make function on room rect??
+		if params.room.lock_planned:
+			route_generator.placed_lock()
+			params.room.add_lock()
+			params.room.lock_planned = false
+		
+		map.special_elements.add_special_items_to_room(params.room)
+		map.edges.handle_gates(params.room)
+
 	# then fill the new room
 	slope_painter.place_slopes(rect)
 	slope_painter.fill_room(rect)
@@ -297,8 +306,7 @@ func handle_optional_requirements(params):
 		map.terrain.paint(params.rect, "finish")
 		
 	elif params.place_lock:
-		route_generator.placed_lock()
-		params.rect.add_lock()
+		params.rect.lock_planned = true
 	
 	else:
 		params.rect.can_have_special_items = true

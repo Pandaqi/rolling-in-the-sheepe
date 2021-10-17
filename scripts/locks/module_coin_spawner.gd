@@ -8,8 +8,13 @@ var coins_grabbed : int = 0
 var coin_scene = preload("res://scenes/locks/coin.tscn")
 onready var my_lock = get_parent()
 
+var feedback_enabled : bool = false
+
 func _ready():
 	_on_Timer_timeout()
+
+func give_feedback():
+	feedback_enabled = true
 
 func _on_Timer_timeout():
 	if coins.size() >= MAX_COINS: return
@@ -34,7 +39,8 @@ func on_coin_grab(body, coin):
 	body.get_node("Coins").get_paid(1)
 	coins_grabbed += 1
 	
-	my_lock.perform_update()
+	if feedback_enabled:
+		my_lock.perform_update()
 
 func delete():
 	for c in coins:

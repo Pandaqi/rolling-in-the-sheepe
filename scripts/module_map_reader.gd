@@ -133,7 +133,7 @@ func do_effect_of_cell(cell):
 				status.make_invincible(false) # start no timer, so invincibility is "permanent" while in terrain
 		
 		"rounder":
-			if coins.count >= MIN_COIN_LIMIT:
+			if coins.count() >= MIN_COIN_LIMIT:
 				shaper.make_circle()
 		
 		"halver":
@@ -281,6 +281,12 @@ func last_cell_has_terrain(t):
 
 func last_cell_has_lock():
 	if not last_cell: return false
-	if not last_cell.room: return false
+	var terrain = last_cell.terrain
+	if terrain == "" or not terrain: return false
 	
-	return last_cell.room.has_lock()
+	return terrain.right(terrain.length() - 4) == "lock"
+	
+#	if not last_cell: return false
+#	if not last_cell.room: return false
+#
+#	return last_cell.room.has_lock()

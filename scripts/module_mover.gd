@@ -27,6 +27,8 @@ const TIME_PENALTY_STANDSTILL_TELEPORT : float = 6.0
 var normal_vec : Vector2
 var in_air : bool = false
 
+var velocity_last_frame : Vector2
+
 var gravity_dir : int = 1
 
 var air_break : bool = false
@@ -111,6 +113,8 @@ func _physics_process(_dt):
 	check_for_standstill()
 
 	debug_draw()
+	
+	velocity_last_frame = body.get_linear_velocity()
 
 func check_for_air_break():
 	if not keys_down.right: return
@@ -134,6 +138,7 @@ func check_for_standstill():
 	if status.has_finished: return
 	
 	var cur_time = OS.get_ticks_msec()
+	
 	var time_since_last_input = (cur_time - last_input_time)/1000.0
 	if time_since_last_input <= STANDSTILL_THRESHOLD: return
 	

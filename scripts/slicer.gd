@@ -77,6 +77,8 @@ func create_circle_body(b):
 
 func slice_body(b, p1, p2):
 	var original_player_num = b.get_node("Status").player_num
+	var original_coins = b.get_node("Coins").count()
+	
 	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
 	if player_is_at_body_limit: 
 		print("Player already has too many bodies")
@@ -88,8 +90,11 @@ func slice_body(b, p1, p2):
 			new_bodies[i] = create_circle_body(b)
 
 		b.get_node("Status").delete()
-		create_body_from_shape(original_player_num, new_bodies[0])
-		create_body_from_shape(original_player_num, new_bodies[1])
+		
+		var coins_a = floor(original_coins * 0.5)
+		var coins_b = original_coins - coins_a
+		create_body_from_shape(original_player_num, new_bodies[0], coins_a)
+		create_body_from_shape(original_player_num, new_bodies[1], coins_b)
 		return
 	
 	var num_shapes = b.shape_owner_get_shape_count(0)
@@ -138,13 +143,21 @@ func slice_body(b, p1, p2):
 	# create bodies for each set of points left over
 	var vec = (p2 - p1)
 	var ortho_vec = vec.rotated(PI)
-	
-	var result_bodies = []
-	for key in shape_layers:
-		var body = create_body_from_shape_list(original_player_num, shape_layers[key])
+
+	var num_resulting_bodies = shape_layers.keys().size()
+	var total_coins_distributed = 0
+	for i in range(num_resulting_bodies):
+		var shp = shape_layers[i]
+		var coin_total = round(original_coins / float(num_resulting_bodies))
 		
+		var last_body_to_make = (i == (num_resulting_bodies - 1))
+		if last_body_to_make:
+			coin_total = original_coins - total_coins_distributed
+		
+		var body = create_body_from_shape_list(original_player_num, shp, coin_total)
+		
+		total_coins_distributed += coin_total
 		body.plan_shoot_away(ortho_vec)
-		result_bodies.append(body)
 
 func determine_shape_layers(new_shapes, p1, p2):
 	var saved_layers = []
@@ -275,7 +288,7 @@ func area_too_small(shapes):
 
 	return (area < MIN_AREA_FOR_VALID_SHAPE)
 
-func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2D:
+func create_body_from_shape_list(player_num : int, shapes : Array, coins : int) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	# the average centroid of all centroids will be the center of the new body
@@ -293,10 +306,11 @@ func create_body_from_shape_list(player_num : int, shapes : Array) -> RigidBody2
 	
 	# and we make sure it has the same parent as the original body
 	body.get_node("Status").set_player_num(player_num)
+	body.get_node("Coins").get_paid(coins)
 	
 	return body
 
-func create_body_from_shape(player_num : int, shp : Array) -> RigidBody2D:
+func create_body_from_shape(player_num : int, shp : Array, coins : int) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
@@ -307,6 +321,7 @@ func create_body_from_shape(player_num : int, shp : Array) -> RigidBody2D:
 	
 	# and we make sure it has the same parent as the original body
 	body.get_node("Status").set_player_num(player_num)
+	body.get_node("Coins").get_paid(coins)
 	
 	return body
 

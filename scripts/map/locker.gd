@@ -6,4 +6,5 @@ func _ready():
 	available_types = GlobalDict.lock_types.keys()
 
 func get_random_type():
+	return "button_lock"
 	return available_types[randi() % available_types.size()]

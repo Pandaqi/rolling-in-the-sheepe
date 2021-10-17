@@ -3,12 +3,14 @@ extends Node
 const FADE_DURATION : float = 4.0
 const MAX_COINS : int = 10
 
-var num_coins : int = 5
+var num_coins : int = 0
 var coin_sprite_scene = preload("res://scenes/ui/coin_sprite.tscn")
 
 onready var main_gui = get_node("/root/Main/GUI")
 
 onready var body = get_parent()
+onready var status = get_node("../Status")
+onready var shaper = get_node("../Shaper")
 onready var my_gui = $GUI
 onready var tween = $Tween
 
@@ -36,21 +38,54 @@ func pay(c):
 	show()
 
 func _physics_process(_dt):
+	check_for_collision_with_self()
 	position_gui_above_player()
+
+func check_for_collision_with_self():
+	var player_num = status.player_num
+	for obj in body.contact_data:
+		var other_body = obj.body
+		
+		if not other_body.is_in_group("Players"): continue
+		if other_body.get_node("Status").player_num != player_num: continue
+		
+		transfer_coins_to_biggest_shape(obj)
+		break
+
+func transfer_coins_to_biggest_shape(obj):
+	var my_radius = shaper.approximate_radius()
+	var their_radius = obj.body.get_node("Shaper").approximate_radius()
+	
+	if my_radius > their_radius:
+		var paysum = obj.body.get_node("Coins").count()
+		get_paid(paysum)
+		obj.body.get_node("Coins").pay(paysum)
+	else:
+		var paysum = count()
+		obj.body.get_node("Coins").get_paid(paysum)
+		pay(paysum)
 
 # TO DO: Show the current num_coins in some neat configuration
 # TO DO => IDEA => Show the coins _on the player itself_, so we temporarily hide your face? (Not sure if this is great, as shapes can get very small.)
 func update_gui():
 	var counter = 0
 	var coin_sprite_size = 16
-	var total_offset = 0.5 * (num_coins-1)*coin_sprite_size * Vector2(1,0)
+	var cols = min(5, num_coins)
+	
+	var total_offset = Vector2(0.5 * (cols-1)*coin_sprite_size, -0.5*coin_sprite_size)
 	
 	for child in my_gui.get_children():
 		var show = (counter < num_coins)
-
-		var my_offset = counter*coin_sprite_size*Vector2(1,0)
 		child.set_visible(show)
-		child.set_position(Vector2.ZERO - total_offset + my_offset)
+		
+		if show:
+			var col = counter % int(cols)
+			var row = floor(counter / float(cols))
+
+			var my_offset = coin_sprite_size*Vector2(col, row)
+			
+			child.set_position(-total_offset + my_offset)
+		
 		counter += 1
 
 func show():

@@ -7,7 +7,8 @@ onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 onready var body = get_parent()
 
 func _ready():
-	cur_room = route_generator.cur_path[0]
+	cur_room = route_generator.get_cur_room(body)
+	if not cur_room: return
 	cur_room.add_player(body)
 
 func _physics_process(_dt):
@@ -22,7 +23,7 @@ func check_current_room():
 	if not new_room: return
 	
 	if new_room != cur_room:
-		cur_room.remove_player(body)
+		if cur_room: cur_room.remove_player(body)
 		new_room.add_player(body)
 	
 	cur_room = new_room

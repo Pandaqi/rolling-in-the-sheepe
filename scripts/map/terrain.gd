@@ -8,31 +8,6 @@ onready var tilemap_terrain = $TileMapTerrain
 onready var tutorial = get_node("/root/Main/Tutorial")
 onready var route_generator = get_node("../RouteGenerator")
 
-var terrain_types = {
-	"finish": { "frame": 0, 'unpickable': true, 'category': 'essential' },
-	"lock": { "frame": 1, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
-	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
-	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true },
-	"no_gravity": { "frame": 4, 'category': 'gravity' },
-	"ice": { "frame": 5, 'category': 'physics' },
-	"bouncy": { "frame": 6, 'category': 'physics' },
-	"spiderman": { "frame": 7, 'category': 'physics' },
-	"speed_boost": { "frame": 8, 'category': 'speed' },
-	"speed_slowdown": { "frame": 9, 'category': 'speed' },
-	"glue": { "frame": 10, 'category': 'slicing' },
-	"reverse_controls": { "frame": 11, 'category': 'misc' },
-	"spikes": { "frame": 12, 'category': 'slicing' },
-	"ghost": { "frame": 13, 'category': 'misc' },
-	"grower": { "frame": 14, "category": "slicing" },
-	"no_wolf": { "frame": 15, "category": "misc" },
-	"body_limit": { "frame": 16, "category": "slicing" },
-	"invincibility": { "frame": 17, "category": "coin" },
-	"rounder": { "frame": 18, "category": "coin" },
-	"halver": { "frame": 19, "category": "coin" },
-	"slower": { "frame": 20, "category": "coin" },
-	"bomb": { "frame": 19, "category": "coin" }
-}
-
 var available_terrains = []
 
 func _ready():
@@ -40,7 +15,20 @@ func _ready():
 
 func read_terrain_list_from_campaign():
 	# TO DO: do what the function says
-	available_terrains = terrain_types.keys()
+	available_terrains = GlobalDict.terrain_types.keys()
+	
+	available_terrains.erase("finish")
+	available_terrains.erase("teleporter")
+	
+	for i in range(available_terrains.size()-1, -1, -1):
+		var key = available_terrains[i]
+		if terrain_is_lock(key):
+			available_terrains.remove(i)
+	
+	print(available_terrains)
+
+func terrain_is_lock(t):
+	return t.right(t.length()-4) == "lock"
 
 func on_new_rect_created(rect):
 	var first_room = (rect.index <= 0)
@@ -58,9 +46,6 @@ func get_terrain_at_index(index):
 	return route_generator.cur_path[index].terrain
 
 func get_random_terrain_type(rect):
-	# DEBUGGING
-	return "invincibility"
-	
 	# RESTRICTION: place reverse gravity on things going up
 	if rect.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
@@ -69,9 +54,10 @@ func get_random_terrain_type(rect):
 	var last_terrain = get_terrain_at_index(rect.index - 1)
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
-	if last_terrain != "" and not terrain_types[last_terrain].has('disable_consecutive'):
-		if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
-			return last_terrain
+	if last_terrain != "":
+		if not GlobalDict.terrain_types[last_terrain].has('disable_consecutive') and not terrain_is_lock(last_terrain):
+			if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
+				return last_terrain
 	
 	var key = "finish"
 	var bad_choice = true
@@ -79,12 +65,12 @@ func get_random_terrain_type(rect):
 	while bad_choice:
 		key = available_terrains[randi() % available_terrains.size()]
 		
-		if terrain_types[key].has('unpickable'):
+		if GlobalDict.terrain_types[key].has('unpickable'):
 			continue
 		
 		# UPGRADE: don't allow two consecutive terrains of the same general category
 		if last_terrain:
-			if terrain_types[last_terrain].category == terrain_types[key].category:
+			if GlobalDict.terrain_types[last_terrain].category == GlobalDict.terrain_types[key].category:
 				continue
 		
 		# RESTRICTION: No reverse gravity when going down
@@ -97,10 +83,10 @@ func get_random_terrain_type(rect):
 
 func paint(rect, type):
 	var tile_id = -1
-	if terrain_types.has(type):
-		tile_id = terrain_types[type].frame
+	if GlobalDict.terrain_types.has(type):
+		tile_id = GlobalDict.terrain_types[type].frame
 
-	var overwrites_terrain = terrain_types[type].has('overwrite')
+	var overwrites_terrain = GlobalDict.terrain_types[type].has('overwrite')
 	
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):
@@ -133,7 +119,7 @@ func erase(rect):
 # 		 or under a _specific condition_, not just all of them??
 
 func someone_entered(node, terrain):
-	var is_coin_terrain = (terrain_types[terrain].category == "coin")
+	var is_coin_terrain = (GlobalDict.terrain_types[terrain].category == "coin")
 	if is_coin_terrain:
 		node.get_node("Coins").show()
 

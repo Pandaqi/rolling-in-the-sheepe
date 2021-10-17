@@ -57,6 +57,9 @@ func glue_object_to_me(obj):
 	
 	obj.body.get_node("Status").delete()
 	
+	var extra_coins = obj.body.get_node("Coins").count()
+	get_node("Coins").get_paid(extra_coins)
+
 	disable_glue()
 
 func disable_glue():
@@ -94,10 +97,10 @@ func get_realistic_slice_line(obj):
 	
 	return { 'start': start, 'end': end }
 
-func get_halfway_slice_line(obj):
-	#var bb = obj.body.get_node("Shaper").bounding_box
+func get_halfway_slice_line(body):
+	#var bb = body.get_node("Shaper").bounding_box
 	
-	var center_pos = obj.body.get_global_position()
+	var center_pos = body.get_global_position()
 	var start = center_pos - 100*Vector2(1,1)
 	var end = center_pos + 100*Vector2(1,1)
 	
@@ -108,12 +111,14 @@ func get_halfway_slice_line(obj):
 	
 	return { 'start': start, 'end': end }
 
+func slice_along_halfway_line():
+	var slice_line = get_halfway_slice_line(body)
+	slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
+
 func spike_object(obj):
-	# Wolfs just SLICE someone in half (somewhat perfectly)
-	# TO DO: Make this code general?
 	var slice_line = get_realistic_slice_line(obj)
 	if is_wolf: 
-		slice_line = get_halfway_slice_line(obj)
+		slice_line = get_halfway_slice_line(obj.body)
 	
 	slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [obj.body])
 	

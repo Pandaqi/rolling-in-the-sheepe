@@ -3,9 +3,12 @@ extends Node
 const ITEM_EFFECT_DURATION : float = 5.0
 const TIMEOUT_DURATION : float = 1.0
 
+const MIN_VELOCITY_FOR_BOMB : float = 180.0
+
 onready var body = get_parent()
 onready var status = get_node("../Status")
 onready var glue = get_node("../Glue")
+onready var mover = get_node("../Mover")
 
 onready var slicer = get_node("/root/Main/Slicer")
 
@@ -42,7 +45,7 @@ func register_contact(obj):
 	if map.out_of_bounds(grid_pos): return
 	
 	var cell = map.get_cell(grid_pos)
-	if is_bomb:
+	if is_bomb and mover.velocity_last_frame.length() > MIN_VELOCITY_FOR_BOMB:
 		map.explode_cell(body, cell)
 		return
 	
@@ -98,11 +101,21 @@ func do_something_with_items():
 
 func handle_item(obj):
 	var type = obj.type
+	var prevent_deletion = false
 	
 	match type:
 		"spikes":
 			var slice_line = glue.get_realistic_slice_line(obj.col_data)
 			slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
+		
+		"button_regular":
+			obj.item.my_room.lock_module.record_button_push(obj.item)
+		
+		"button_order":
+			var res = obj.item.my_room.lock_module.record_button_push(obj.item)
+			if not res: prevent_deletion = true
+	
+	if prevent_deletion: return
 	
 	map.special_elements.delete_on_activation(obj.item)
 
