@@ -17,6 +17,7 @@ onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 onready var body = get_parent()
 onready var slicer = get_node("/root/Main/Slicer")
 onready var shaper = get_node("../Shaper")
+onready var rounder = get_node("../Rounder")
 
 func set_player_num(num):
 	player_num = num
@@ -38,14 +39,32 @@ func check_glue():
 	if not glue_active: return
 	if glue_disabled: return
 	
+	var unrealistic_glueing = GlobalDict.cfg.unrealistic_glueing
+	
 	for obj in body.contact_data:
 		var other_body = obj.body
 		
 		if not other_body.is_in_group("Players"): continue
 		if other_body.get_node("Status").player_num != player_num: continue
 		
-		glue_object_to_me(obj)
+		if unrealistic_glueing:
+			eat_and_grow_object(obj)
+		else:
+			glue_object_to_me(obj)
 		break
+
+func eat_and_grow_object(obj):
+	var their_area : float = obj.body.get_node("Shaper").get_area()
+	var our_area : float = shaper.get_area()
+	
+	# if they are bigger than us, they should eat us
+	# and they will, because a collision goes both ways
+	if their_area > our_area: return
+	
+	obj.body.get_node("Status").delete()
+	
+	var grow_ratio = 2.0 * (our_area / their_area - 1.0)
+	rounder.grow(grow_ratio)
 
 func glue_object_to_me(obj):
 	var num_shapes = obj.body.shape_owner_get_shape_count(0)

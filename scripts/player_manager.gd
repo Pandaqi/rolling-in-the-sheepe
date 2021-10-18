@@ -14,29 +14,6 @@ var player_shapes = []
 
 var bodies_per_player = []
 
-# Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
-var shape_list = {
-	'circle': { 'frame': 0 },
-	'square': { 'frame': 1 },
-	'triangle': { 'frame': 2 },
-	'pentagon': { 'frame': 3 },
-	'hexagon': { 'frame': 4 },
-	'parallellogram': { 'frame': 5 },
-	'l-shape': { 'frame': 6 },
-	'starpenta': { 'frame': 7 },
-	'starhexa': { 'frame': 8 },
-	'trapezium': { 'frame': 9 },
-	'crown': { 'frame': 10 },
-	'cross': { 'frame': 11 },
-	'heart': { 'frame': 12 },
-	'drop': { 'frame': 13 },
-	'arrow': { 'frame': 14 },
-	'diamond': { 'frame': 15 },
-	'crescent': { 'frame': 16 },
-	'trefoil': { 'frame': 17 },
-	'quatrefoil': { 'frame': 18 }
-}
-
 var predefined_shapes = {}
 var available_shapes = []
 
@@ -65,14 +42,14 @@ func create_players():
 
 func get_player_shape_frame(player_num : int):
 	var shape_name = player_shapes[player_num]
-	return shape_list[shape_name].frame
+	return GlobalDict.shape_list[shape_name].frame
 
 func create_player(player_num : int):
 	var player = player_scene.instance()
 	
 	var rand_shape = available_shapes.pop_front()
 	player_shapes[player_num] = rand_shape
-	player.get_node("Shaper").create_from_shape(shape_list[rand_shape].points)
+	player.get_node("Shaper").create_from_shape(GlobalDict.shape_list[rand_shape].points, { 'type': rand_shape })
 	
 	var room = route_generator.cur_path[0]
 	player.set_position(get_spread_out_position(room))
@@ -129,7 +106,7 @@ func load_predefined_shapes():
 		var key = child.name.to_lower()
 		var val = scale_shape( Array(child.polygon) )
 
-		shape_list[key].points = val
+		GlobalDict.shape_list[key].points = val
 		available_shapes.append(key)
 	
 	available_shapes.shuffle()

@@ -46,6 +46,9 @@ func get_terrain_at_index(index):
 	return route_generator.cur_path[index].terrain
 
 func get_random_terrain_type(rect):
+	# DEBUGGING
+	return "glue"
+	
 	# RESTRICTION: place reverse gravity on things going up
 	if rect.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:

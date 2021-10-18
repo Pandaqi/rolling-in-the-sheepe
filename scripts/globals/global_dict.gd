@@ -1,7 +1,47 @@
 extends Node
 
 var cfg = {
-	"slicing_yields_circles": true
+	"unrealistic_slicing": true,
+	"slicing_yields": "triangle",
+	
+	"unrealistic_glueing": true,
+	
+	"unrealistic_rounding": true
+}
+
+# Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
+var shape_list = {
+	'circle': { 'frame': 0, 'basic': 'circle' },
+	'square': { 'frame': 1, 'basic': 'square' },
+	'triangle': { 'frame': 2, 'basic': 'triangle' },
+	'pentagon': { 'frame': 3, 'basic': 'pentagon' },
+	'hexagon': { 'frame': 4, 'basic': 'hexagon' },
+	'parallellogram': { 'frame': 5, 'basic': 'square' },
+	'l-shape': { 'frame': 6, 'basic': 'square' },
+	'starpenta': { 'frame': 7, 'basic': 'pentagon' },
+	'starhexa': { 'frame': 8, 'basic': 'hexagon' },
+	'trapezium': { 'frame': 9, 'basic': 'square' },
+	'crown': { 'frame': 10, 'basic': 'triangle' },
+	'cross': { 'frame': 11, 'basic': 'octagon' },
+	'heart': { 'frame': 12, 'basic': 'square' },
+	'drop': { 'frame': 13, 'basic': 'square' },
+	'arrow': { 'frame': 14, 'basic': 'triangle' },
+	'diamond': { 'frame': 15, 'basic': 'pentagon' },
+	'crescent': { 'frame': 16, 'basic': 'pentagon' },
+	'trefoil': { 'frame': 17, 'basic': 'triangle' },
+	'quatrefoil': { 'frame': 18, 'basic': 'octagon' }
+}
+
+var shape_order = ['triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'nonagon', 'circle']
+var points_per_shape = {
+	'triangle': 3,
+	'square': 4,
+	'pentagon': 5,
+	'hexagon': 6, 
+	'heptagon': 7,
+	'octagon': 8,
+	'nonagon': 9,
+	'circle': 16
 }
 
 var edge_types = {

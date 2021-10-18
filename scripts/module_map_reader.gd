@@ -28,6 +28,7 @@ onready var status = get_node("../Status")
 onready var coins = get_node("../Coins")
 onready var shaper = get_node("../Shaper")
 onready var mover = get_node("../Mover")
+onready var rounder = get_node("../Rounder")
 onready var item_reader = get_node("../ItemReader")
 onready var room_tracker = get_node("../RoomTracker")
 
@@ -134,7 +135,11 @@ func do_effect_of_cell(cell):
 		
 		"rounder":
 			if coins.count() >= MIN_COIN_LIMIT:
-				shaper.make_circle()
+				rounder.make_fully_round()
+		
+		"malformer":
+			if coins.count() < MIN_COIN_LIMIT:
+				rounder.make_fully_malformed()
 		
 		"halver":
 			coins.pay(floor(0.5*coins.count()))

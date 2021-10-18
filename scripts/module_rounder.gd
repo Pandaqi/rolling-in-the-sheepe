@@ -22,6 +22,7 @@ onready var status = get_node("../Status")
 onready var shaper = get_node("../Shaper")
 onready var mover = get_node("../Mover")
 
+onready var slicer = get_node("/root/Main/Slicer")
 onready var round_algo_timer = $Timer
 onready var grow_timer = $GrowTimer
 
@@ -39,11 +40,70 @@ func _on_Timer_timeout():
 	# We now have a value between 0->1 which tells us which FRACTION
 	# of that time we spent not-rolling
 	if average_airtime > 0.5:
-		become_more_malformed(average_airtime)
+		if GlobalDict.cfg.unrealistic_rounding:
+			become_more_malformed_unrealistic(average_airtime)
+		else:
+			become_more_malformed(average_airtime)
 	else:
-		become_more_round(1.0 - average_airtime)
+		if GlobalDict.cfg.unrealistic_rounding:
+			become_more_round_unrealistic(average_airtime)
+		else:
+			become_more_round(1.0 - average_airtime)
 	
 	average_airtime = 0.0
+
+func become_more_round_unrealistic(average_airtime):
+	if status.is_wolf: return
+	
+	if grow_instead_of_rounding:
+		grow(GROW_FACTOR)
+		return
+	if is_round: return
+	
+	var new_shape_name = change_shape_index(+1)
+	var new_body = slicer.create_basic_body(body, new_shape_name)
+	
+	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
+	
+	is_round = false
+	if new_shape_name == "circle": is_round = true
+
+func become_more_malformed_unrealistic(average_airtime):
+	if status.is_wolf: return
+	
+	if grow_instead_of_rounding:
+		shrink(GROW_FACTOR)
+		return
+	if is_malformed: return
+	
+	var new_shape_name = change_shape_index(-1)
+	var new_body = slicer.create_basic_body(body, new_shape_name)
+	
+	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
+	
+	is_malformed = false
+	if new_shape_name == "triangle": is_malformed = true
+
+func make_fully_round():
+	var new_body = slicer.create_basic_body(body, "circle")
+	
+	shaper.create_new_from_shape(new_body, { 'type': "circle" })
+
+func make_fully_malformed():
+	var new_body = slicer.create_basic_body(body, "triangle")
+	
+	shaper.create_new_from_shape(new_body, { 'type': "triangle" })
+
+func change_shape_index(val):
+	var cur_shape = shaper.shape_type
+	var cur_index = GlobalDict.shape_order.find(cur_shape)
+	
+	if cur_index < 0:
+		var related_basic_shape = GlobalDict.shape_list[cur_shape].basic
+		cur_index = GlobalDict.shape_order.find(related_basic_shape)
+	
+	var next_index = clamp(cur_index + val, 0, GlobalDict.shape_order.size()-1)
+	return GlobalDict.shape_order[next_index]
 
 #
 # Deforming

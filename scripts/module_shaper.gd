@@ -1,12 +1,20 @@
 extends Node2D
 
-const MIN_RADIUS : float = 9.0
-const MAX_RADIUS : float = 16.0 # JUST fits between gaps
+# when changing bodies, we "lose" some of our area, so this compensates
+# NOTE: it's certainly NOT perfect, as it depends on whether you grow/shrink, and which shape exactly you move to, but it's a middle ground
+const BASIC_BODY_RADIUS_GROWTH : float = 1.25
+
+const MIN_RADIUS : float = 10.0
+const MAX_RADIUS : float = 26.0 # JUST fits between gaps
 const SIZE : float = 20.0
 
 var area : float
+var circumcircle_radius : float
+var avg_angle : float
 var bounding_box
 var color : Color = Color(1.0, 0.0, 0.0)
+
+var shape_type : String = ""
 
 onready var body = get_parent()
 onready var slicer = get_node("/root/Main/Slicer")
@@ -16,13 +24,14 @@ onready var slicer = get_node("/root/Main/Slicer")
 # Creation (from given shape/parameters
 #
 #####
-func make_circle():
-	var arr = slicer.create_circle_body(body)
+func destroy():
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
-		body.shape_owner_remove_shape(0, i)
-	
-	append_shape(arr)
+		body.shape_owner_remove_shape(0, 0)
+
+func create_new_from_shape(shp, params):
+	destroy()
+	create_from_shape(shp, params)
 
 func append_shape(shape):
 	var shape_node = ConvexPolygonShape2D.new()
@@ -40,16 +49,18 @@ func create_from_shape_list(shapes):
 
 	on_shape_updated()
 
-func create_from_shape(shp):
+func create_from_shape(shp, params):
 	var shape = reposition_around_centroid(shp)
 	
 	var col_node = get_parent().get_node("CollisionPolygon2D")
 	col_node.polygon = shape
 	
+	shape_type = params.type
+	
 	on_shape_updated()
 
 func create_from_random_shape():
-	create_from_shape(create_random_shape())
+	create_from_shape(create_random_shape(), { 'type': 'random' })
 
 func create_random_shape():
 	var shape = []
@@ -85,7 +96,7 @@ func make_point_global(point):
 func make_local(shp):
 	shp = shp + []
 	
-	# This does NOT work because the parent hasn't been added to scene tree yet
+	# The comment below does NOT work because the parent hasn't been added to scene tree yet
 	# It's also not necessary, as we start a new, so only position is important (not rotation)
 	#var trans = get_parent().get_global_transform()
 	# shp[i] = trans.xform_inv(shp[i])
@@ -179,13 +190,38 @@ func recalculate_bounding_box():
 	
 	bounding_box = bounds
 
+func get_area():
+	return area
+
 func recalculate_area():
 	area = 0
+	circumcircle_radius = 0
+	avg_angle = 0
 	
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
 		var shape = body.shape_owner_get_shape(0, i)
-		area += calculate_shape_area_shoelace(shape.points)
+		var pts = shape.points
+		
+		area += calculate_shape_area_shoelace(pts)
+		circumcircle_radius = max(circumcircle_radius, calculate_circumcircle(pts))
+		avg_angle += calculate_avg_angle(pts)
+	
+	avg_angle /= float(num_shapes)
+
+func get_avg_angle():
+	return avg_angle
+
+func calculate_avg_angle(shp):
+	var ang = 0
+	for i in range(shp.size()):
+		var next_index = (i+1) % int(shp.size())
+		var p1 = shp[i]
+		var p2 = shp[next_index]
+		
+		ang = (p2 - p1).angle()
+	
+	return ang / float(shp.size())
 
 func calculate_shape_area_shoelace(shp):
 	var A = 0
@@ -206,11 +242,24 @@ func calculate_shape_area_shoelace(shp):
 #
 #	return clamp(approx, MIN_RADIUS, MAX_RADIUS)
 
+func get_circumcircle_radius():
+	return circumcircle_radius
+
+func calculate_circumcircle(shp):
+	var c = 0
+	for i in range(shp.size()):
+		c = max(c, shp[i].length())
+	return c
+
 func approximate_radius():
 	return sqrt(area / PI)
 
 func approximate_radius_as_ratio():
 	return approximate_radius() / float(MAX_RADIUS)
+
+func approximate_radius_for_basic_body(shrinker : float = 1.0):
+	var radius = shrinker*BASIC_BODY_RADIUS_GROWTH * approximate_radius()
+	return clamp(radius, MIN_RADIUS, MAX_RADIUS)
 
 func at_max_size():
 	return approximate_radius() >= MAX_RADIUS

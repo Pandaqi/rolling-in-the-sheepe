@@ -63,13 +63,15 @@ func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 	for b in bodies:
 		slice_body(b, p1, p2)
 
-func create_circle_body(b):
+func create_basic_body(b, type, shrinker : float = 1.0):
 	var base_pos = b.get_global_position()
-	var radius = 0.66 * b.get_node("Shaper").approximate_radius()
+	var radius = b.get_node("Shaper").approximate_radius_for_basic_body(shrinker)
+	
+	var num_points = GlobalDict.points_per_shape[type]
 	
 	var arr = []
-	for a in range(8):
-		var angle = (a / 8.0) * (2*PI)
+	for a in range(num_points):
+		var angle = (a / float(num_points)) * (2*PI)
 		var new_pos = base_pos + Vector2(cos(angle), sin(angle))*radius
 		arr.append(new_pos)
 	
@@ -84,17 +86,19 @@ func slice_body(b, p1, p2):
 		print("Player already has too many bodies")
 		return
 	
-	if GlobalDict.cfg.slicing_yields_circles:
-		var new_bodies = [[],[]]
-		for i in range(2):
-			new_bodies[i] = create_circle_body(b)
-
+	if GlobalDict.cfg.unrealistic_slicing:
 		b.get_node("Status").delete()
+		
+		var new_type = GlobalDict.cfg.slicing_yields
+		var new_shapes = []
+		for i in range(2):
+			new_shapes.append( create_basic_body(b, new_type, 0.5) )
 		
 		var coins_a = floor(original_coins * 0.5)
 		var coins_b = original_coins - coins_a
-		create_body_from_shape(original_player_num, new_bodies[0], coins_a)
-		create_body_from_shape(original_player_num, new_bodies[1], coins_b)
+		create_body_from_shape(new_shapes[0], { 'player_num': original_player_num, 'coins': coins_a, 'type': new_type })
+		create_body_from_shape(new_shapes[1], { 'player_num': original_player_num, 'coins': coins_b, 'type': new_type })
+		
 		return
 	
 	var num_shapes = b.shape_owner_get_shape_count(0)
@@ -310,18 +314,18 @@ func create_body_from_shape_list(player_num : int, shapes : Array, coins : int) 
 	
 	return body
 
-func create_body_from_shape(player_num : int, shp : Array, coins : int) -> RigidBody2D:
+func create_body_from_shape(shp : Array, params = {}) -> RigidBody2D:
 	var body = body_scene.instance()
 	
 	body.position = calculate_centroid(shp)
 	
-	body.get_node("Shaper").create_from_shape(shp)
+	body.get_node("Shaper").create_from_shape(shp, params)
 	
 	map.add_child(body)
 	
 	# and we make sure it has the same parent as the original body
-	body.get_node("Status").set_player_num(player_num)
-	body.get_node("Coins").get_paid(coins)
+	body.get_node("Status").set_player_num(params.player_num)
+	body.get_node("Coins").get_paid(params.coins)
 	
 	return body
 
