@@ -412,7 +412,7 @@ func calculate_area_shoelace(shp):
 		
 		area += p1.x * p2.y - p1.y * p2.x
 	
-	return area * 0.5
+	return abs(area * 0.5)
 
 func calculate_area(shp):
 	var x_bounds = Vector2(INF, -INF)

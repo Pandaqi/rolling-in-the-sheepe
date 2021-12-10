@@ -233,7 +233,7 @@ func calculate_shape_area_shoelace(shp):
 		
 		A += p1.x * p2.y - p1.y * p2.x
 	
-	return A * 0.5
+	return abs(A * 0.5)
 
 #func approximate_radius():
 #	var x_length = abs(bounding_box.x.min) + abs(bounding_box.x.max)
