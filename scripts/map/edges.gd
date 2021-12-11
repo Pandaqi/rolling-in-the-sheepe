@@ -7,7 +7,7 @@ onready var map = get_parent()
 func handle_gates(room):
 	if not room: return
 	
-	room.recalculate_gates()
+	room.lock.recalculate_gates()
 
 func set_at(pos, dir_index, type):
 	var already_has_edge = map.get_cell(pos).edges[dir_index]

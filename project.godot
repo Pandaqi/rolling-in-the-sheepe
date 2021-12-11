@@ -19,6 +19,14 @@ config/icon="res://icon.png"
 GlobalInput="*res://scripts/globals/global_input.gd"
 GlobalDict="*res://scripts/globals/global_dict.gd"
 
+[display]
+
+window/dpi/allow_hidpi=true
+
+[gui]
+
+theme/use_hidpi=true
+
 [input]
 
 ui_restart={

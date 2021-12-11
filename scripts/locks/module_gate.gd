@@ -18,7 +18,7 @@ func _on_Area2D_body_entered(body):
 	if not passthrough_allowed(body): return
 	if already_paid(body): return
 	
-	for gate in edge.my_room.gates:
+	for gate in edge.my_room.lock.gates:
 		gate.add_collision_exception_with(body)
 
 	if edge.type == "coin_gate":
@@ -33,7 +33,7 @@ func _on_Area2D_body_entered(body):
 		body.get_node("Coins").pay(general_parameter)
 		edge.my_room.delete()
 
-func _on_Area2D_body_exited(body):
+func _on_Area2D_body_exited(_body):
 	pass
 	
 #	if body in col_exceptions:

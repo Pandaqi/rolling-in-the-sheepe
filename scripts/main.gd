@@ -25,6 +25,7 @@ func _input(ev):
 	if not game_over_mode: return
 	
 	if ev.is_action_released("ui_restart"):
+# warning-ignore:return_value_discarded
 		get_tree().reload_current_scene()
 	elif ev.is_action_released("ui_exit"):
 		print("Should exit to menu")

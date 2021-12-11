@@ -109,10 +109,10 @@ func handle_item(obj):
 			slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
 		
 		"button_regular":
-			obj.item.my_room.lock_module.record_button_push(obj.item)
+			obj.item.my_room.lock.record_button_push(obj.item) 
 		
 		"button_order":
-			var res = obj.item.my_room.lock_module.record_button_push(obj.item)
+			var res = obj.item.my_room.lock.record_button_push(obj.item)
 			if not res: prevent_deletion = true
 	
 	if prevent_deletion: return
@@ -137,10 +137,10 @@ func reset_immediate_items():
 func _on_OngoingTimer_timeout():
 	reset_ongoing_items()
 
-func do_ongoing(obj):
+func do_ongoing(_obj):
 	pass
 
-func undo_ongoing(obj):
+func undo_ongoing(_obj):
 	pass
 
 func reset_ongoing_items():

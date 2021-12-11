@@ -30,7 +30,7 @@ func determine_leading_and_trailing_player():
 	for p in players:
 		if not is_instance_valid(p): continue
 		
-		var index = p.get_node("RoomTracker").get_cur_room().index
+		var index = p.get_node("RoomTracker").get_cur_room().route.index
 		var dist_in_room = p.get_node("RoomTracker").get_dist_in_room()
 		
 		if index > max_room:
@@ -84,7 +84,7 @@ func determine_leading_and_trailing_player():
 func get_distance_to_generation_end():
 	if not has_leading_player(): return
 	
-	var index = leading_player.get_node("RoomTracker").get_cur_room().index
+	var index = leading_player.get_node("RoomTracker").get_cur_room().route.index
 	return (route_generator.cur_path.size() - index)
 
 #
@@ -93,7 +93,7 @@ func get_distance_to_generation_end():
 func check_wolf():
 	if not has_trailing_player(): return
 	
-	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().index > 1) and (not wolf_disabled)
+	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().route.index > 1) and (not wolf_disabled)
 	if not wolf_creation_is_allowed: return
 	
 	var already_is_wolf = trailing_player.get_node("Status").is_wolf

@@ -35,7 +35,6 @@ func _draw():
 	draw_line(a, b, Color(0,0,0), 2)
 
 func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
-	var max_radius = max( abs(p1.x - p2.x), abs(p1.y - p2.y) )
 	var angle = (p2 - p1).angle()
 	var avg_pos = (p2 + p1)*0.5
 	
@@ -91,12 +90,14 @@ func slice_body(b, p1, p2):
 		
 		var new_type = GlobalDict.cfg.slicing_yields
 		var new_shapes = []
-		for i in range(2):
+		for _i in range(2):
 			new_shapes.append( create_basic_body(b, new_type, 0.5) )
 		
 		var coins_a = floor(original_coins * 0.5)
 		var coins_b = original_coins - coins_a
+# warning-ignore:return_value_discarded
 		create_body_from_shape(new_shapes[0], { 'player_num': original_player_num, 'coins': coins_a, 'type': new_type })
+# warning-ignore:return_value_discarded
 		create_body_from_shape(new_shapes[1], { 'player_num': original_player_num, 'coins': coins_b, 'type': new_type })
 		
 		return

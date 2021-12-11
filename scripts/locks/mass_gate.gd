@@ -12,5 +12,5 @@ func update_label():
 func on_body_enter(body):
 	.on_body_enter(body)
 	
-	if my_room.players_inside.size() >= general_parameter:
+	if my_room.entities.count() >= general_parameter:
 		delete()

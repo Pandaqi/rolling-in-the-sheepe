@@ -12,7 +12,7 @@ func link_sprites():
 	shaper = get_node("../Shaper")
 	ear_sprite = shaper.get_node("EarSprite")
 
-func update_size(bounds):
+func update_size(_bounds):
 	if not face_sprite: link_sprites()
 	
 	var new_scale = shaper.approximate_radius()/sprite_size

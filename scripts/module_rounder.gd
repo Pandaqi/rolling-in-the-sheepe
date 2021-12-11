@@ -41,18 +41,18 @@ func _on_Timer_timeout():
 	# of that time we spent not-rolling
 	if average_airtime > 0.5:
 		if GlobalDict.cfg.unrealistic_rounding:
-			become_more_malformed_unrealistic(average_airtime)
+			become_more_malformed_unrealistic()
 		else:
-			become_more_malformed(average_airtime)
+			become_more_malformed()
 	else:
 		if GlobalDict.cfg.unrealistic_rounding:
-			become_more_round_unrealistic(average_airtime)
+			become_more_round_unrealistic()
 		else:
-			become_more_round(1.0 - average_airtime)
+			become_more_round()
 	
 	average_airtime = 0.0
 
-func become_more_round_unrealistic(average_airtime):
+func become_more_round_unrealistic():
 	if status.is_wolf: return
 	
 	if grow_instead_of_rounding:
@@ -68,7 +68,7 @@ func become_more_round_unrealistic(average_airtime):
 	is_round = false
 	if new_shape_name == "circle": is_round = true
 
-func become_more_malformed_unrealistic(average_airtime):
+func become_more_malformed_unrealistic():
 	if status.is_wolf: return
 	
 	if grow_instead_of_rounding:
@@ -107,19 +107,21 @@ func change_shape_index(val):
 
 #
 # Deforming
+#  => These functions are basically useless now, as I don't think I'll ever activate this system again ...
 #
 
 # TO DO: Ensure minimum dimensions here as well
 # (Maybe just require all points to be some distance away from Vector2.ZERO?)
 
 # TO DO: This doesn't even work, as points that are _overlapping_ ( = matching) wiill get sent in different directions ... unless I _seed_ the randomness based on rounded coordinates?
-func become_more_malformed(ratio):
+func become_more_malformed():
 	print("MALFORM!")
 	
 	if status.is_wolf: return
 	
+	var ratio = average_airtime
 	if grow_instead_of_rounding:
-		shrink(GROW_FACTOR)
+		shrink(GROW_FACTOR*ratio)
 		return
 	if is_malformed: return
 	
@@ -143,11 +145,12 @@ func move_points_randomly(shp):
 #
 # Rounding
 #
-func become_more_round(ratio):
+func become_more_round():
 	if status.is_wolf: return
 	
+	var ratio = 1.0 - average_airtime
 	if grow_instead_of_rounding:
-		grow(GROW_FACTOR)
+		grow(GROW_FACTOR*ratio)
 		return
 	if is_round: return
 	

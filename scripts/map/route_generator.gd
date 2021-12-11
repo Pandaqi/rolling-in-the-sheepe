@@ -66,7 +66,7 @@ func check_for_new_room():
 	if has_finished: return
 	
 	var lead = player_progression.get_leading_player()
-	var index = lead.get_node("RoomTracker").get_cur_room().index
+	var index = lead.get_node("RoomTracker").get_cur_room().route.index
 	var num_rooms_threshold = NUM_ROOMS_FRONT_BUFFER
 	var far_enough_forward = (index > cur_path.size() - num_rooms_threshold)
 	
@@ -77,7 +77,7 @@ func check_for_old_room_deletion():
 	if not player_progression.has_trailing_player(): return
 	
 	var trail = player_progression.get_trailing_player()
-	var index = trail.get_node("RoomTracker").get_cur_room().index
+	var index = trail.get_node("RoomTracker").get_cur_room().route.index
 	var num_rooms_threshold = NUM_ROOMS_BACK_BUFFER
 	var far_enough_from_last_room = (index > num_rooms_threshold)
 	
@@ -90,7 +90,7 @@ func delete_oldest_room():
 	# update the index of all surviving rooms
 	# (should be lowered by exactly one, for all)
 	for i in range(cur_path.size()):
-		cur_path[i].set_index(i)
+		cur_path[i].route.set_index(i)
 
 #
 # Extra helpers for related situations (such as "clear map => delete all rooms")
@@ -126,7 +126,7 @@ func get_new_room_index():
 
 # TO DO: 
 # On big rooms, it might be faster to check against ROOMS, not individual cells???? Not sure if that is the case. (So check overlap with the other room rect, AABB, for all rooms on path.)
-func room_overlaps_path(rect, params):
+func room_rect_overlaps_path(rect, params):
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):
 			var my_pos = rect.pos + Vector2(x,y)
@@ -135,7 +135,7 @@ func room_overlaps_path(rect, params):
 			var cur_room = map.get_room_at(my_pos)
 			
 			if not cur_room: continue
-			if cur_room.index == params.room.index: continue
+			if cur_room.route.index == params.prev_room.route.index: continue
 			
 			return true
 	return false
@@ -165,7 +165,7 @@ func get_average_room_size_over_last(offset : int):
 	var sum : float = 0.0
 	for i in range(start, end):
 		var room = cur_path[i]
-		sum += room.get_area()
+		sum += room.rect.get_area()
 	
 	return sum / offset
 
@@ -173,7 +173,7 @@ func get_pos_just_ahead():
 	if not player_progression.has_leading_player(): return null
 	
 	var lead = player_progression.get_leading_player()
-	var index = lead.get_node("RoomTracker").get_cur_room().index
+	var index = lead.get_node("RoomTracker").get_cur_room().route.index
 	if index == (cur_path.size()-1): return null
 	
 	var coming_positions : Vector2 = Vector2.ZERO
@@ -184,7 +184,7 @@ func get_pos_just_ahead():
 	
 	for i in range(index+1, max_bound):
 		var ratio : float = 1.0 / float(i-index)
-		coming_positions += ratio * cur_path[i].get_center()
+		coming_positions += ratio * cur_path[i].rect.get_center()
 		num_positions_considered += ratio
 	
 	coming_positions /= num_positions_considered
@@ -197,12 +197,12 @@ func get_pos_just_ahead():
 	return lead.get_global_position() + norm_vec*dist
 
 func get_next_best_player(p):
-	var my_index = p.get_node("RoomTracker").get_cur_room().index
+	var my_index = p.get_node("RoomTracker").get_cur_room().route.index
 	var my_num = p.get_node("Status").player_num
 	for i in range(my_index+1, cur_path.size()):
 		var room = cur_path[i]
 		
-		for p in room.players_inside:
+		for p in room.entities.get_them():
 			var num = p.get_node("Status").player_num
 			if num == my_num: continue
 			

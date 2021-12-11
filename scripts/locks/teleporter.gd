@@ -19,7 +19,7 @@ func _ready():
 	for i in GlobalInput.get_player_count():
 		players_here[i] = []
 	
-	$Label.set_position(my_room.get_free_real_pos_inside())
+	$Label.set_position(my_room.rect.get_free_real_pos_inside())
 
 func start_timer():
 	time_left = 15
@@ -91,7 +91,7 @@ func perform_teleport():
 	for i in range(GlobalInput.get_player_count()):
 		unteleported_players.append(i)
 	
-	var teleport_target_pos = route_generator.cur_path[0].get_center()
+	var teleport_target_pos = route_generator.cur_path[0].rect.get_center()
 	for key in players_here:
 		for body in players_here[key]:
 			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)

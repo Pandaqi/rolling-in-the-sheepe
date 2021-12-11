@@ -116,10 +116,10 @@ func get_realistic_slice_line(obj):
 	
 	return { 'start': start, 'end': end }
 
-func get_halfway_slice_line(body):
+func get_halfway_slice_line(other_body):
 	#var bb = body.get_node("Shaper").bounding_box
 	
-	var center_pos = body.get_global_position()
+	var center_pos = other_body.get_global_position()
 	var start = center_pos - 100*Vector2(1,1)
 	var end = center_pos + 100*Vector2(1,1)
 	

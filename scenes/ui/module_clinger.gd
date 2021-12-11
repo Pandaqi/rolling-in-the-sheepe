@@ -44,10 +44,7 @@ func execute_ceiling_cling():
 	cling_vec = Vector2.ZERO
 	
 	if map_reader.last_cell_has_terrain("reverse_gravity"): return
-	
-	var space_state = get_world_2d().direct_space_state
-	var start = body.get_global_position()
-	
+
 	var result = shoot_raycast_in_dir(Vector2.UP)
 	if not result: 
 		ceiling_clung_last_frame = false

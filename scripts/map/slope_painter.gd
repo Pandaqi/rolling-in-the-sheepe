@@ -28,72 +28,75 @@ func placement_allowed(pos, own_room, consider_empty_room = true):
 	
 	return true
 
-func in_growth_area(pos, rect):
-	return (pos.x == 0 or pos.x == (rect.size.x-1)) or (pos.y == 0 or pos.y == (rect.size.y-1))
+func in_growth_area(pos, room):
+	return (pos.x == 0 or pos.x == (room.rect.size.x-1)) or (pos.y == 0 or pos.y == (room.rect.size.y-1))
 
-func recalculate_room(r):
-	if not r: return
+func recalculate_room(room):
+	if not room: return
 	
 	# TO DO: This has become redundant; we already loop through the WHOLE rectangle below
 	# TO DO: However, isn't it better to SAVE exactly which tiles we filled inside the rectangle? Then we have a fixed, short list (instead of going through the WHOLE rectangle)
-	for pos in get_slopes(r.shrunk):
-		if not placement_allowed(pos, r, false): 
+	var shrunk = room.rect.get_shrunk()
+	for pos in get_slopes(room):
+		if not placement_allowed(pos, room, false): 
 			map.change_cell(pos, -1)
 	
-	for x in range(r.shrunk.size.x):
-		for y in range(r.shrunk.size.y):
-			var temp_pos = r.shrunk.pos + Vector2(x,y)
+	for x in range(shrunk.size.x):
+		for y in range(shrunk.size.y):
+			var temp_pos = shrunk.pos + Vector2(x,y)
 			
 			if tilemap.get_cellv(temp_pos) == -1: continue
-			if placement_allowed(temp_pos, r): continue
+			if placement_allowed(temp_pos, room): continue
 			
 			map.change_cell(temp_pos, -1)
 	
-	map.update_bitmask(r.pos, r.size)
+	map.update_bitmask(shrunk.pos, shrunk.size)
 
 ####
 # Islands
 ####
-func fill_room(r):
-	if not r: return
-	if r.index <= 0: return
+func fill_room(room):
+	if not room: return
+	if room.route.index <= 0: return
 	
-	if r.shrunk.size.x < 3 or r.shrunk.size.y < 3: return
+	var rect = room.rect
+	var shrunk = rect.get_shrunk()
+	if shrunk.size.x < 3 or shrunk.size.y < 3: return
 	
-	var area = r.get_area()
+	var area = rect.get_area()
 	var num_islands = area
 	
 	for _i in range(num_islands):
-		var rand_pos = r.shrunk.pos+Vector2(1,1) + (Vector2(randf(), randf()) * (r.shrunk.size-Vector2(1,1)*2)).floor()
-		if not placement_allowed(rand_pos, r): continue
+		var rand_pos = shrunk.pos+Vector2(1,1) + (Vector2(randf(), randf()) * (shrunk.size-Vector2(1,1)*2)).floor()
+		if not placement_allowed(rand_pos, room): continue
 		
 		map.change_cell(rand_pos, 0)
 	
-	map.update_bitmask(r.pos, r.size)
+	map.update_bitmask_from_room(room)
 
 ####
 # Slopes
 ####
 
-# NOTE: r is a SHRUNK rectangle
-func get_slopes(r):
+func get_slopes(room):
 	var slopes_created = []
 	
 	# add slopes in all four corner
-	if r.size.x > 2 and r.size.y > 2:
-		slopes_created.append(r.pos + Vector2(0,0))
-		slopes_created.append(r.pos + Vector2(r.size.x-1,0))
-		slopes_created.append(r.pos + Vector2(r.size.x-1,r.size.y-1))
-		slopes_created.append(r.pos + Vector2(0, r.size.y-1))
+	var shrunk = room.rect.shrunk
+	if shrunk.size.x > 2 and shrunk.size.y > 2:
+		slopes_created.append(shrunk.pos + Vector2(0, 0))
+		slopes_created.append(shrunk.pos + Vector2(shrunk.size.x-1, 0))
+		slopes_created.append(shrunk.pos + Vector2(shrunk.size.x-1, shrunk.size.y-1))
+		slopes_created.append(shrunk.pos + Vector2(0, shrunk.size.y-1))
 	
 	return slopes_created
 
-func place_slopes(r):
-	for pos in get_slopes(r.shrunk):
-		if not placement_allowed(pos, r, false): continue
+func place_slopes(room):
+	for pos in get_slopes(room):
+		if not placement_allowed(pos, room, false): continue
 		map.change_cell(pos, 0)
 	
-	map.update_bitmask(r.pos, r.size)
+	map.update_bitmask_from_room(room)
 
 # TO DO: Shouldn't these be functions on the RECTANGLES themselves? Or at least partly?
 func should_be_slope(pos):
@@ -110,23 +113,6 @@ func should_be_slope(pos):
 	
 	# slope!
 	return true
-
-func check_slope_validity(r):
-	if not r: return
-	
-	var slopes_created = get_slopes(r)
-	var something_changed = false
-	
-	# now check which tiles we need to remove
-	for pos in slopes_created:
-		if tile_is_slope(pos): continue
-		
-		map.change_cell(pos, -1)
-		something_changed = true
-	
-	if not something_changed: return
-	
-	map.update_bitmask(r.pos, r.size)
 
 func tile_is_slope(pos):
 	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)

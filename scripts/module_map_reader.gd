@@ -123,7 +123,7 @@ func do_effect_of_cell(cell):
 		"body_limit":
 			# NOTE: at this point we've already added ourself to the room, so its "size before" is 1 smaller than it is now
 			var body_max = GlobalInput.get_player_count()
-			var body_count = (cell.room.players_inside.size() - 1)
+			var body_count = (cell.room.entities.count() - 1)
 			
 			if body_count >= body_max:
 				body.set_linear_velocity(Vector2.ZERO)
@@ -258,7 +258,7 @@ func check_if_too_far_behind():
 	if euclidian_dist >= MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT:
 		too_far_behind = true
 	
-	var tiled_dist = next_player_room.tiled_dist_to(next_player_room)
+	var tiled_dist = next_player_room.route.tiled_dist_to(next_player_room)
 	if tiled_dist > MAX_TILED_DIST_BETWEEN_PLAYERS:
 		too_far_behind = true
 	
@@ -274,7 +274,7 @@ func get_forward_boost_pos(pick_next_best_player = false):
 		
 		target_room = next_player.get_node("RoomTracker").get_cur_room()
 	else:
-		var cur_room_index = body.get_node("RoomTracker").get_cur_room().index
+		var cur_room_index = body.get_node("RoomTracker").get_cur_room().route.index
 		var target_room_index = (cur_room_index + 1)
 		target_room = route_generator.cur_path[target_room_index]
 	

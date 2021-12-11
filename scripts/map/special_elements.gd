@@ -17,13 +17,13 @@ func _ready():
 
 func add_special_items_to_room(room):
 	if not room: return
-	if not room.can_have_special_items: return
+	if not room.items.can_have_special_items: return
 	
 	# if we already have items, remove all of them
 	# because our configuration might have changed, so they might be invalid/floating in mid-air, so just clean it up
-	if room.has_special_items(): room.clear_special_items()
+	if room.items.has_special_items(): room.items.clear_special_items()
 	
-	room.add_special_item()
+	room.items.add_special_item()
 
 func get_random_type():
 	if available_item_types.size() <= 0: return null
@@ -41,16 +41,16 @@ func delete_on_activation(obj):
 	var my_room = map.get_cell_from_node(obj).room
 	if not my_room: return # TO DO: This should actually never happen, but it's not so bad if it triggers from time to time
 	
-	my_room.erase_special_item(obj)
+	my_room.items.erase_special_item(obj)
 
-func place(rect, params):
+func place(room, params):
 	var type = get_random_type()
 	if params.has('type'): type = params.type
 	if not type: return null
 	
 	# determine location
 	# NOTE: "tile" means we KNOW it's a filled tile in the tilemap
-	var grid_pos = rect.get_free_tile_inside()
+	var grid_pos = room.items.get_free_tile_inside()
 	if not grid_pos: return null
 	
 	# determine rotation (based on neighbors OR slope dir) => if none possible, abort
@@ -75,7 +75,7 @@ func place(rect, params):
 	item.set_rotation(real_rot)
 	
 	# keep reference to room that created us
-	item.my_room = rect
+	item.my_room = room
 	
 	# finally, add references
 	map.get_cell(grid_pos).special = item

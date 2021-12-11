@@ -26,7 +26,7 @@ onready var slicer = get_node("/root/Main/Slicer")
 #####
 func destroy():
 	var num_shapes = body.shape_owner_get_shape_count(0)
-	for i in range(num_shapes):
+	for _i in range(num_shapes):
 		body.shape_owner_remove_shape(0, 0)
 
 func create_new_from_shape(shp, params):

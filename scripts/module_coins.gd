@@ -15,7 +15,7 @@ onready var my_gui = $GUI
 onready var tween = $Tween
 
 func _ready():
-	for i in range(MAX_COINS):
+	for _i in range(MAX_COINS):
 		var coin_sprite = coin_sprite_scene.instance()
 		coin_sprite.set_visible(false)
 		my_gui.add_child(coin_sprite)
@@ -30,11 +30,11 @@ func as_ratio():
 	return num_coins / float(MAX_COINS)
 
 func get_paid(c):
-	num_coins = clamp(num_coins + c, 0, MAX_COINS)
+	num_coins = int(clamp(num_coins + c, 0, MAX_COINS))
 	show()
 
 func pay(c):
-	num_coins = clamp(num_coins - c, 0, MAX_COINS)
+	num_coins = int(clamp(num_coins - c, 0, MAX_COINS))
 	show()
 
 func _physics_process(_dt):

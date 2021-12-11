@@ -17,7 +17,7 @@ onready var player_progression = get_node("../PlayerProgression")
 onready var tutorial = get_node("/root/Main/Tutorial")
 onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
 
-var RoomRect = preload("res://scripts/RoomRect.gd")
+var room_scene = preload("res://scenes/room.tscn")
 
 #
 # Initialization
@@ -38,14 +38,9 @@ func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
 	# if we have a previous room, take it into account when placing the next
 	# (allow backtracking if we keep failing)
 	backtrack_and_find_good_room(params)
+	var res = place_teleporter_if_stuck(params)
+	if res: return
 
-	if params.no_valid_placement:
-		var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
-		if should_place_teleporter:
-			route_generator.pause_room_generation = true
-			route_generator.get_furthest_room().turn_into_teleporter()
-		return
-	
 	place_room_according_to_params(params)
 	handle_optional_requirements(params)
 	
@@ -59,10 +54,18 @@ func initialize_new_room_rect(proposed_location):
 	
 	var params = {
 		'dir': 0,
-		'room': room,
+		'prev_room': room,
+		'new_room': null,
 		
 		'overlapping_rooms_were_allowed': false,
 		'forced_dir': -1,
+		
+		'place_finish': false,
+		'place_lock': false,
+		
+		'require_large_size': false,
+		'ignore_optional_requirements': false,
+		'no_valid_placement': false
 	}
 	
 	if tutorial.is_active(): params.forced_dir = tutorial.get_forced_dir()
@@ -70,14 +73,11 @@ func initialize_new_room_rect(proposed_location):
 	var pos = default_starting_pos
 	if proposed_location: pos = proposed_location
 
-	var rect = RoomRect.new()
-	
-	rect.init(map)
-	rect.set_pos(pos)
-	rect.set_size(default_starting_room_size)
-	
-	params.rect = rect
-	
+	var new_room = room_scene.instance()
+	add_child(new_room)
+	new_room.initialize(pos, default_starting_room_size)
+	params.new_room = new_room
+
 	return params
 
 # "Optional requirements" means that we WANT to do something at the earliest moment possible
@@ -94,38 +94,48 @@ func set_wanted_room_parameters(params):
 	params.no_valid_placement = false
 
 func backtrack_and_find_good_room(params):
-	if not params.room: return # no previous room? no need to do all this
+	if not params.prev_room: return # no previous room? no need to do all this
 	
 	var found_something = false
 	for i in range(MAX_BACKTRACK_ROOMS):
-		params.room = route_generator.get_path_from_front(i)
+		params.prev_room = route_generator.get_path_from_front(i)
 		
 		var new_rect = find_valid_configuration_better(params)
 		if not new_rect: continue
 		
 		found_something = true
-		params.rect.set_pos(new_rect.pos)
-		params.rect.set_size(new_rect.size)
+		params.new_room.rect.update_from(new_rect)
 		break
 	
 	if not found_something:
 		params.no_valid_placement = true
 
+func place_teleporter_if_stuck(params):
+	if not params.no_valid_placement: return false
+	
+	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
+	
+	if not should_place_teleporter: return false
+	
+	route_generator.pause_room_generation = true
+	route_generator.get_furthest_room().turn_into_teleporter()
+	return true
+
 func generate_all_1x1_rooms_in_dir(params):
 	var dir_vertical = (params.dir == 1 or params.dir == 3)
 	var arr = []
-	var prev_room = params.room.shrunk
+	var prev_rect = params.prev_room.rect.get_shrunk()
 	
 	if dir_vertical:
-		var y_offset = -1 if params.dir == 3 else prev_room.size.y
-		for x in range(prev_room.size.x):
-			var temp_pos = prev_room.pos + Vector2(x, y_offset)
+		var y_offset = -1 if params.dir == 3 else prev_rect.size.y
+		for x in range(prev_rect.size.x):
+			var temp_pos = prev_rect.pos + Vector2(x, y_offset)
 			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
 	else:
-		var x_offset = -1 if params.dir == 2 else prev_room.size.x
-		for y in range(prev_room.size.y):
-			var temp_pos = prev_room.pos + Vector2(x_offset, y)
+		var x_offset = -1 if params.dir == 2 else prev_rect.size.x
+		for y in range(prev_rect.size.y):
+			var temp_pos = prev_rect.pos + Vector2(x_offset, y)
 			arr.append({ 'pos': temp_pos, 'size': Vector2(1,1) })
 	
 	return arr
@@ -144,9 +154,9 @@ func find_valid_configuration_better(params):
 	
 	# determine the preferred order in which to check directions
 	# (it's a rolling game, so continuing horizontal is always best)
-	var last_pos = params.room.shrunk.pos
-	var last_size = params.room.shrunk.size
-	var last_dir = params.room.dir
+	var last_pos = params.prev_room.rect.shrunk.pos
+	var last_size = params.prev_room.rect.shrunk.size
+	var last_dir = params.prev_room.route.dir
 	var last_step_was_vertical = (last_dir == 1 or last_dir == 3)
 	if last_step_was_vertical:
 		last_dir = 0 if randf() < 0.5 else 2
@@ -177,7 +187,7 @@ func find_valid_configuration_better(params):
 			sneak_room.pos -= Vector2(0, max_room_size.y)
 		
 		sneak_room.pos += get_random_displacement(last_size, max_room_size, params.dir)
-		if not route_generator.room_overlaps_path(sneak_room, params):
+		if not route_generator.room_rect_overlaps_path(sneak_room, params):
 			return sneak_room
 		
 		# start with all possible 1x1 rooms
@@ -191,7 +201,7 @@ func find_valid_configuration_better(params):
 		while rooms_to_check.size() > 0:
 			# if the room is bad, stop here
 			var room = rooms_to_check.pop_front()
-			if route_generator.room_overlaps_path(room, params):
+			if route_generator.room_rect_overlaps_path(room, params):
 				continue
 			
 			# otherwise, record it as valid
@@ -243,77 +253,39 @@ func find_valid_configuration_better(params):
 	return null
 
 func place_room_according_to_params(params):
-	var rect = params.rect
-	
-	# we AUTO-GROW rooms by 1 when saving them in the map (and painting terrain)
-	# This ensures we also get a good background on slopes and other "transparent" autotiles
-	# And also (hopefully) ensures betters separation of rooms
-	rect.shrunk = { 'pos': rect.pos, 'size': rect.size }
-	rect.set_pos(rect.pos - Vector2(1,1))
-	rect.set_size(rect.size + Vector2(1,1)*2)
-	
-#	print("RECT PLACED")
-#	print({ 'pos': rect.pos, 'size': rect.size })
-#	print(rect.shrunk)
+	params.index = route_generator.get_new_room_index()
+	params.path_pos = route_generator.total_rooms_created
 
-	rect.set_index(route_generator.get_new_room_index())
+	route_generator.cur_path.append(params.new_room)
+	params.new_room.place(params)
 	
-	rect.set_previous_room(params.room)
-	rect.set_dir(params.dir)
-	rect.set_path_position(route_generator.total_rooms_created)
+	if params.prev_room:
+		params.prev_room.finish_placement_in_hindsight()
 	
-	map.terrain.on_new_rect_created(rect)
-	rect.erase_tiles()
-	
-	route_generator.cur_path.append(rect)
-	map.set_all_cells_to_room(rect)
-
-	# first recalculate tiles/slopes on previous room, which allows us to also place special elements
-	if params.room:
-		slope_painter.recalculate_room(params.room)
-		params.room.determine_tiles_inside()
-		
-		# TO DO: make function on room rect??
-		if params.room.lock_planned:
-			route_generator.placed_lock()
-			params.room.add_lock()
-			params.room.lock_planned = false
-		
-		map.special_elements.add_special_items_to_room(params.room)
-		map.edges.handle_gates(params.room)
-
-	# then fill the new room
-	slope_painter.place_slopes(rect)
-	slope_painter.fill_room(rect)
-
-	rect.determine_outline()
-	
-	#rect.determine_tiles_inside() => moved to when we actually place special elements, as then we KNOW what's inside and what's not
-	# rect.create_border_around_us()
-	
-	tutorial.placed_a_new_room(rect)
+	params.new_room.finish_placement()
+	tutorial.placed_a_new_room(params.new_room)
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return
 	
-	var room_area = params.rect.get_area()
+	var room_area = params.new_room.rect.get_area()
 	if room_area < 9:
 		params.place_finish = false
 		params.place_lock = false
 	
 	if params.place_finish:
 		route_generator.placed_finish()
-		map.terrain.paint(params.rect, "finish")
+		map.terrain.paint(params.new_room, "finish")
 		
 	elif params.place_lock:
-		params.rect.lock_planned = true
+		params.new_room.lock.plan()
 	
 	else:
-		params.rect.can_have_special_items = true
+		params.new_room.items.allow()
 
 func update_global_generation_parameters(params):
-	route_generator.total_rooms_created += params.rect.get_longest_side()
-	route_generator.rooms_in_current_section += params.rect.get_longest_side()
+	route_generator.total_rooms_created += params.new_room.rect.get_longest_side()
+	route_generator.rooms_in_current_section += params.new_room.rect.get_longest_side()
 
 # TO DO: Can function be simplified, as 0 == 2 and 1 == 3???
 func get_displacement_bounds(old_r, new_r, dir_index):

@@ -3,7 +3,7 @@ extends Node
 var surface_image : Image = Image.new()
 var surface_texture : ImageTexture = ImageTexture.new()
 
-var paint_image : Image = Image.new()
+var paint_image : Image = preload("res://assets/paint_mask.png")
 
 var image_size : Vector2
 var resolution : float = 1.0
@@ -17,9 +17,6 @@ func _ready():
 	
 	image_size = (world_size / resolution).floor()
 	surface_image.create(int(image_size.x), int(image_size.y), false,Image.FORMAT_RGBAH)
-	
-	paint_image.load("res://assets/paint_mask.png")
-	paint_image.convert(Image.FORMAT_RGBAH)
 
 	$Sprite.texture = surface_texture
 

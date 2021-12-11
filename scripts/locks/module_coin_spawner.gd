@@ -22,7 +22,7 @@ func _on_Timer_timeout():
 
 func place_coin():
 	var coin = coin_scene.instance()
-	var rand_pos = my_lock.my_room.get_random_real_position_inside({ 'empty': true })
+	var rand_pos = my_lock.my_room.rect.get_random_real_pos_inside({ 'empty': true })
 	coin.set_position(rand_pos)
 	add_child(coin)
 	

@@ -113,6 +113,10 @@ func change_cell(pos, id, flip_x = false, flip_y = false, transpose = false):
 	tilemap.set_cellv(pos, id, flip_x, flip_y, transpose)
 	tilemap_copy.set_cellv(pos, id, flip_x, flip_y, transpose)
 
+func update_bitmask_from_room(room):
+	var rect = room.rect
+	update_bitmask(rect.pos, rect.size)
+
 func update_bitmask(pos, size):
 	var update_margin = Vector2(1,1)
 	tilemap.update_bitmask_region(pos-update_margin, size+update_margin*2)
@@ -182,7 +186,8 @@ func get_room_at(pos):
 	if out_of_bounds(pos): return null
 	return get_cell(pos).room
 
-func set_all_cells_to_room(r):
+func set_all_cells_to_room(room):
+	var r = room.rect
 	for x in range(r.size.x):
 		for y in range(r.size.y):
 			var new_pos = r.pos + Vector2(x,y)
@@ -192,16 +197,17 @@ func set_all_cells_to_room(r):
 			var already_has_room = get_room_at(new_pos)
 			if already_has_room and inside_growth_area: continue
 			
-			get_cell(new_pos).room = r
+			get_cell(new_pos).room = room
 
-func remove_cells_from_room(r):
+func remove_cells_from_room(room):
+	var r = room.rect
 	for x in range(r.size.x):
 		for y in range(r.size.y):
 			var temp_pos = r.pos + Vector2(x,y)
 			if out_of_bounds(temp_pos): continue
 			
 			var cur_room = get_room_at(temp_pos)
-			if cur_room != self: continue
+			if cur_room != room: continue
 			
 			get_cell(temp_pos).room = null
 

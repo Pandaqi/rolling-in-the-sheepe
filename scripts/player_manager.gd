@@ -59,8 +59,8 @@ func create_player(player_num : int):
 	player.get_node("Status").set_player_num(player_num)
 
 func get_spread_out_position(room):
-	var start_pos = room.get_real_pos()
-	var max_dist = room.get_real_size()
+	var start_pos = room.rect.get_real_pos()
+	var max_dist = room.rect.get_real_size()
 	
 	var bad_choice = true
 	var pos

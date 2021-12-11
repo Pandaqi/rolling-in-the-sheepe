@@ -55,14 +55,14 @@ func spawn_buttons():
 			num_buttons = 2 + randi() % 2
 	
 	print("AVAILABLE_TILES")
-	print(my_room.tiles_inside)
+	print(my_room.items.tiles_inside)
 	
 	buttons = []
 	var final_buttons_placed = 0
 	for i in range(num_buttons):
 		print("PLACING BUTTON")
 		
-		var new_button = my_room.add_special_item({ 'type': "button_" + sub_type })
+		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type })
 		if not new_button: break
 		
 		if sub_type == "order":

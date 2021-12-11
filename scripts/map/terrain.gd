@@ -30,31 +30,30 @@ func read_terrain_list_from_campaign():
 func terrain_is_lock(t):
 	return t.right(t.length()-4) == "lock"
 
-func on_new_rect_created(rect):
-	var first_room = (rect.index <= 0)
-	var handout_terrains = (not tutorial.is_active()) and (not first_room)
+func on_new_room_created(room):
+	var handout_terrains = (not tutorial.is_active()) and (not room.route.is_first_room())
 	if not handout_terrains: return
 	
-	var rect_too_small = rect.get_area() < 4
+	var rect_too_small = room.rect.get_area() < 4
 	if rect_too_small: return
 	
-	var rand_type = get_random_terrain_type(rect)
-	paint(rect, rand_type)
+	var rand_type = get_random_terrain_type(room)
+	paint(room, rand_type)
 
 func get_terrain_at_index(index):
 	if index < 0: return ""
 	return route_generator.cur_path[index].terrain
 
-func get_random_terrain_type(rect):
+func get_random_terrain_type(room):
 	# DEBUGGING
 	return "glue"
 	
 	# RESTRICTION: place reverse gravity on things going up
-	if rect.dir == 3:
+	if room.route.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
 			return "reverse_gravity"
 	
-	var last_terrain = get_terrain_at_index(rect.index - 1)
+	var last_terrain = get_terrain_at_index(room.route.index - 1)
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
 	if last_terrain != "":
@@ -77,20 +76,21 @@ func get_random_terrain_type(rect):
 				continue
 		
 		# RESTRICTION: No reverse gravity when going down
-		if rect.dir == 1 and key == "reverse_gravity":
+		if room.route.dir == 1 and key == "reverse_gravity":
 			continue
 		
 		bad_choice = false
 	
 	return key
 
-func paint(rect, type):
+func paint(room, type):
 	var tile_id = -1
 	if GlobalDict.terrain_types.has(type):
 		tile_id = GlobalDict.terrain_types[type].frame
 
 	var overwrites_terrain = GlobalDict.terrain_types[type].has('overwrite')
 	
+	var rect = room.rect
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):
 			var temp_pos = rect.pos + Vector2(x,y)
@@ -104,19 +104,20 @@ func paint(rect, type):
 			tilemap_terrain.set_cellv(temp_pos, tile_id)
 			map.change_terrain_at(temp_pos, type)
 	
-	rect.terrain = type
+	room.tilemap.terrain = type
 
-func erase(rect):
+func erase(room):
+	var rect = room.rect
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):
 			var temp_pos = rect.pos + Vector2(x,y)
-			var room = map.get_room_at(temp_pos)
-			if room and room != rect: continue
+			var cell_room = map.get_room_at(temp_pos)
+			if cell_room and cell_room != room: continue
 			
 			tilemap_terrain.set_cellv(temp_pos, -1)
 			map.change_terrain_at(temp_pos, "")
 	
-	rect.terrain = ""
+	room.tilemap.terrain = ""
 
 # TO DO: Create a function that paints a _specific tile/position_, 
 # 		 or under a _specific condition_, not just all of them??

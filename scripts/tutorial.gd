@@ -64,17 +64,17 @@ func perform_switch():
 		forced_dir = -1
 		wanted_tutorial_placement = "jump"
 
-func placed_a_new_room(rect):
+func placed_a_new_room(room):
 	if not wanted_tutorial_placement: return
 	
 	# TO DO: Look at the SIZE of the rect (and perhaps if it has a LOCK/TERRAIN), and use that to determine if we can place a tutorial here
 	var can_place_it = false
 	if not can_place_it: return
 	
-	place_image(rect)
+	place_image(room)
 
 # TO DO: use an ARRAY to loop through images in order, instead of hardcoding it, so I can allow ANY level to have a specific set of tutorials
-func place_image(rect):
+func place_image(room):
 	var sprite = tutorial_sprite.instance()
 	sprite.set_scale(Vector2(1,1))
 	var new_tut = wanted_tutorial_placement
@@ -84,7 +84,7 @@ func place_image(rect):
 	elif new_tut == "finish":
 		sprite.set_frame(11)
 	
-	sprite.set_position(rect.get_center())
+	sprite.set_position(room.rect.get_center())
 	tilemap.add_child(sprite)
 	
 	wanted_tutorial_placement = ""
