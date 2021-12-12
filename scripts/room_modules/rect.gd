@@ -96,6 +96,9 @@ func get_free_real_pos_inside():
 #
 #	return copy
 
+func big_enough_for_tutorial():
+	return get_area() >= 9
+
 func get_mask_data():
 	return {
 		'pos': (pos - Vector2(0.5,0.5))*TILE_SIZE, 

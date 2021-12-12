@@ -37,18 +37,17 @@ func on_new_room_created(room):
 	var rect_too_small = room.rect.get_area() < 4
 	if rect_too_small: return
 	
-	var rand_type = get_random_terrain_type(room)
-	paint(room, rand_type)
+	if map.dynamic_tutorial.has_random('terrain', room):
+		var rand_type = get_random_terrain_type(room)
+		paint(room, rand_type)
 
 func get_terrain_at_index(index):
 	if index < 0: return ""
-	return route_generator.cur_path[index].terrain
+	return route_generator.cur_path[index].tilemap.terrain
 
 func get_random_terrain_type(room):
-	# DEBUGGING
-	return "glue"
-	
 	# RESTRICTION: place reverse gravity on things going up
+	# TO DO: only if actually included in the list of terrains
 	if room.route.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
 			return "reverse_gravity"
@@ -64,14 +63,23 @@ func get_random_terrain_type(room):
 	var key = "finish"
 	var bad_choice = true
 	
+	var num_tries = 0
+	var RESTRICTION_CUTOFF = 50
+	var MAX_TRIES = 150
+	
 	while bad_choice:
-		key = available_terrains[randi() % available_terrains.size()]
+		key = map.dynamic_tutorial.get_random('terrain', room)
+		num_tries += 1
+		
+		if num_tries > MAX_TRIES:
+			key = ""
+			break
 		
 		if GlobalDict.terrain_types[key].has('unpickable'):
 			continue
 		
 		# UPGRADE: don't allow two consecutive terrains of the same general category
-		if last_terrain:
+		if last_terrain and num_tries < RESTRICTION_CUTOFF:
 			if GlobalDict.terrain_types[last_terrain].category == GlobalDict.terrain_types[key].category:
 				continue
 		
@@ -84,6 +92,8 @@ func get_random_terrain_type(room):
 	return key
 
 func paint(room, type):
+	if not type or type == "": return
+	
 	var tile_id = -1
 	if GlobalDict.terrain_types.has(type):
 		tile_id = GlobalDict.terrain_types[type].frame
@@ -105,6 +115,8 @@ func paint(room, type):
 			map.change_terrain_at(temp_pos, type)
 	
 	room.tilemap.terrain = type
+	
+	map.dynamic_tutorial.on_usage_of('terrain', type)
 
 func erase(room):
 	var rect = room.rect

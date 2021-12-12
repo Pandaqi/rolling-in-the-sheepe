@@ -86,9 +86,23 @@ func set_wanted_room_parameters(params):
 	params.place_finish = route_generator.should_place_finish()
 	params.place_lock = route_generator.should_place_lock()
 	
+	# if we need a lock, but we don't have any taught yet
+	# forbid it, but place a tutorial for a lock at the nearest opportunity
+	var wanted_tut_kind = 'any'
+	if params.place_lock and not map.dynamic_tutorial.has_random('lock'):
+		params.place_lock = false
+		wanted_tut_kind = 'lock'
+	
+	params.place_tutorial = false
+	
+	if map.dynamic_tutorial.can_teach_something_new():
+		map.dynamic_tutorial.plan_random_placement(wanted_tut_kind)
+	
+	params.place_tutorial = map.dynamic_tutorial.needs_tutorial()
+	
 	if tutorial.is_active(): params.place_lock = false
 	
-	params.require_large_size = (params.place_finish or params.place_lock)
+	params.require_large_size = (params.place_finish or params.place_lock or params.place_tutorial)
 	
 	params.ignore_optional_requirements = false
 	params.no_valid_placement = false
@@ -273,12 +287,18 @@ func handle_optional_requirements(params):
 		params.place_finish = false
 		params.place_lock = false
 	
+	if not params.new_room.rect.big_enough_for_tutorial():
+		params.place_tutorial = false
+	
 	if params.place_finish:
 		route_generator.placed_finish()
 		map.terrain.paint(params.new_room, "finish")
 		
 	elif params.place_lock:
 		params.new_room.lock.plan()
+	
+	elif params.place_tutorial:
+		map.dynamic_tutorial.place_tutorial(params.new_room)
 	
 	else:
 		params.new_room.items.allow()

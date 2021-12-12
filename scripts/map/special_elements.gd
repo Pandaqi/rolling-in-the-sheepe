@@ -25,9 +25,8 @@ func add_special_items_to_room(room):
 	
 	room.items.add_special_item()
 
-func get_random_type():
-	if available_item_types.size() <= 0: return null
-	return available_item_types[randi() % available_item_types.size()]
+func get_random_type(room):
+	return map.dynamic_tutorial.get_random('item', room)
 
 func type_is_immediate(tp):
 	return GlobalDict.item_types[tp].has('immediate')
@@ -44,7 +43,7 @@ func delete_on_activation(obj):
 	my_room.items.erase_special_item(obj)
 
 func place(room, params):
-	var type = get_random_type()
+	var type = get_random_type(room)
 	if params.has('type'): type = params.type
 	if not type: return null
 	
@@ -81,6 +80,8 @@ func place(room, params):
 	map.get_cell(grid_pos).special = item
 	add_child(item)
 	item.set_type(type)
+	
+	map.dynamic_tutorial.on_usage_of('item', type)
 	
 	return item
 

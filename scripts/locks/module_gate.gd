@@ -23,15 +23,15 @@ func _on_Area2D_body_entered(body):
 
 	if edge.type == "coin_gate":
 		body.get_node("Coins").pay(general_parameter)
-		edge.my_room.lock_module.perform_update()
+		edge.my_room.lock.perform_update()
 	
 	elif edge.type == "sacrifice":
-		body.get_node("Glue").slice_along_halfway_line()
-		edge.my_room.delete()
+		body.get_node("Glue").call_deferred("slice_along_halfway_line")
+		edge.my_room.lock.delete()
 	
 	elif edge.type == "sacrifice_coin":
 		body.get_node("Coins").pay(general_parameter)
-		edge.my_room.delete()
+		edge.my_room.lock.delete()
 
 func _on_Area2D_body_exited(_body):
 	pass

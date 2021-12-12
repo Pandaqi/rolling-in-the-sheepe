@@ -25,7 +25,7 @@ func has_lock():
 	return (lock_module != null)
 
 func add_lock():
-	var rand_type = map.locker.get_random_type()
+	var rand_type = map.dynamic_tutorial.get_random('lock', parent)
 	var data = GlobalDict.lock_types[rand_type]
 	
 	var related_edge = "regular"
@@ -41,6 +41,8 @@ func add_lock():
 	
 	lock_module = scene
 	map.add_child(scene)
+	
+	map.dynamic_tutorial.on_usage_of('lock', rand_type)
 	
 	print("Should add lock now")
 
@@ -75,6 +77,9 @@ func check_planned_lock():
 
 func record_button_push(pusher):
 	return lock_module.record_button_push(pusher)
+
+func perform_update():
+	lock_module.perform_update()
 
 func delete():
 	if not has_lock(): return

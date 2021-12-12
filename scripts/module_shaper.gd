@@ -4,7 +4,7 @@ extends Node2D
 # NOTE: it's certainly NOT perfect, as it depends on whether you grow/shrink, and which shape exactly you move to, but it's a middle ground
 const BASIC_BODY_RADIUS_GROWTH : float = 1.25
 
-const MIN_RADIUS : float = 10.0
+const MIN_RADIUS : float = 14.0
 const MAX_RADIUS : float = 26.0 # JUST fits between gaps
 const SIZE : float = 20.0
 

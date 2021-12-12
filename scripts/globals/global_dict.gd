@@ -5,8 +5,10 @@ var cfg = {
 	"slicing_yields": "triangle",
 	
 	"unrealistic_glueing": true,
+	"unrealistic_rounding": true,
 	
-	"unrealistic_rounding": true
+	# TO DO: make toggelable in (technical) settings
+	"dynamic_tutorials": true,
 }
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
@@ -76,25 +78,29 @@ var terrain_types = {
 	"finish": { "frame": 0, 'unpickable': true, 'category': 'essential' },
 	"lock": { "frame": 1, 'unpickable': true, 'category': 'lock', 'overwrite': true, 'disable_consecutive': true },
 	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
-	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true },
-	"no_gravity": { "frame": 4, 'category': 'gravity' },
-	"ice": { "frame": 5, 'category': 'physics' },
-	"bouncy": { "frame": 6, 'category': 'physics' },
-	"spiderman": { "frame": 7, 'category': 'physics' },
-	"speed_boost": { "frame": 8, 'category': 'speed' },
-	"speed_slowdown": { "frame": 9, 'category': 'speed' },
-	"glue": { "frame": 10, 'category': 'slicing' },
-	"reverse_controls": { "frame": 11, 'category': 'misc' },
-	"spikes": { "frame": 12, 'category': 'slicing' },
-	"ghost": { "frame": 13, 'category': 'misc' },
-	"grower": { "frame": 14, "category": "slicing" },
-	"no_wolf": { "frame": 15, "category": "misc" },
-	"body_limit": { "frame": 16, "category": "slicing" },
-	"invincibility": { "frame": 17, "category": "coin" },
-	"rounder": { "frame": 18, "category": "coin" },
-	"halver": { "frame": 19, "category": "coin" },
-	"slower": { "frame": 20, "category": "coin" },
-	"bomb": { "frame": 21, "category": "coin" },
+	
+	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true, 'tut': 5 },
+	"no_gravity": { "frame": 4, 'category': 'gravity', 'tut': 6 },
+	"ice": { "frame": 5, 'category': 'physics', 'tut': 7 },
+	"bouncy": { "frame": 6, 'category': 'physics', 'tut': 13 },
+	"spiderman": { "frame": 7, 'category': 'physics', 'tut': 14 },
+	"speed_boost": { "frame": 8, 'category': 'speed', 'tut': 15 },
+	"speed_slowdown": { "frame": 9, 'category': 'speed', 'tut': 21 },
+	"glue": { "frame": 10, 'category': 'slicing', 'tut': 22 },
+	"reverse_controls": { "frame": 11, 'category': 'misc', 'tut': 23 },
+	
+	"spikes": { "frame": 12, 'category': 'slicing', 'tut': 25 },
+	"ghost": { "frame": 13, 'category': 'misc', 'tut': 26 },
+	"grower": { "frame": 14, "category": "slicing", 'tut': 27 },
+	"no_wolf": { "frame": 15, "category": "misc", 'tut': 28 },
+	"body_limit": { "frame": 16, "category": "slicing", 'tut': 29 },
+	
+	"invincibility": { "frame": 17, "category": "coin", 'tut': 30 },
+	"rounder": { "frame": 18, "category": "coin", 'tut': 31 },
+	"halver": { "frame": 19, "category": "coin", 'tut': 32 },
+	"slower": { "frame": 20, "category": "coin", 'tut': 33 },
+	"bomb": { "frame": 21, "category": "coin", 'tut': 34 },
+	
 	"coin_gate_lock": { "frame": 22, "category": "lock" },
 	"mass_gate_lock": { "frame": 23, "category": "lock" },
 	"button_lock": { "frame": 24, "category": "lock" },

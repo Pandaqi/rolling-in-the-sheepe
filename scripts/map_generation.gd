@@ -16,6 +16,7 @@ onready var terrain = $Terrain
 onready var special_elements = $SpecialElements
 onready var slope_painter = $SlopePainter
 onready var locker = $Locker
+onready var dynamic_tutorial = $DynamicTutorial
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 
@@ -30,12 +31,15 @@ func generate():
 	randomize()
 	
 	mask_painter.set_texture_size(WORLD_SIZE*TILE_SIZE)
+	dynamic_tutorial.determine_included_types()
 	
 	initialize_grid()
 	create_border_around_world()
 	
 	route_generator.set_global_parameters()
 	route_generator.initialize_rooms()
+	
+	
 
 func initialize_grid():
 	map = []

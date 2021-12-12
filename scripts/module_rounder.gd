@@ -275,10 +275,12 @@ func change_size(factor):
 		
 		shapes_to_add.append(pts)
 	
+	for _i in range(num_shapes):
+		body.shape_owner_remove_shape(0,0)
+	
 	for shp in shapes_to_add:
 		var new_shape = ConvexPolygonShape2D.new()
 		new_shape.points = shp
-		body.shape_owner_remove_shape(0, 0)
 		body.shape_owner_add_shape(0, new_shape)
 
 	shaper.on_shape_updated()

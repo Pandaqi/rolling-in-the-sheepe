@@ -136,9 +136,7 @@ func do_effect_of_cell(cell):
 		"rounder":
 			if coins.count() >= MIN_COIN_LIMIT:
 				rounder.make_fully_round()
-		
-		"malformer":
-			if coins.count() < MIN_COIN_LIMIT:
+			else:
 				rounder.make_fully_malformed()
 		
 		"halver":
