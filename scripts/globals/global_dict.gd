@@ -58,11 +58,11 @@ var edge_types = {
 # NOTE: All their terrains must end in "_lock", 
 # (otherwise they are not filtered out (during terrain picking) nor registered as being a "locking" room)
 var lock_types = {
-	"coin_lock": { "terrain": "lock" },
-	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock" },
-	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass" },
-	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "regular" },
-	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "regular" },
+	"coin_lock": { "terrain": "lock", "tut": 33 },
+	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock", "tut": 34 },
+	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 35 },
+	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice" },
+	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin" },
 	"button_lock": { "terrain": "button_lock", "edge_type": "button" }
 }
 
@@ -77,7 +77,7 @@ var item_types = {
 var terrain_types = {
 	"finish": { "frame": 0, 'unpickable': true, 'category': 'essential' },
 	"lock": { "frame": 1, 'unpickable': true, 'category': 'lock', 'overwrite': true, 'disable_consecutive': true },
-	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true },
+	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true, "tut": 36 },
 	
 	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true, 'tut': 5 },
 	"no_gravity": { "frame": 4, 'category': 'gravity', 'tut': 6 },
