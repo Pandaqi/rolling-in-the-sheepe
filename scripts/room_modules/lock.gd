@@ -35,9 +35,17 @@ func add_lock():
 	var related_terrain = data.terrain
 	map.terrain.paint(parent, related_terrain)
 	
+	# button locks have many different (similar) variants, so we do that via subtypes
+	var rand_sub_type = null
+	if data.terrain == 'button_lock':
+		rand_type = 'button_lock'
+		rand_sub_type = data.sub_type
+	
 	var scene = load("res://scenes/locks/" + rand_type + ".tscn").instance()
 	scene.my_room = parent
 	scene.coin_related = data.has("coin")
+	
+	if rand_sub_type: scene.set_sub_type(rand_sub_type)
 	
 	lock_module = scene
 	map.add_child(scene)

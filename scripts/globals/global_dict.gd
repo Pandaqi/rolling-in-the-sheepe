@@ -58,12 +58,15 @@ var edge_types = {
 # NOTE: All their terrains must end in "_lock", 
 # (otherwise they are not filtered out (during terrain picking) nor registered as being a "locking" room)
 var lock_types = {
-	"coin_lock": { "terrain": "lock", "tut": 33 },
-	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock", "tut": 34 },
-	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 35 },
-	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice" },
-	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin" },
-	"button_lock": { "terrain": "button_lock", "edge_type": "button" }
+	"coin_lock": { "terrain": "lock", "tut": 35 },
+	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock", "tut": 36 },
+	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 37 },
+	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice", "tut": 39 },
+	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
+	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "sub_type": "regular", "tut":41 },
+	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "sub_type": "timed", "tut": 42 },
+	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "sub_type": "order", "tut": 43 },
+	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "sub_type": "simultaneous", "tut": 44 }
 }
 
 var item_types = {
@@ -77,7 +80,7 @@ var item_types = {
 var terrain_types = {
 	"finish": { "frame": 0, 'unpickable': true, 'category': 'essential' },
 	"lock": { "frame": 1, 'unpickable': true, 'category': 'lock', 'overwrite': true, 'disable_consecutive': true },
-	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true, "tut": 36 },
+	"teleporter": { "frame": 2, 'unpickable': true, 'category': 'essential', 'overwrite': true, 'disable_consecutive': true, "tut": 38 },
 	
 	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true, 'tut': 5 },
 	"no_gravity": { "frame": 4, 'category': 'gravity', 'tut': 6 },

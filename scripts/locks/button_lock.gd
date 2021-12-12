@@ -10,19 +10,14 @@ var buttons_to_push : int = 0
 onready var label = $Label
 
 func _ready():
-	pick_sub_type()
 	spawn_buttons()
 	update_label()
 
 func update_label():
 	label.perform_update(str(buttons_pushed) + "/" + str(buttons_to_push))
 
-func pick_sub_type():
-	# DEBUGGING
-	sub_type = "order"
-	return
-	
-	sub_type = types[randi() % types.size()]
+func set_sub_type(tp):
+	sub_type = tp
 
 func record_button_push(item):
 	if sub_type == "order":

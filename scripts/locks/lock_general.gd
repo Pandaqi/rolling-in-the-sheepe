@@ -15,6 +15,9 @@ func on_body_enter(body):
 func on_body_exit(body):
 	pass
 
+func set_sub_type(tp : String):
+	pass
+
 func convert_connection_to_gate():
 	print("Trying to convert connection to gate")
 
