@@ -21,11 +21,17 @@ func set_pos(new_pos):
 func get_real_pos():
 	return pos * TILE_SIZE
 
+func get_real_shrunk_pos():
+	return shrunk.pos * TILE_SIZE
+
 func set_size(new_size):
 	size = new_size
 
 func get_area():
 	return shrunk.size.x*shrunk.size.y
+
+func get_real_shrunk_size():
+	return shrunk.size*TILE_SIZE
 
 func get_real_size():
 	return size*TILE_SIZE

@@ -30,10 +30,12 @@ func add_lock() -> bool:
 	var rand_type = map.dynamic_tutorial.get_random('lock', parent)
 	var data = GlobalDict.lock_types[rand_type]
 	
-	# button locks have many different (similar) variants, so we do that via subtypes
+	# some locks have many different (similar) variants, 
+	# so we instantiate the same scene for them
+	# but modify via subtypes
 	var rand_sub_type = null
-	if data.terrain == 'button_lock':
-		rand_type = 'button_lock'
+	if data.has('lock_group'):
+		rand_type = data.lock_group
 		rand_sub_type = data.sub_type
 	
 	var scene = load("res://scenes/locks/" + rand_type + ".tscn").instance()
@@ -42,7 +44,7 @@ func add_lock() -> bool:
 	
 	if rand_sub_type: scene.set_sub_type(rand_sub_type)
 	
-	map.add_child(scene)
+	map.lock_module_layer.add_child(scene)
 	
 	if scene.is_invalid(): 
 		scene.delete()
@@ -73,7 +75,7 @@ func add_teleporter():
 	
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = parent
-	map.add_child(lock_module)
+	map.lock_module_layer.add_child(lock_module)
 	
 	map.terrain.paint(parent, "teleporter")
 	outline.create_border_around_us({ 'open_all_linked_edges': true })

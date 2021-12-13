@@ -8,11 +8,20 @@ var paint_image : Image = preload("res://assets/paint_mask.png")
 var image_size : Vector2
 var resolution : float = 1.0
 
+var active : bool = true
+
 onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var cam = get_node("/root/Main/Camera2D")
 onready var map = get_parent()
 
 func _ready():
+	if not GlobalDict.cfg.paint_on_tilemap:
+		active = false
+		return
+	
+	create_mask_texture()
+
+func create_mask_texture():
 	var world_size : Vector2 = map.WORLD_SIZE * map.TILE_SIZE
 	
 	image_size = (world_size / resolution).floor()
@@ -27,15 +36,19 @@ func out_of_mask_bounds(pos):
 	return pos.x < 0 or pos.x >= image_size.x or pos.y < 0 or pos.y >= image_size.y
 
 func _physics_process(_dt):
+	if not active: return
 	surface_texture.create_from_image(surface_image)
 
 func clear_mask():
+	if not active: return
 	surface_image.lock()
 	surface_image.fill(Color(0,0,0,0))
 	surface_image.unlock()
 
 # REMEMBER: when working with these images/texture, only INTEGER coordinates are allowed!
 func clear_rectangle(pos, size):
+	if not active: return
+	
 	surface_image.lock()
 
 	pos = pos.floor()
@@ -50,6 +63,8 @@ func clear_rectangle(pos, size):
 	surface_image.unlock()
 
 func paint_on_mask(pos : Vector2, player_num : int):
+	if not active: return
+	
 	surface_image.lock()
 	
 	# place pixels in the form of a circle

@@ -14,6 +14,9 @@ func delete():
 	var mask_data = rect.get_mask_data()
 	map.mask_painter.clear_rectangle(mask_data.pos, mask_data.size)
 
+func is_cell_filled(pos: Vector2):
+	return map.tilemap.get_cellv(pos) >= 0
+
 func erase_tiles():
 	change_tiles_to(-1)
 

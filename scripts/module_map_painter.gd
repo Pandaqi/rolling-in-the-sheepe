@@ -9,6 +9,7 @@ onready var mask_painter = get_node("/root/Main/Map/MaskPainter")
 onready var body = get_parent()
 
 func _physics_process(_dt):
+	# TO DO: What does this do??? Why is it here???
 	if disable_paint: 
 		disable_paint = false
 		return

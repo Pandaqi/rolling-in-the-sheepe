@@ -10,17 +10,17 @@ var map = []
 
 onready var tilemap = $TileMap
 onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
+onready var route_generator = $RouteGenerator
 onready var mask_painter = $MaskPainter
 onready var edges = $Edges
 onready var terrain = $Terrain
 onready var special_elements = $SpecialElements
 onready var slope_painter = $SlopePainter
-
 onready var dynamic_tutorial = $DynamicTutorial
 
 onready var tutorial = get_node("/root/Main/Tutorial")
 
-onready var route_generator = $RouteGenerator
+onready var lock_module_layer = $LockModuleLayer
 
 ####
 #
@@ -38,8 +38,6 @@ func generate():
 	
 	route_generator.set_global_parameters()
 	route_generator.initialize_rooms()
-	
-	
 
 func initialize_grid():
 	map = []

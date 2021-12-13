@@ -151,6 +151,9 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
+	# DEBUGGING
+	thing_planned = { 'kind': 'lock', 'type': 'painter_holes_lock', 'tutorial_placed': false }
+	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
 	if not GlobalDict.cfg.dynamic_tutorials:

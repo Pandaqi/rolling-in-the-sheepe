@@ -205,6 +205,8 @@ script = ExtResource( 17 )
 [node name="DynamicTutorial" type="Node" parent="Map"]
 script = ExtResource( 19 )
 
+[node name="LockModuleLayer" type="Node" parent="Map"]
+
 [node name="PlayerManager" type="Node" parent="."]
 script = ExtResource( 7 )
 

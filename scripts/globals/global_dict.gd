@@ -11,6 +11,7 @@ var cfg = {
 	
 	# TO DO: make toggelable in (technical) settings
 	"dynamic_tutorials": true,
+	"paint_on_tilemap": false,
 }
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
@@ -56,7 +57,8 @@ var edge_types = {
 	"sacrifice_coin": { "frame": 4, "gate": true },
 	"button": { "frame": 5 },
 	"slot_gate": { "frame": 6, "gate": true },
-	"fast_gate": { "frame": 7, "gate": true }
+	"fast_gate": { "frame": 7, "gate": true },
+	"painter": { "frame": 8 }
 }
 
 # NOTE: All their terrains must end in "_lock", 
@@ -70,14 +72,18 @@ var lock_types = {
 	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice", "tut": 39 },
 	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
 	
-	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "sub_type": "regular", "tut":41 },
-	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "sub_type": "timed", "tut": 42 },
-	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "sub_type": "order", "tut": 43 },
-	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "sub_type": "simultaneous", "tut": 44 },
+	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "regular", "tut":41 },
+	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "timed", "tut": 42 },
+	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "order", "tut": 43 },
+	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "simultaneous", "tut": 44 },
 	
 	"slot_gate": { "terrain": "slot_gate_lock", "edge_type": "slot_gate", "tut": 47 },
 	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
-	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49 }
+	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49 },
+	
+	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular" },
+	"painter_holes_lock": { "terrain": "painter_holes_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "holes" },
+	"painter_erase_lock": { "terrain": "painter_erase_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "erase" }
 }
 
 var item_types = {
@@ -128,5 +134,7 @@ var terrain_types = {
 	
 	"slot_gate_lock": { "frame": 31, 'category': 'lock' },
 	"fast_gate_lock": { "frame": 32, 'category': 'lock' },
-	"float_lock": { "frame": 33, 'category': 'lock' }
+	"float_lock": { "frame": 33, 'category': 'lock' },
+	
+	"painter_erase_lock": { "frame": 34, 'category': 'lock' }
 }
