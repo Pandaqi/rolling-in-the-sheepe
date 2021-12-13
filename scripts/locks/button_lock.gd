@@ -57,7 +57,7 @@ func spawn_buttons():
 	for i in range(num_buttons):
 		print("PLACING BUTTON")
 		
-		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type })
+		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type , 'use_shrunk': true, 'ignore_size': true })
 		if not new_button: break
 		
 		if sub_type == "order":
@@ -70,6 +70,9 @@ func spawn_buttons():
 	
 	buttons_to_push = final_buttons_placed
 	update_label()
+
+func is_invalid() -> bool:
+	return buttons.size() <= 0
 
 func erase_all_buttons():
 	for btn in buttons:

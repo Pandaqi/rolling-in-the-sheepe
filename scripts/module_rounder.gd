@@ -14,6 +14,7 @@ var is_round : float = false
 var is_malformed : float = false
 
 var grow_instead_of_rounding : float = false
+var reverse_rounding : float = false
 
 var grow_mode = ""
 
@@ -39,16 +40,29 @@ func _on_Timer_timeout():
 	
 	# We now have a value between 0->1 which tells us which FRACTION
 	# of that time we spent not-rolling
-	if average_airtime > 0.5:
-		if GlobalDict.cfg.unrealistic_rounding:
-			become_more_malformed_unrealistic()
-		else:
-			become_more_malformed()
+	var what_to_do = "round"
+	if average_airtime > 0.5: what_to_do = "malform"
+		
 	else:
 		if GlobalDict.cfg.unrealistic_rounding:
 			become_more_round_unrealistic()
 		else:
 			become_more_round()
+	
+	if reverse_rounding:
+		if what_to_do == "round": what_to_do = "malform"
+		else: what_to_do = "round"
+	
+	if what_to_do == "round":
+		if GlobalDict.cfg.unrealistic_rounding:
+			become_more_round_unrealistic()
+		else:
+			become_more_round()
+	elif what_to_do == "malform":
+		if GlobalDict.cfg.unrealistic_rounding:
+			become_more_malformed_unrealistic()
+		else:
+			become_more_malformed()
 	
 	average_airtime = 0.0
 

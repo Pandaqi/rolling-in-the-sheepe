@@ -18,6 +18,9 @@ func on_body_exit(body):
 func set_sub_type(tp : String):
 	pass
 
+func is_invalid() -> bool:
+	return false
+
 func convert_connection_to_gate():
 	print("Trying to convert connection to gate")
 

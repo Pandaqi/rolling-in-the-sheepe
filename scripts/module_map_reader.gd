@@ -147,6 +147,9 @@ func do_effect_of_cell(cell):
 		
 		"bomb":
 			item_reader.make_bomb()
+		
+		"reverse_rounding":
+			body.get_node("Rounder").reverse_rounding = true
 
 func undo_effect_of_cell(cell):
 	if not cell: return
@@ -208,6 +211,9 @@ func undo_effect_of_cell(cell):
 		
 		"bomb":
 			item_reader.undo_bomb()
+		
+		"reverse_rounding":
+			body.get_node("Rounder").reverse_rounding = false
 
 func finish():
 	has_finished = true

@@ -24,16 +24,11 @@ func plan():
 func has_lock():
 	return (lock_module != null)
 
-func add_lock():
+# Returns whether it was a SUCCESS or a FAIL
+# (if a fail, we don't definitively set it, so the algorithm will keep trying on subsequent rooms)
+func add_lock() -> bool:
 	var rand_type = map.dynamic_tutorial.get_random('lock', parent)
 	var data = GlobalDict.lock_types[rand_type]
-	
-	var related_edge = "regular"
-	if data.has("edge_type"): related_edge = data.edge_type
-	outline.create_border_around_us({ 'type': related_edge })
-	
-	var related_terrain = data.terrain
-	map.terrain.paint(parent, related_terrain)
 	
 	# button locks have many different (similar) variants, so we do that via subtypes
 	var rand_sub_type = null
@@ -47,12 +42,24 @@ func add_lock():
 	
 	if rand_sub_type: scene.set_sub_type(rand_sub_type)
 	
-	lock_module = scene
 	map.add_child(scene)
 	
+	if scene.is_invalid(): 
+		scene.delete()
+		return false
+	
+	var related_edge = "regular"
+	if data.has("edge_type"): related_edge = data.edge_type
+	outline.create_border_around_us({ 'type': related_edge })
+	
+	var related_terrain = data.terrain
+	map.terrain.paint(parent, related_terrain)
+	
+	lock_module = scene
 	map.dynamic_tutorial.on_usage_of('lock', rand_type)
 	
 	print("Should add lock now")
+	return true
 
 func remove_lock():
 	outline.remove_border_around_us()
@@ -78,9 +85,10 @@ func recalculate_gates():
 func check_planned_lock():
 	if not lock_planned: return
 	
-	add_lock()
-	lock_planned = false
+	var success = add_lock()
+	if not success: return 
 	
+	lock_planned = false
 	route_generator.placed_lock()
 
 func record_button_push(pusher):

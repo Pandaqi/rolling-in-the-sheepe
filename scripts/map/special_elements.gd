@@ -49,7 +49,7 @@ func place(room, params):
 	
 	# determine location
 	# NOTE: "tile" means we KNOW it's a filled tile in the tilemap
-	var grid_pos = room.items.get_free_tile_inside()
+	var grid_pos = room.items.get_free_tile_inside(params)
 	if not grid_pos: return null
 	
 	# determine rotation (based on neighbors OR slope dir) => if none possible, abort

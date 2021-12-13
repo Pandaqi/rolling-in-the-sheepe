@@ -97,6 +97,9 @@ func get_kind_planned():
 	return thing_planned
 
 func on_usage_of(kind : String, type : String):
+	if not things_taught.has(kind): return
+	if not things_to_teach.has(kind): return
+	
 	var not_in_this_game = not (type in things_to_teach[kind])
 	var already_used = (type in things_taught[kind])
 	if already_used or not_in_this_game: return

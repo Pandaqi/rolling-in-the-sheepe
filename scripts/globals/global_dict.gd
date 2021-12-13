@@ -6,6 +6,8 @@ var cfg = {
 	
 	"unrealistic_glueing": true,
 	"unrealistic_rounding": true,
+
+	'wall_jump_strength': 0.3, # set to 0.0 for no wall jump, 1.0 for full effect
 	
 	# TO DO: make toggelable in (technical) settings
 	"dynamic_tutorials": true,
@@ -52,7 +54,9 @@ var edge_types = {
 	"mass": { "frame": 2 },
 	"sacrifice": { "frame": 3, "gate": true },
 	"sacrifice_coin": { "frame": 4, "gate": true },
-	"button": { "frame": 5 }
+	"button": { "frame": 5 },
+	"slot_gate": { "frame": 6, "gate": true },
+	"fast_gate": { "frame": 7, "gate": true }
 }
 
 # NOTE: All their terrains must end in "_lock", 
@@ -60,13 +64,20 @@ var edge_types = {
 var lock_types = {
 	"coin_lock": { "terrain": "lock", "tut": 35 },
 	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock", "tut": 36 },
+	
 	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 37 },
+	
 	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice", "tut": 39 },
 	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
+	
 	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "sub_type": "regular", "tut":41 },
 	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "sub_type": "timed", "tut": 42 },
 	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "sub_type": "order", "tut": 43 },
-	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "sub_type": "simultaneous", "tut": 44 }
+	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "sub_type": "simultaneous", "tut": 44 },
+	
+	"slot_gate": { "terrain": "slot_gate_lock", "edge_type": "slot_gate", "tut": 47 },
+	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
+	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49 }
 }
 
 var item_types = {
@@ -111,5 +122,11 @@ var terrain_types = {
 	"sacrifice_coin_lock": { "frame": 26, "category": "lock" },
 	"shop_lock": { "frame": 27, "category": "lock" },
 	"painter_lock": { "frame": 28, "category": "lock" },
-	"painter_holes_lock": { "frame": 29, "category": "lock" }
+	"painter_holes_lock": { "frame": 29, "category": "lock" },
+	
+	"reverse_rounding": { "frame": 30, "category": "slicing", "tut": 46 },
+	
+	"slot_gate_lock": { "frame": 31, 'category': 'lock' },
+	"fast_gate_lock": { "frame": 32, 'category': 'lock' },
+	"float_lock": { "frame": 33, 'category': 'lock' }
 }

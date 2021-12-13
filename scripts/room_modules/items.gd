@@ -31,9 +31,10 @@ func determine_tiles_inside():
 			
 			tiles_inside.append(temp_pos)
 
-func get_free_tile_inside():
+func get_free_tile_inside(params = {}):
 	tiles_inside.shuffle()
 	for tile in tiles_inside:
+		if params.use_shrunk and rect.inside_growth_area_global(tile): continue
 		if map.get_cell(tile).special: continue
 		
 		return tile
@@ -41,8 +42,7 @@ func get_free_tile_inside():
 func add_special_item(params = {}):
 	# TO DO: find actual good requirements for this
 	var fit_for_special_item = (rect.get_area() >= 9)
-	
-	if not fit_for_special_item: return null
+	if not params.ignore_size and not fit_for_special_item: return null
 	
 	var elem = map.special_elements.place(parent, params)
 	if not elem: return null

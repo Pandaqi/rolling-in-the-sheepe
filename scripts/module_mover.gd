@@ -25,6 +25,7 @@ const STANDSTILL_THRESHOLD : float = 10.0 # in seconds
 const TIME_PENALTY_STANDSTILL_TELEPORT : float = 6.0
 
 var normal_vec : Vector2
+var jump_vec : Vector2
 var in_air : bool = false
 
 var velocity_last_frame : Vector2
@@ -97,8 +98,8 @@ func _on_Input_double_button():
 	var grav_scale_absolute = abs(body.gravity_scale)
 	if grav_scale_absolute == 0: grav_scale_absolute = 1.0
 
-	var jump_vec = normal_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
-	body.apply_central_impulse(jump_vec)
+	var final_jump_vec = jump_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
+	body.apply_central_impulse(final_jump_vec)
 
 func _physics_process(_dt):
 	size_speed_multiplier = shaper.approximate_radius_as_ratio()
@@ -178,9 +179,12 @@ func determine_normal_vec():
 	var dirs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 	
 	normal_vec = Vector2.ZERO
+	jump_vec = Vector2.ZERO
 	
 	var num_hits = 0
-	for dir in dirs:
+	var sides_with_hit = [false,false,false,false]
+	for i in range(4):
+		var dir = dirs[i]
 		var raycast_dist = shaper.get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
 		var end = start + dir*raycast_dist
 		
@@ -190,21 +194,33 @@ func determine_normal_vec():
 		var result = space_state.intersect_ray(start, end, exclude, collision_layer)
 		if not result: continue
 		
+		sides_with_hit[i] = true
 		normal_vec += result.normal
 		num_hits += 1
 	
 	in_air = (num_hits <= 0)
+	if not in_air: normal_vec /= float(num_hits) # without if-check there's div by 0
+	
+	jump_vec = normal_vec
 	
 	if num_hits == 0 or not should_modify_jump_normal():
 		# NOTE: Need to do it this way
 		# (Otherwise, if gravity_dir = 0, we'd have no normal vec)
 		var jump_dir = 1
 		if gravity_dir == -1: jump_dir = -1
-		
-		normal_vec = Vector2.UP*jump_dir
-		return
 
-	normal_vec /= float(num_hits)
+		# TO DO: move outside this if-statement? Nah, would cause other troubles
+		var extra_vec = Vector2.ZERO
+		var factor = GlobalDict.cfg.wall_jump_strength
+		
+		if sides_with_hit[0]:
+			extra_vec += Vector2.LEFT
+		if sides_with_hit[2]:
+			extra_vec += Vector2.RIGHT
+			
+		jump_vec = (Vector2.UP + factor*extra_vec).normalized() * jump_dir
+
+		return
 
 func debug_draw():
 	$NormalVec.rotation = -body.rotation + normal_vec.angle()

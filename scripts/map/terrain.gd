@@ -106,7 +106,7 @@ func paint(room, type):
 			var temp_pos = rect.pos + Vector2(x,y)
 			
 			var already_has_terrain = (tilemap_terrain.get_cellv(temp_pos) != -1) and map.get_room_at(temp_pos)
-			var inside_growth_area = (x == 0 or x == (rect.size.x-1) or y == 0 or y == (rect.size.y - 1))
+			var inside_growth_area = rect.inside_growth_area(Vector2(x,y))
 			
 			if already_has_terrain and inside_growth_area:
 				if not overwrites_terrain: continue

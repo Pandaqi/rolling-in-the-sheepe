@@ -43,6 +43,12 @@ func make_local(p):
 func get_shrunk():
 	return shrunk
 
+func inside_growth_area(p:Vector2):
+	return (p.x == 0 or p.x == (size.x-1) or p.y == 0 or p.y == (size.y - 1))
+
+func inside_growth_area_global(p:Vector2):
+	return inside_growth_area(p - pos)
+
 func save_cur_size_as_shrunk():
 	shrunk = { 'pos': pos, 'size': size }
 

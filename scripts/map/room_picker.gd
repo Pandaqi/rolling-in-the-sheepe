@@ -86,6 +86,10 @@ func set_wanted_room_parameters(params):
 	params.place_finish = route_generator.should_place_finish()
 	params.place_lock = route_generator.should_place_lock()
 	
+	# UPGRADE: no two locks directly after each other
+	if params.prev_room and params.prev_room.lock.has_lock():
+		params.place_lock = false
+	
 	# if we need a lock, but we don't have any taught yet
 	# forbid it, but place a tutorial for a lock at the nearest opportunity
 	var wanted_tut_kind = 'any'
