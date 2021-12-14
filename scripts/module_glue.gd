@@ -101,6 +101,12 @@ func check_spikes():
 		if not other_body.is_in_group("Players"): continue
 		if other_body.get_node("Status").player_num == player_num: continue
 		
+		if GlobalDict.cfg.wolf_takes_coin:
+			if is_wolf and other_body.get_node("Coins").has_some():
+				other_body.get_node("Coins").pay(1)
+				body.coins.get_node("Coins").get_paid(1)
+				break
+		
 		spike_object(obj)
 		break
 

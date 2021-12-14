@@ -36,19 +36,28 @@ func set_at(pos, dir_index, type):
 	
 	return e
 
-func remove_at(pos, dir_index):
+func remove_at(pos, dir_index, soft_remove : bool = false):
 	var other_pos = pos + map.get_vector_from_dir(dir_index)
 	var other_dir_index = (dir_index + 2) % 4
 	
-	if not map.get_cell(pos).edges[dir_index]: return
+	var e1 = map.get_cell(pos).edges[dir_index]
+	if not e1: return
 	
-	map.get_cell(pos).edges[dir_index].queue_free()
-	map.get_cell(pos).edges[dir_index] = null
+	if soft_remove:
+		e1.soft_lock()
+	else:
+		e1.queue_free()
+		map.get_cell(pos).edges[dir_index] = null
 	
 	if map.out_of_bounds(other_pos): return
 	
-	map.get_cell(other_pos).edges[other_dir_index].queue_free()
-	map.get_cell(other_pos).edges[other_dir_index] = null
+	var e2 = map.get_cell(other_pos).edges[other_dir_index]
+	
+	if soft_remove:
+		e2.soft_lock()
+	else:
+		e2.queue_free()
+		map.get_cell(other_pos).edges[other_dir_index] = null
 
 func remove_all():
 	for x in range(map.WORLD_SIZE.x):

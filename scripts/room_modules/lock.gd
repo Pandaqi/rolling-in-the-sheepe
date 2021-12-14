@@ -80,6 +80,8 @@ func add_teleporter():
 	map.lock_module_layer.add_child(lock_module)
 	
 	map.terrain.paint(parent, "teleporter")
+	
+	# this basically just blows away any edges that might obstruct passage towards this
 	outline.create_border_around_us({ 'open_all_linked_edges': true })
 
 func recalculate_gates():

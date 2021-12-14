@@ -23,6 +23,9 @@ func _ready():
 	remove_child(my_gui)
 	main_gui.add_child(my_gui)
 
+func has_some():
+	return (num_coins > 0)
+
 func count():
 	return num_coins
 

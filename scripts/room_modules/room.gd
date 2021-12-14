@@ -12,6 +12,8 @@ onready var route = $Route
 onready var tilemap = $Tilemap
 onready var items = $Items
 
+var is_finish : bool = false
+
 func initialize(pos, size):
 	rect.set_pos(pos)
 	rect.set_size(size)
@@ -20,6 +22,17 @@ func delete():
 	lock.delete()
 	tilemap.delete()
 	items.delete()
+
+# NOTE: called AFTER the whole placement for this room is done
+func turn_into_finish():
+	is_finish = true
+	map.terrain.paint(self, "finish")
+	outline.create_border_around_us({ 'type': 'finish' })
+	
+	map.route_generator.placed_finish()
+	
+	# nothing comes after the finish anymore, so do this ourselves
+	finish_placement_in_hindsight()
 
 func turn_into_teleporter():
 	tilemap.update_map_to_new_rect()
@@ -58,9 +71,6 @@ func finish_placement():
 	slope_painter.fill_room(self)
 
 	outline.determine_outline()
-	
-	#rect.determine_tiles_inside() => moved to when we actually place special elements, as then we KNOW what's inside and what's not
-	# rect.create_border_around_us()
 
 # called when the NEXT room is being placed, as only then we know what should happen with this one
 func finish_placement_in_hindsight():

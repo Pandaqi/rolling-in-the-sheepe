@@ -1,6 +1,6 @@
 extends Node
 
-var type : String = "play"
+var type : String = "tutorial"
 var in_game : bool = false
 var scenes = {
 	'main': preload("res://Main.tscn"),
@@ -20,3 +20,9 @@ func back_to_menu():
 	in_game = false
 # warning-ignore:return_value_discarded
 	get_tree().change_scene_to(scenes.menu)
+
+func in_tutorial_mode():
+	return (type == "tutorial")
+
+func in_play_mode():
+	return (type == "play")

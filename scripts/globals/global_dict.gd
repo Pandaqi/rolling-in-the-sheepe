@@ -11,7 +11,7 @@ var cfg = {
 	
 	'time_penalty_unfinished_bodies': 10.0, # set to 0.0 to eliminate this rule
 	
-	'wolf_takes_coins': true,
+	'wolf_takes_coin': true,
 	
 	# TO DO: make toggelable in (technical) settings
 	'generation_speed': 2.0, # higher is faster; inverted (1/X) on game start
@@ -63,7 +63,8 @@ var edge_types = {
 	"button": { "frame": 5 },
 	"slot_gate": { "frame": 6, "gate": true },
 	"fast_gate": { "frame": 7, "gate": true },
-	"painter": { "frame": 8 }
+	"painter": { "frame": 8 },
+	"finish": { "frame": 9 }
 }
 
 # NOTE: All their terrains must end in "_lock", 
@@ -143,5 +144,10 @@ var terrain_types = {
 	"fast_gate_lock": { "frame": 32, 'category': 'lock' },
 	"float_lock": { "frame": 33, 'category': 'lock' },
 	
-	"painter_erase_lock": { "frame": 34, 'category': 'lock' }
+	"painter_erase_lock": { "frame": 34, 'category': 'lock' },
+	
+	# menu terrains are here (35, 36)
+	
+	"magnet": { "frame": 37, 'category': 'physics', 'tut': 53 },
+	"body_cleanup": { 'frame': 38, 'category': 'slicing', 'tut': 54 }
 }

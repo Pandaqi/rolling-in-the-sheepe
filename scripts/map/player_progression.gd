@@ -14,6 +14,7 @@ var time_since_trail_switch : float = -1
 var wolf_disabled : bool = false
 
 onready var route_generator = get_node("../RouteGenerator")
+onready var room_picker = get_node("../RoomPicker")
 
 func _physics_process(_dt):
 	determine_leading_and_trailing_player()
@@ -92,6 +93,7 @@ func get_distance_to_generation_end():
 #
 func check_wolf():
 	if not has_trailing_player(): return
+	if room_picker.has_tutorial() and not room_picker.tutorial_course.wolf_active: return
 	
 	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().route.index > 1) and (not wolf_disabled)
 	if not wolf_creation_is_allowed: return

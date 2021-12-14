@@ -37,7 +37,7 @@ func convert_connection_to_gate():
 		var other_side = my_room.outline.edge_links_to(edge)
 		if other_side and other_side.route.index > my_room.route.index:
 			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
-			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter })
+			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter, 'gate': true })
 
 func perform_update():
 	pass

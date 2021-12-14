@@ -46,6 +46,7 @@ func check_if_game_over():
 	
 	print("GAME OVER")
 	game_over_mode = true
+	map.route_generator.get_furthest_room().outline.seal()
 	show_game_over_screen()
 
 func player_finished(b):

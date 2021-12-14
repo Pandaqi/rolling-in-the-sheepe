@@ -143,13 +143,19 @@ func do_effect_of_cell(cell):
 			coins.pay(floor(0.5*coins.count()))
 		
 		"slower":
-			mover.speed_multiplier = clamp(coins.as_ratio()*2.0, 0.2, 2.0) 
+			mover.speed_multiplier = clamp(coins.as_ratio()*2.0, 0.5, 2.0) 
 		
 		"bomb":
 			item_reader.make_bomb()
 		
 		"reverse_rounding":
 			body.get_node("Rounder").reverse_rounding = true
+		
+		"magnet":
+			body.get_node("Magnet").activate()
+		
+		"body_cleanup":
+			player_manager.remove_furthest_body_of(body.get_node("Status").player_num)
 
 func undo_effect_of_cell(cell):
 	if not cell: return
@@ -214,6 +220,9 @@ func undo_effect_of_cell(cell):
 		
 		"reverse_rounding":
 			body.get_node("Rounder").reverse_rounding = false
+		
+		"magnet":
+			body.get_node("Magnet").deactivate()
 
 func finish():
 	has_finished = true

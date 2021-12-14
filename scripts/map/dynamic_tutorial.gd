@@ -115,10 +115,9 @@ func is_thing_already_used(kind : String, type : String):
 func can_teach_something_new():
 	print("CAN TEACH SOMETHING NEW?")
 	
+	if Global.in_tutorial_mode(): return false
+	
 	var too_soon = abs(map.route_generator.get_new_room_index() - last_tutorial_index) < MIN_ROOMS_BETWEEN_TUTORIALS
-	
-	print(too_soon)
-	
 	if too_soon: return false
 	
 	var still_busy = has_something_planned()
@@ -188,7 +187,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
 	# DEBUGGING
-	#thing_planned = { 'kind': 'lock', 'type': 'painter_holes_lock', 'tutorial_placed': false }
+	#thing_planned = { 'kind': 'terrain', 'type': 'body_cleanup', 'tutorial_placed': false }
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
@@ -200,6 +199,12 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	
 	return true
 
+func place_tutorial_custom(room, params):
+	var tut = tutorial_scene.instance()
+	tut.set_position(room.rect.get_center())
+	tut.get_node("Sprite").set_frame(params.frame)
+	map.add_child(tut)
+
 func place_tutorial(room):
 	var self_placement = room.tilemap.terrain == "teleporter"
 	if not has_something_planned() and not self_placement: return
@@ -207,8 +212,9 @@ func place_tutorial(room):
 	var tut = tutorial_scene.instance()
 	tut.set_position(room.rect.get_center())
 	
-	var frame = get_planned_frame()
+	var frame = 0
 	if self_placement: frame = 38
+	else: frame = get_planned_frame()
 	
 	tut.get_node("Sprite").set_frame(frame)
 	map.add_child(tut)

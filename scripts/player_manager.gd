@@ -104,6 +104,29 @@ func get_spread_out_position(room):
 	
 	return pos
 
+func remove_furthest_body_of(p_num : int):
+	var body_list = bodies_per_player[p_num]
+	if body_list.size() <= 1: return
+	
+	# TO DO (Optional): if you only have one body, this SLICES that body instead?
+	var furthest_body = null
+	var lowest_room_index = INF
+	var dist_in_room = INF
+	for b in body_list:
+		var my_index = b.get_node("RoomTracker").cur_room.route.index
+		var my_dist = b.get_node("RoomTracker").get_dist_in_room()
+		if my_index > lowest_room_index: continue
+		
+		if my_index == lowest_room_index:
+			if my_dist >= dist_in_room:
+				continue
+
+		lowest_room_index = my_index
+		furthest_body = b
+		dist_in_room = my_dist
+	
+	furthest_body.get_node("Status").delete()
+
 func closest_dist_to_player(pos):
 	var other_players = get_tree().get_nodes_in_group("Players")
 	var min_dist = INF

@@ -40,26 +40,30 @@ func open_connection_to_previous_room():
 	for edge in outline:
 		if not edge_links_to_previous_room(edge): continue
 
-		map.edges.remove_at(edge.pos, edge.dir_index)
+		map.edges.remove_at(edge.pos, edge.dir_index, true)
+
+func seal():
+	create_border_around_us({ 'close_all': true })
 
 func create_border_around_us(params = {}):
 	var type = "regular"
 	if params.has('type'): type = params.type
 	
+	for edge in outline:
+		map.edges.set_at(edge.pos, edge.dir_index, type)
+	
 	var prev_room = route.get_previous_room()
 	for edge in outline:
+		if params.has('close_all'): continue
+		
 		var other_side = edge_links_to(edge)
+		
 		if params.has('open_all_linked_edges'):
 			if other_side and not (other_side == self): 
-				map.edges.remove_at(edge.pos, edge.dir_index)
-				continue
+				map.edges.remove_at(edge.pos, edge.dir_index, true)
 		elif prev_room:
 			if other_side == prev_room and (not prev_room.lock.has_lock()):
-				map.edges.remove_at(edge.pos, edge.dir_index) 
-				continue
-		
-		# @params => position, index (which direction), type of edge
-		map.edges.set_at(edge.pos, edge.dir_index, type)
+				map.edges.remove_at(edge.pos, edge.dir_index, true) 
 	
 	has_border = true
 
@@ -79,12 +83,10 @@ func edge_links_to_previous_room(edge):
 	return (edge_links_to(edge) == route.get_previous_room())
 
 func delete_edges_inside():
-	var shrunk = rect.shrunk
-	for x in range(shrunk.size.x):
-		for y in range(shrunk.size.y):
-			for i in range(4):
-				var edge = { 'pos': shrunk.pos + Vector2(x,y), 'dir_index': i }
-				var link = edge_links_to(edge)
-				if not link or link != self: continue
-				
-				map.edges.remove_at(edge.pos, edge.dir_index)
+	for temp_pos in rect.shrunk_positions:
+		for i in range(4):
+			var edge = { 'pos': temp_pos, 'dir_index': i }
+			var link = edge_links_to(edge)
+			if not link or link != self: continue
+			
+			map.edges.remove_at(edge.pos, edge.dir_index)

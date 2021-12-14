@@ -34,9 +34,6 @@ func in_growth_area(pos, room):
 func recalculate_room(room):
 	if not room: return
 	
-	# TO DO: This has become redundant; we already loop through the WHOLE rectangle below
-	# TO DO: However, isn't it better to SAVE exactly which tiles we filled inside the rectangle? Then we have a fixed, short list (instead of going through the WHOLE rectangle)
-	var shrunk = room.rect.get_shrunk()
 	for pos in get_slopes(room):
 		if not placement_allowed(pos, room, false): 
 			map.change_cell(pos, -1)
@@ -47,6 +44,9 @@ func recalculate_room(room):
 		
 		map.change_cell(temp_pos, -1)
 	
+	print("UPDATING BITMASK FOR ROOM")
+	print(room.is_finish)
+	
 	map.update_bitmask_from_room(room)
 
 ####
@@ -55,6 +55,7 @@ func recalculate_room(room):
 func fill_room(room):
 	if not room: return
 	if room.route.index <= 0: return
+	if map.room_picker.has_tutorial() and not map.room_picker.tutorial_course.tiles_inside_allowed: return
 	
 	var rect = room.rect
 	var shrunk = rect.get_shrunk()

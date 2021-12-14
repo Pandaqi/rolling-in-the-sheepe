@@ -11,6 +11,7 @@ var map = []
 onready var tilemap = $TileMap
 onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
 onready var route_generator = $RouteGenerator
+onready var room_picker = $RoomPicker
 onready var mask_painter = $MaskPainter
 onready var edges = $Edges
 onready var terrain = $Terrain

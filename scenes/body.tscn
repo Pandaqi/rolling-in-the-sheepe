@@ -1,9 +1,10 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scenes/body_modules/status.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/body_modules/clinger.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scripts/module_map_reader.gd" type="Script" id=4]
+[ext_resource path="res://scripts/module_magnet.gd" type="Script" id=5]
 [ext_resource path="res://scenes/body_modules/mover.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scripts/player.gd" type="Script" id=7]
 [ext_resource path="res://scripts/module_map_painter.gd" type="Script" id=8]
@@ -17,6 +18,10 @@
 [ext_resource path="res://scripts/module_edge_reader.gd" type="Script" id=20]
 
 [sub_resource type="PhysicsMaterial" id=1]
+bounce = 0.1
+
+[sub_resource type="CircleShape2D" id=2]
+radius = 180.003
 
 [node name="Body" type="RigidBody2D" groups=["Players"]]
 position = Vector2( 435, 200 )
@@ -92,6 +97,14 @@ position = Vector2( 435, 200 )
 
 [node name="EdgeReader" type="Node" parent="."]
 script = ExtResource( 20 )
+
+[node name="Magnet" type="Node2D" parent="."]
+script = ExtResource( 5 )
+
+[node name="Area2D" type="Area2D" parent="Magnet"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Magnet/Area2D"]
+shape = SubResource( 2 )
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]

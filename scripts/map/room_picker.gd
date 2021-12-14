@@ -18,11 +18,18 @@ onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
 
 var room_scene = preload("res://scenes/room.tscn")
 
+var tutorial_course_scene = preload("res://scenes/tutorial_course.tscn")
+var tutorial_course = null
+
 #
 # Initialization
 #
 func _ready():
 	default_starting_pos *= map.WORLD_SIZE
+	
+	if Global.in_tutorial_mode():
+		tutorial_course = tutorial_course_scene.instance()
+		add_child(tutorial_course)
 
 #
 # The only functionality it has: create newest room
@@ -82,6 +89,10 @@ func set_wanted_room_parameters(params):
 	
 	# UPGRADE: no two locks directly after each other
 	if params.prev_room and params.prev_room.lock.has_lock_or_planned():
+		params.place_lock = false
+	
+	# EXCEPTION: in tutorial, we delay locks until we've explained them
+	if tutorial_course and not tutorial_course.can_place_locks:
 		params.place_lock = false
 	
 	# if we need a lock, but we don't have any taught yet
@@ -151,6 +162,8 @@ func generate_all_1x1_rooms_in_dir(params):
 	return arr
 
 func find_valid_configuration_better(params):
+	var use_simple_generation = tutorial_course and tutorial_course.simple_route_generation
+	
 	# UPGRADE: controlled variation; determine our maximum size
 	# (the path tries to stay varied: never too many small or large rooms after each other)
 	var average_size_over_path : float = route_generator.get_average_room_size_over_last(7)
@@ -159,6 +172,8 @@ func find_valid_configuration_better(params):
 	for i in range(1, total_max_room_size):
 		rand_max = i
 		if randf() <= ROUTE_TIGHTNESS * (average_size_over_path/total_max_room_size): break
+	
+	if use_simple_generation: rand_max = 3
 	
 	var max_room_size = Vector2(1,1)*rand_max
 	
@@ -175,6 +190,10 @@ func find_valid_configuration_better(params):
 	var preferred_dir_order = [last_dir, (last_dir + 2) % 4, 1, 3]
 	if abs(map.dist_to_bounds(last_pos)) < total_max_room_size:
 		preferred_dir_order.erase(map.dir_index_to_bounds(last_pos))
+	
+	# EXCEPTION: tutorial wants to stay simple, so no upward
+	if use_simple_generation:
+		preferred_dir_order.erase(3)
 	
 	# find the valid rooms in each dir, until we have a direction with results
 	while preferred_dir_order.size() > 0:
@@ -213,6 +232,13 @@ func find_valid_configuration_better(params):
 			var room = rooms_to_check.pop_front()
 			if route_generator.room_rect_overlaps_path(room, params):
 				continue
+			
+			# simple generation wants rooms to stay the same size
+			if use_simple_generation:
+				if params.dir == 0 or params.dir == 2:
+					if room.size.x != last_size.x: continue
+				elif params.dir == 1 or params.dir == 3:
+					if room.size.y != last_size.y: continue
 			
 			# otherwise, record it as valid
 			valid_rooms.append(room)
@@ -286,8 +312,7 @@ func handle_optional_requirements(params):
 		params.place_tutorial = false
 	
 	if params.place_finish:
-		route_generator.placed_finish()
-		map.terrain.paint(params.new_room, "finish")
+		params.new_room.turn_into_finish()
 		
 	elif params.place_lock:
 		params.new_room.lock.plan()
@@ -301,6 +326,12 @@ func handle_optional_requirements(params):
 func update_global_generation_parameters(params):
 	route_generator.total_rooms_created += params.new_room.rect.get_longest_side()
 	route_generator.rooms_in_current_section += params.new_room.rect.get_longest_side()
+	
+	if tutorial_course:
+		tutorial_course.on_new_room_created(params.new_room)
+
+func has_tutorial():
+	return (tutorial_course != null)
 
 # TO DO: Can function be simplified, as 0 == 2 and 1 == 3???
 func get_displacement_bounds(old_r, new_r, dir_index):

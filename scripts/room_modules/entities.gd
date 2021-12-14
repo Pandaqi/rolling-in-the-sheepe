@@ -3,6 +3,7 @@ extends Node
 var players_inside = []
 
 onready var lock = get_node("../Lock")
+onready var outline = get_node("../Outline")
 
 func add_player(p):
 	players_inside.append(p)
