@@ -1,0 +1,142 @@
+[gd_scene load_steps=15 format=2]
+
+[ext_resource path="res://tileset.tres" type="TileSet" id=1]
+[ext_resource path="res://tileset_terrain.tres" type="TileSet" id=2]
+[ext_resource path="res://scripts/camera_menu.gd" type="Script" id=3]
+[ext_resource path="res://assets/ui/menu_play_helper.png" type="Texture" id=4]
+[ext_resource path="res://assets/ui/menu_tutorial_helper.png" type="Texture" id=5]
+[ext_resource path="res://assets/ui/menu_button_helper.png" type="Texture" id=6]
+[ext_resource path="res://scripts/menu.gd" type="Script" id=7]
+[ext_resource path="res://scripts/menu_input.gd" type="Script" id=8]
+[ext_resource path="res://scripts/player_manager.gd" type="Script" id=9]
+[ext_resource path="res://scenes/menu/menu_area.tscn" type="PackedScene" id=10]
+
+[sub_resource type="Animation" id=1]
+resource_name = "PreparingPlay"
+length = 0.4
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Helper:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1.25, 3, 1.25, 1 ) ]
+}
+
+[sub_resource type="Animation" id=2]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Helper:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=3]
+resource_name = "PreparingPlay"
+length = 0.4
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Helper:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1.25, 3, 1.25, 1 ) ]
+}
+
+[sub_resource type="Animation" id=4]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Helper:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ) ]
+}
+
+[node name="Main" type="Node2D"]
+script = ExtResource( 7 )
+
+[node name="Map" type="Node2D" parent="."]
+
+[node name="TileMapTerrain" type="TileMap" parent="Map"]
+tile_set = ExtResource( 2 )
+format = 1
+tile_data = PoolIntArray( 0, 35, 0, 1, 35, 0, 2, 35, 0, 3, 35, 0, 12, 36, 0, 13, 36, 0, 14, 36, 0, 15, 36, 0, 65536, 35, 0, 65537, 35, 0, 65538, 35, 0, 65539, 35, 0, 65548, 36, 0, 65549, 36, 0, 65550, 36, 0, 65551, 36, 0, 131072, 35, 0, 131073, 35, 0, 131074, 35, 0, 131075, 35, 0, 131084, 36, 0, 131085, 36, 0, 131086, 36, 0, 131087, 36, 0, 196608, 35, 0, 196609, 35, 0, 196610, 35, 0, 196611, 35, 0, 196620, 36, 0, 196621, 36, 0, 196622, 36, 0, 196623, 36, 0, 262144, 35, 0, 262145, 35, 0, 262146, 35, 0, 262147, 35, 0, 262156, 36, 0, 262157, 36, 0, 262158, 36, 0, 262159, 36, 0 )
+
+[node name="TileMap" type="TileMap" parent="Map"]
+tile_set = ExtResource( 1 )
+format = 1
+tile_data = PoolIntArray( -1, 0, 8, -65536, 0, 10, -65535, 0, 10, -65534, 0, 10, -65533, 0, 10, -65532, 0, 10, -65531, 0, 10, -65530, 0, 10, -65529, 0, 10, -65528, 0, 10, -65527, 0, 10, -65526, 0, 10, -65525, 0, 10, -65524, 0, 10, -65523, 0, 10, -65522, 0, 10, -65521, 0, 10, -65520, 0, 11, 65535, 0, 65544, 0, 0, 131078, 1, 0, 196617, 2, 0, 196617, 3, 0, 196617, 4, 0, 196617, 5, 0, 196617, 6, 0, 196617, 7, 0, 196617, 8, 0, 196617, 9, 0, 196617, 10, 0, 196617, 11, 0, 196617, 12, 0, 196617, 13, 0, 196617, 14, 0, 196617, 15, 0, 131077, 16, 0, 131083, 131071, 0, 65544, 65536, 0, 131083, 65551, 0, 65544, 65552, 0, 131083, 196607, 0, 65544, 131072, 0, 131083, 131087, 0, 65544, 131088, 0, 131083, 262143, 0, 65544, 196608, 0, 131083, 196623, 0, 65544, 196624, 0, 131083, 327679, 0, 65544, 262144, 0, 65542, 262145, 0, 10, 262146, 0, 10, 262147, 0, 10, 262148, 0, 11, 262155, 0, 8, 262156, 0, 10, 262157, 0, 10, 262158, 0, 10, 262159, 0, 65541, 262160, 0, 131083, 393215, 0, 65544, 327680, 0, 131081, 327681, 0, 131081, 327682, 0, 131081, 327683, 0, 131081, 327684, 0, 65542, 327685, 0, 11, 327690, 0, 8, 327691, 0, 65541, 327692, 0, 131081, 327693, 0, 131081, 327694, 0, 131081, 327695, 0, 131081, 327696, 0, 131083, 458751, 0, 65544, 393216, 0, 131081, 393217, 0, 131081, 393218, 0, 131081, 393219, 0, 131081, 393220, 0, 131081, 393221, 0, 65542, 393222, 0, 10, 393223, 0, 10, 393224, 0, 10, 393225, 0, 10, 393226, 0, 65541, 393227, 0, 131081, 393228, 0, 131081, 393229, 0, 131081, 393230, 0, 131081, 393231, 0, 131081, 393232, 0, 131083, 524287, 0, 65544, 458752, 0, 131081, 458753, 0, 131081, 458754, 0, 131081, 458755, 0, 131081, 458756, 0, 131081, 458757, 0, 131081, 458758, 0, 131081, 458759, 0, 131081, 458760, 0, 131081, 458761, 0, 131081, 458762, 0, 131081, 458763, 0, 131081, 458764, 0, 131081, 458765, 0, 131081, 458766, 0, 131081, 458767, 0, 131081, 458768, 0, 131083, 589823, 0, 65544, 524288, 0, 131081, 524289, 0, 131081, 524290, 0, 131081, 524291, 0, 131081, 524292, 0, 131081, 524293, 0, 131081, 524294, 0, 131081, 524295, 0, 131081, 524296, 0, 131081, 524297, 0, 131081, 524298, 0, 131081, 524299, 0, 131081, 524300, 0, 131081, 524301, 0, 131081, 524302, 0, 131081, 524303, 0, 131081, 524304, 0, 131083, 655359, 0, 65544, 589824, 0, 131081, 589825, 0, 131081, 589826, 0, 131081, 589827, 0, 131081, 589828, 0, 131081, 589829, 0, 131081, 589830, 0, 131081, 589831, 0, 131081, 589832, 0, 131081, 589833, 0, 131081, 589834, 0, 131081, 589835, 0, 131081, 589836, 0, 131081, 589837, 0, 131081, 589838, 0, 131081, 589839, 0, 131081, 589840, 0, 131083, 720895, 0, 196616, 655360, 0, 196617, 655361, 0, 196617, 655362, 0, 196617, 655363, 0, 196617, 655364, 0, 196617, 655365, 0, 196617, 655366, 0, 196617, 655367, 0, 196617, 655368, 0, 196617, 655369, 0, 196617, 655370, 0, 196617, 655371, 0, 196617, 655372, 0, 196617, 655373, 0, 196617, 655374, 0, 196617, 655375, 0, 196617, 655376, 0, 196619 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+limit_left = 0
+limit_top = 0
+limit_right = 1024
+limit_bottom = 600
+limit_smoothed = true
+script = ExtResource( 3 )
+
+[node name="ButtonHelper" type="Sprite" parent="."]
+position = Vector2( 512, 485 )
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 6 )
+
+[node name="Input" type="Node" parent="."]
+script = ExtResource( 8 )
+
+[node name="PlayerManager" type="Node" parent="."]
+script = ExtResource( 9 )
+is_menu = true
+
+[node name="Tween" type="Tween" parent="."]
+
+[node name="TutorialArea" parent="." instance=ExtResource( 10 )]
+
+[node name="Helper" type="Sprite" parent="TutorialArea"]
+position = Vector2( -103, 114 )
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 5 )
+centered = false
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="TutorialArea"]
+anims/PreparingPlay = SubResource( 1 )
+anims/RESET = SubResource( 2 )
+
+[node name="PlayArea" parent="." instance=ExtResource( 10 )]
+position = Vector2( 882, 161 )
+type = "play"
+
+[node name="Helper" type="Sprite" parent="PlayArea"]
+position = Vector2( -132, 114 )
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 4 )
+centered = false
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="PlayArea"]
+anims/PreparingPlay = SubResource( 3 )
+anims/RESET = SubResource( 4 )
+
+[node name="GUI" type="CanvasLayer" parent="."]

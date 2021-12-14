@@ -21,6 +21,9 @@ func on_body_exit(p):
 func plan():
 	lock_planned = true
 
+func has_lock_or_planned():
+	return has_lock() or lock_planned
+
 func has_lock():
 	return (lock_module != null)
 
@@ -39,8 +42,7 @@ func add_lock() -> bool:
 		rand_sub_type = data.sub_type
 	
 	var scene = load("res://scenes/locks/" + rand_type + ".tscn").instance()
-	scene.my_room = parent
-	scene.coin_related = data.has("coin")
+	scene.link_to_room({ 'room': parent, 'coin_related': data.has("coin_related") })
 	
 	if rand_sub_type: scene.set_sub_type(rand_sub_type)
 	

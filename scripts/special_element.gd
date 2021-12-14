@@ -44,4 +44,4 @@ func has_overlapping_bodies():
 
 func _on_Timer_timeout():
 	if type == "button_timed":
-		my_room.lock_module.record_button_push(self)
+		my_room.lock.lock_module.record_button_push(self)

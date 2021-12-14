@@ -18,9 +18,9 @@ onready var special_elements = $SpecialElements
 onready var slope_painter = $SlopePainter
 onready var dynamic_tutorial = $DynamicTutorial
 
-onready var tutorial = get_node("/root/Main/Tutorial")
-
 onready var lock_module_layer = $LockModuleLayer
+
+var num_teleporters_placed : int = 0
 
 ####
 #
@@ -189,29 +189,22 @@ func get_room_at(pos):
 	return get_cell(pos).room
 
 func set_all_cells_to_room(room):
-	var r = room.rect
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var new_pos = r.pos + Vector2(x,y)
-			if out_of_bounds(new_pos): continue
-			
-			var inside_growth_area = (x == 0 or x == (r.size.x-1) or y == 0 or y == (r.size.y - 1))
-			var already_has_room = get_room_at(new_pos)
-			if already_has_room and inside_growth_area: continue
-			
-			get_cell(new_pos).room = room
+	for new_pos in room.rect.positions:
+		if out_of_bounds(new_pos): continue
+
+		var already_has_room = get_room_at(new_pos)
+		if already_has_room and room.rect.inside_growth_area_global(new_pos): continue
+		
+		get_cell(new_pos).room = room
 
 func remove_cells_from_room(room):
-	var r = room.rect
-	for x in range(r.size.x):
-		for y in range(r.size.y):
-			var temp_pos = r.pos + Vector2(x,y)
-			if out_of_bounds(temp_pos): continue
-			
-			var cur_room = get_room_at(temp_pos)
-			if cur_room != room: continue
-			
-			get_cell(temp_pos).room = null
+	for temp_pos in room.rect.positions:
+		if out_of_bounds(temp_pos): continue
+		
+		var cur_room = get_room_at(temp_pos)
+		if cur_room != room: continue
+		
+		get_cell(temp_pos).room = null
 
 # If negative or 0, we're inside the world area (and not out of bounds)
 # If positive, gives us the number of tiles we're out of bounds

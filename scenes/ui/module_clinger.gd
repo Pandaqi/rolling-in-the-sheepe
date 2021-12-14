@@ -15,10 +15,13 @@ var ceiling_clung_last_frame : bool = false
 onready var body = get_parent()
 onready var shaper = get_node("../Shaper")
 onready var mover = get_node("../Mover")
-onready var map_reader = get_node("../MapReader")
+var map_reader = null
 
 var disabled : bool = false
 onready var disable_timer = $DisableTimer
+
+func _ready():
+	if has_node("../MapReader"): map_reader  = get_node("../MapReader")
 
 func disable():
 	disabled = true
@@ -43,7 +46,7 @@ func has_influence():
 func execute_ceiling_cling():
 	cling_vec = Vector2.ZERO
 	
-	if map_reader.last_cell_has_terrain("reverse_gravity"): return
+	if map_reader and map_reader.last_cell_has_terrain("reverse_gravity"): return
 
 	var result = shoot_raycast_in_dir(Vector2.UP)
 	if not result: 

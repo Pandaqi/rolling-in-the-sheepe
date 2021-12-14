@@ -1,10 +1,14 @@
 extends Node
 
 const MIN_ROOMS_BETWEEN_TUTORIALS = 3
+const MIN_ROOMS_BEFORE_TUTORIALS_START : int = 2
 
 const NUM_TERRAIN_BOUNDS = { 'min': 2, 'max': 5 }
 const NUM_LOCK_BOUNDS = { 'min': 2, 'max': 5 }
 const NUM_ITEM_BOUNDS = { 'min': 1, 'max': 3 }
+
+const MIN_COIN_THINGS = 3
+const MIN_GLUE_THINGS = 1
 
 onready var map = get_parent()
 
@@ -21,8 +25,6 @@ var things_to_teach = {
 	'lock': [],
 	'item': []
 }
-
-const MIN_ROOMS_BEFORE_TUTORIALS_START : int = 2
 
 var last_tutorial_index : int = -MIN_ROOMS_BETWEEN_TUTORIALS + MIN_ROOMS_BEFORE_TUTORIALS_START
 var thing_planned = null
@@ -67,8 +69,42 @@ func determine_included_types():
 		'item': all_items.slice(0, num_items)
 	}
 	
+	# UPGRADE: ensure at least several coin related things, so coins are not useless
+	var c_num = count_things_of_type("coin_related")
+	while c_num < MIN_COIN_THINGS:
+		add_something_of_type("coin_related")
+		c_num += 1
+	
+	# UPGRADE: ensure at least several things to glue your bodies back together, otherwise it's too hard
+	var g_num = count_things_of_type("glue_related")
+	while g_num < MIN_GLUE_THINGS:
+		add_something_of_type("glue_related")
+		g_num += 1
+	
 	print("DYNAMIC TUTORIAL")
 	print(things_to_teach)
+
+func count_things_of_type(tp : String):
+	var sum = 0
+	for key in things_to_teach:
+		var list_key = key + "_types"
+		for thing in things_to_teach[key]:
+			if GlobalDict[list_key][thing].has(tp):
+				sum += 1
+	return sum
+
+func add_something_of_type(tp : String):
+	var all_available = []
+	for key in things_to_teach:
+		var list_key = key + "_types"
+		for thing in GlobalDict[list_key]:
+			if not GlobalDict[list_key][thing].has(tp): continue
+			if (thing in things_to_teach[key]): continue
+			
+			all_available.append({ 'key': key, 'thing': thing })
+	
+	var rand = all_available[randi() % all_available.size()]
+	things_to_teach[rand.key].append(rand.thing)
 
 func terrain_is_lock(key):
 	return GlobalDict.terrain_types[key].category == 'lock'
@@ -152,7 +188,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
 	# DEBUGGING
-	thing_planned = { 'kind': 'lock', 'type': 'painter_holes_lock', 'tutorial_placed': false }
+	#thing_planned = { 'kind': 'lock', 'type': 'painter_holes_lock', 'tutorial_placed': false }
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
@@ -165,12 +201,19 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	return true
 
 func place_tutorial(room):
-	if not has_something_planned(): return
+	var self_placement = room.tilemap.terrain == "teleporter"
+	if not has_something_planned() and not self_placement: return
 	
 	var tut = tutorial_scene.instance()
 	tut.set_position(room.rect.get_center())
-	tut.get_node("Sprite").set_frame(get_planned_frame())
+	
+	var frame = get_planned_frame()
+	if self_placement: frame = 38
+	
+	tut.get_node("Sprite").set_frame(frame)
 	map.add_child(tut)
+	
+	if self_placement: return
 	
 	thing_planned.tutorial_placed = true
 	last_tutorial_index = map.route_generator.get_new_room_index()

@@ -5,7 +5,6 @@ const USE_REV_GRAVITY_ON_UP_DIR : float = 0.4
 
 onready var map = get_parent()
 onready var tilemap_terrain = $TileMapTerrain
-onready var tutorial = get_node("/root/Main/Tutorial")
 onready var route_generator = get_node("../RouteGenerator")
 
 var available_terrains = []
@@ -31,7 +30,7 @@ func terrain_is_lock(t):
 	return t.right(t.length()-4) == "lock"
 
 func on_new_room_created(room):
-	var handout_terrains = (not tutorial.is_active()) and (not room.route.is_first_room())
+	var handout_terrains = not room.route.is_first_room()
 	if not handout_terrains: return
 	
 	var rect_too_small = room.rect.get_area() < 4
@@ -101,18 +100,15 @@ func paint(room, type):
 	var overwrites_terrain = GlobalDict.terrain_types[type].has('overwrite')
 	
 	var rect = room.rect
-	for x in range(rect.size.x):
-		for y in range(rect.size.y):
-			var temp_pos = rect.pos + Vector2(x,y)
-			
-			var already_has_terrain = (tilemap_terrain.get_cellv(temp_pos) != -1) and map.get_room_at(temp_pos)
-			var inside_growth_area = rect.inside_growth_area(Vector2(x,y))
-			
-			if already_has_terrain and inside_growth_area:
-				if not overwrites_terrain: continue
-			
-			tilemap_terrain.set_cellv(temp_pos, tile_id)
-			map.change_terrain_at(temp_pos, type)
+	for temp_pos in rect.positions:
+		var already_has_terrain = (tilemap_terrain.get_cellv(temp_pos) != -1) and map.get_room_at(temp_pos)
+		var inside_growth_area = rect.inside_growth_area_global(temp_pos)
+		
+		if already_has_terrain and inside_growth_area:
+			if not overwrites_terrain: continue
+		
+		tilemap_terrain.set_cellv(temp_pos, tile_id)
+		map.change_terrain_at(temp_pos, type)
 	
 	room.tilemap.terrain = type
 	
@@ -120,14 +116,12 @@ func paint(room, type):
 
 func erase(room):
 	var rect = room.rect
-	for x in range(rect.size.x):
-		for y in range(rect.size.y):
-			var temp_pos = rect.pos + Vector2(x,y)
-			var cell_room = map.get_room_at(temp_pos)
-			if cell_room and cell_room != room: continue
-			
-			tilemap_terrain.set_cellv(temp_pos, -1)
-			map.change_terrain_at(temp_pos, "")
+	for temp_pos in rect.positions:
+		var cell_room = map.get_room_at(temp_pos)
+		if cell_room and cell_room != room: continue
+		
+		tilemap_terrain.set_cellv(temp_pos, -1)
+		map.change_terrain_at(temp_pos, "")
 	
 	room.tilemap.terrain = ""
 
@@ -135,9 +129,8 @@ func erase(room):
 # 		 or under a _specific condition_, not just all of them??
 
 func someone_entered(node, terrain):
-	var is_coin_terrain = (GlobalDict.terrain_types[terrain].category == "coin")
-	if is_coin_terrain:
-		node.get_node("Coins").show()
+	var is_coin_terrain = (GlobalDict.terrain_types[terrain].has('coin_related'))
+	if is_coin_terrain: node.get_node("Coins").show()
 
 func someone_exited(node, terrain):
 	pass

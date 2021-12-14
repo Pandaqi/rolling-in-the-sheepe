@@ -41,16 +41,13 @@ func recalculate_room(room):
 		if not placement_allowed(pos, room, false): 
 			map.change_cell(pos, -1)
 	
-	for x in range(shrunk.size.x):
-		for y in range(shrunk.size.y):
-			var temp_pos = shrunk.pos + Vector2(x,y)
-			
-			if tilemap.get_cellv(temp_pos) == -1: continue
-			if placement_allowed(temp_pos, room): continue
-			
-			map.change_cell(temp_pos, -1)
+	for temp_pos in room.rect.shrunk_positions:
+		if tilemap.get_cellv(temp_pos) == -1: continue
+		if placement_allowed(temp_pos, room): continue
+		
+		map.change_cell(temp_pos, -1)
 	
-	map.update_bitmask(shrunk.pos, shrunk.size)
+	map.update_bitmask_from_room(room)
 
 ####
 # Islands
@@ -71,8 +68,6 @@ func fill_room(room):
 		if not placement_allowed(rand_pos, room): continue
 		
 		map.change_cell(rand_pos, 0)
-	
-	map.update_bitmask_from_room(room)
 
 ####
 # Slopes
@@ -95,8 +90,6 @@ func place_slopes(room):
 	for pos in get_slopes(room):
 		if not placement_allowed(pos, room, false): continue
 		map.change_cell(pos, 0)
-	
-	map.update_bitmask_from_room(room)
 
 # TO DO: Shouldn't these be functions on the RECTANGLES themselves? Or at least partly?
 func should_be_slope(pos):

@@ -38,9 +38,10 @@ var air_break_time_limit : float = 230.0
 
 onready var body = get_parent()
 onready var shaper = get_node("../Shaper")
+onready var status = get_node("../Status")
+
 onready var map_reader = get_node("../MapReader")
 onready var clinger = get_node("../Clinger")
-onready var status = get_node("../Status")
 
 var last_input_time : float = -1
 var keys_down = {
@@ -103,8 +104,7 @@ func _on_Input_double_button():
 
 func _physics_process(_dt):
 	size_speed_multiplier = shaper.approximate_radius_as_ratio()
-	if status.is_wolf:
-		size_speed_multiplier *= WOLF_BONUS_SPEED
+	if status.is_wolf: size_speed_multiplier *= WOLF_BONUS_SPEED
 	
 	reset_gravity_strength()
 	
@@ -135,6 +135,7 @@ func check_for_air_break():
 	body.linear_velocity.y = 0.0
 
 func check_for_standstill():
+	if status.is_menu: return
 	if map_reader.last_cell_has_lock(): return
 	if status.has_finished: return
 	
@@ -171,6 +172,7 @@ func modify_gravity_strength(val):
 	body.gravity_scale = gravity_dir*val*BASE_GRAVITY_SCALE
 
 func should_modify_jump_normal():
+	if status.is_menu: return false
 	return clinger.has_influence() or map_reader.last_cell_has_terrain("no_gravity")
 
 func determine_normal_vec():

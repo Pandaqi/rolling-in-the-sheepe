@@ -22,7 +22,7 @@ func restart_timer():
 	timer.start()
 
 func change_open_gates():
-	var my_gates = my_room.gates
+	var my_gates = my_room.lock.gates
 	if my_gates.size() <= 0: return
 
 	var gate_to_close = open_gate

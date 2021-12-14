@@ -1,5 +1,7 @@
 extends Node
 
+const DEF_ERROR_CODE : int = -100
+
 var inputs = [
 	[KEY_RIGHT, KEY_LEFT],
 	[KEY_D, KEY_A],
@@ -75,10 +77,79 @@ func printout_inputmap():
 			print(inp.device)
 
 #
+# Handle the actual EVENTS used to add/remove devices
+#
+func check_new_player(ev):
+	var data = {
+		'failed': true,
+		'device': 0
+	}
+	
+	var res = check_new_controller(ev)
+	if res > DEF_ERROR_CODE: 
+		data.failed = false
+		data.device = res
+		return data
+	
+	res = check_new_keyboard(ev)
+	if res > DEF_ERROR_CODE:
+		data.failed = false 
+		data.device = res
+		return data
+		
+	return data
+
+func check_new_controller(ev):
+	if not (ev is InputEventJoypadButton): return DEF_ERROR_CODE
+	if ev.pressed: return DEF_ERROR_CODE
+	if GlobalInput.device_already_registered(ev.device): return DEF_ERROR_CODE
+	
+	return add_new_player('controller', ev.device)
+
+func check_new_keyboard(ev): 
+	if not ev.is_action_released("add_keyboard_player"): return DEF_ERROR_CODE
+	return add_new_player('keyboard')
+
+func check_remove_player(ev):
+	var data = {
+		'failed': true,
+		'device': 0
+	}
+	
+	var res = check_remove_controller(ev)
+	if res > DEF_ERROR_CODE: 
+		data.failed = false
+		data.device = res
+		return data
+	
+	res = check_remove_keyboard(ev)
+	if res > DEF_ERROR_CODE: 
+		data.failed = false
+		data.device = res
+		return res
+	
+	return data
+	
+func check_remove_controller(ev):
+	if not (ev is InputEventJoypadButton): return DEF_ERROR_CODE
+	if ev.pressed: return DEF_ERROR_CODE
+	
+	if not GlobalInput.device_already_registered(ev.device): return DEF_ERROR_CODE
+	if ev.button_index != 1: return DEF_ERROR_CODE
+	
+	return remove_player('controller', ev.device)
+
+func check_remove_keyboard(ev):
+	if not ev.is_action_released("remove_keyboard_player"): return DEF_ERROR_CODE
+	if get_num_keyboard_players() <= 0: return DEF_ERROR_CODE
+	
+	return remove_player('keyboard')
+
+#
 # Handle (un)registering input devices
 #
 func add_new_player(type, id = -1):
-	if max_devices_reached(): return -100
+	if max_devices_reached(): return DEF_ERROR_CODE
 	
 	if type == 'keyboard':
 		id = get_lowest_id() - 1
@@ -97,7 +168,7 @@ func add_new_player(type, id = -1):
 	
 	return id
 
-func remove_player(type, id, return_num : bool = false):
+func remove_player(type, id = null, return_num : bool = false):
 	if no_devices_registered(): return
 	
 	if type == 'keyboard' and not id:

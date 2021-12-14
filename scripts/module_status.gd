@@ -10,6 +10,7 @@ onready var player_manager = get_node("/root/Main/PlayerManager")
 
 var player_num : int = -1
 var shape_name : String = ""
+var is_menu : bool = false
 
 var time_penalty : float = 0.0
 var has_finished : bool = false
@@ -45,14 +46,15 @@ func set_player_num(num : int):
 	
 	if has_node("../Shaper"):
 		get_node("../Shaper").set_color(player_manager.player_colors[num])
-	
-	if has_node("../Tutorial"):
-		var global_tutorial = get_node("/root/Main/Tutorial")
-		var module_tutorial = get_node("../Tutorial")
-		if global_tutorial.is_active():
-			module_tutorial.activate()
-		else:
-			module_tutorial.queue_free()
+
+# TO DO: Need to completely rewrite tutorial module anyway
+#	if has_node("../Tutorial"):
+#		var global_tutorial = get_node("/root/Main/Tutorial")
+#		var module_tutorial = get_node("../Tutorial")
+#		if global_tutorial.is_active():
+#			module_tutorial.activate()
+#		else:
+#			module_tutorial.queue_free()
 	
 	player_manager.register_body(body)
 	
@@ -77,17 +79,19 @@ func undo_ghost():
 
 func make_wolf():
 	is_wolf = true
-	
-	glue.make_wolf()
 	face.make_wolf()
-	rounder.start_grow_mode("shrink")
+	
+	if not is_menu:
+		glue.make_wolf()
+		rounder.start_grow_mode("shrink")
 
 func make_sheep():
 	is_wolf = false
-	
-	glue.make_sheep()
 	face.make_sheep()
-	rounder.end_grow_mode()
+	
+	if not is_menu:
+		glue.make_sheep()
+		rounder.end_grow_mode()
 
 func make_invincible(start_timer = true):
 	is_invincible = true

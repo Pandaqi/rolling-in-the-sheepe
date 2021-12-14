@@ -14,7 +14,6 @@ var default_room_size_for_tutorial = Vector2(2,2)
 onready var map = get_parent()
 onready var route_generator = get_node("../RouteGenerator")
 onready var player_progression = get_node("../PlayerProgression")
-onready var tutorial = get_node("/root/Main/Tutorial")
 onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
 
 var room_scene = preload("res://scenes/room.tscn")
@@ -24,9 +23,6 @@ var room_scene = preload("res://scenes/room.tscn")
 #
 func _ready():
 	default_starting_pos *= map.WORLD_SIZE
-	
-	if tutorial.is_active():
-		default_starting_room_size = Vector2(6, 4)
 
 #
 # The only functionality it has: create newest room
@@ -68,8 +64,6 @@ func initialize_new_room_rect(proposed_location):
 		'no_valid_placement': false
 	}
 	
-	if tutorial.is_active(): params.forced_dir = tutorial.get_forced_dir()
-	
 	var pos = default_starting_pos
 	if proposed_location: pos = proposed_location
 
@@ -87,7 +81,7 @@ func set_wanted_room_parameters(params):
 	params.place_lock = route_generator.should_place_lock()
 	
 	# UPGRADE: no two locks directly after each other
-	if params.prev_room and params.prev_room.lock.has_lock():
+	if params.prev_room and params.prev_room.lock.has_lock_or_planned():
 		params.place_lock = false
 	
 	# if we need a lock, but we don't have any taught yet
@@ -103,9 +97,7 @@ func set_wanted_room_parameters(params):
 		map.dynamic_tutorial.plan_random_placement(wanted_tut_kind)
 	
 	params.place_tutorial = map.dynamic_tutorial.needs_tutorial()
-	
-	if tutorial.is_active(): params.place_lock = false
-	
+
 	params.require_large_size = (params.place_finish or params.place_lock or params.place_tutorial)
 	
 	params.ignore_optional_requirements = false
@@ -281,7 +273,6 @@ func place_room_according_to_params(params):
 		params.prev_room.finish_placement_in_hindsight()
 	
 	params.new_room.finish_placement()
-	tutorial.placed_a_new_room(params.new_room)
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return

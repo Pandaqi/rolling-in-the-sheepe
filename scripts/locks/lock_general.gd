@@ -9,6 +9,12 @@ onready var map = get_node("/root/Main/Map")
 
 signal delete()
 
+func link_to_room(params):
+	my_room = params.room
+	
+	if params.has('coin_related'):
+		coin_related = params.coin_related
+
 func on_body_enter(body):
 	if coin_related: body.get_node("Coins").show()
 
@@ -31,11 +37,7 @@ func convert_connection_to_gate():
 		var other_side = my_room.outline.edge_links_to(edge)
 		if other_side and other_side.route.index > my_room.route.index:
 			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
-			
-			edge_body.my_room = my_room
-			edge_body.my_gate.general_parameter = general_parameter
-			
-			my_room.lock.gates.append(edge_body)
+			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter })
 
 func perform_update():
 	pass

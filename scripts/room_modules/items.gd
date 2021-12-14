@@ -19,17 +19,13 @@ func has_special_items():
 
 func determine_tiles_inside():
 	tiles_inside = []
-	
-	var size = rect.size
-	var pos = rect.pos
-	for x in range(size.x):
-		for y in range(size.y):
-			var temp_pos = pos + Vector2(x,y)
-			if map.tilemap.get_cellv(temp_pos) == -1: continue
-			if map.out_of_bounds(temp_pos): continue
-			if map.get_cell(temp_pos).room != parent: continue
-			
-			tiles_inside.append(temp_pos)
+
+	for temp_pos in rect.positions:
+		if map.tilemap.get_cellv(temp_pos) == -1: continue
+		if map.out_of_bounds(temp_pos): continue
+		if map.get_cell(temp_pos).room != parent: continue
+		
+		tiles_inside.append(temp_pos)
 
 func get_free_tile_inside(params = {}):
 	tiles_inside.shuffle()

@@ -16,14 +16,15 @@ func determine_outline():
 	
 	# top and bottom cells
 	var shrunk = rect.shrunk
+	var p = shrunk.pos
 	for x in range(shrunk.size.x):
-		arr.append({ 'pos': shrunk.pos + Vector2(x,0), 'dir_index': 3 })
-		arr.append({ 'pos': shrunk.pos + Vector2(x,shrunk.size.y-1), 'dir_index': 1 })
+		arr.append({ 'pos': p + Vector2(x,0), 'dir_index': 3 })
+		arr.append({ 'pos': p + Vector2(x,shrunk.size.y-1), 'dir_index': 1 })
 	
 	# left and right cells
 	for y in range(shrunk.size.y):
-		arr.append({ 'pos': shrunk.pos + Vector2(shrunk.size.x-1,y), 'dir_index': 0 })
-		arr.append({ 'pos': shrunk.pos + Vector2(0,y), 'dir_index': 2 })
+		arr.append({ 'pos': p + Vector2(shrunk.size.x-1,y), 'dir_index': 0 })
+		arr.append({ 'pos': p + Vector2(0,y), 'dir_index': 2 })
 	
 	outline = arr
 	

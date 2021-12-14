@@ -24,12 +24,9 @@ func fill_tiles():
 	change_tiles_to(0)
 
 func change_tiles_to(tile_id : int = -1):
-	var shrunk = rect.get_shrunk()
-	for x in range(shrunk.size.x):
-		for y in range(shrunk.size.y):
-			var temp_pos = shrunk.pos + Vector2(x,y)
-			if map.out_of_bounds(temp_pos): continue
-			map.change_cell(temp_pos, tile_id)
+	for temp_pos in rect.shrunk_positions:
+		if map.out_of_bounds(temp_pos): continue
+		map.change_cell(temp_pos, tile_id)
 	
 	map.update_bitmask_from_room(parent)
 

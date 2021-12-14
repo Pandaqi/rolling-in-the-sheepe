@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/tutorials.png-92880ebaba528c3e809d3026d0a09ff8.stex"
+path="res://.import/menu_button_helper.png-943f37d013dc218cd477281aaec5a9a1.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/tutorials.png"
-dest_files=[ "res://.import/tutorials.png-92880ebaba528c3e809d3026d0a09ff8.stex" ]
+source_file="res://assets/ui/menu_button_helper.png"
+dest_files=[ "res://.import/menu_button_helper.png-943f37d013dc218cd477281aaec5a9a1.stex" ]
 
 [params]
 

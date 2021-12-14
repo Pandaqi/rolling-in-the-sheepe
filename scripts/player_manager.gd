@@ -1,12 +1,14 @@
 extends Node
 
+export var is_menu : bool = false
+
 const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
 const PREDEFINED_SHAPE_SCALE : float = 1.5
 
 var player_scene = preload("res://scenes/body.tscn")
+var menu_player_scene = preload("res://scenes/menu_body.tscn")
 
 onready var map = get_node("/root/Main/Map")
-onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 
 var num_players : int = 0
 var player_colors = []
@@ -21,12 +23,12 @@ func activate():
 	load_colors()
 	load_predefined_shapes()
 	
-	if GlobalInput.get_player_count() <= 0:
-		GlobalInput.create_debugging_players()
-	
-	num_players = GlobalInput.get_player_count()
-	
-	create_players()
+	if not is_menu:
+		if GlobalInput.get_player_count() <= 0:
+			GlobalInput.create_debugging_players()
+		
+		num_players = GlobalInput.get_player_count()
+		create_players()
 
 func create_players():
 	player_shapes = []
@@ -44,15 +46,39 @@ func get_player_shape_frame(player_num : int):
 	var shape_name = player_shapes[player_num]
 	return GlobalDict.shape_list[shape_name].frame
 
+func create_menu_player(player_num : int):
+	create_player(player_num)
+
 func create_player(player_num : int):
-	var player = player_scene.instance()
+	if player_shapes.size() <= player_num:
+		player_shapes.resize(player_num+1)
+	
+	if bodies_per_player.size() <= player_num:
+		bodies_per_player.resize(player_num+1)
+		bodies_per_player[player_num] = []
+	
+	var player
+	if is_menu:
+		player = menu_player_scene.instance()
+		player.get_node("Status").is_menu = true
+	else:
+		player = player_scene.instance()
 	
 	var rand_shape = available_shapes.pop_front()
+	if Global.make_all_players_round():
+		rand_shape = 'circle'
+	
 	player_shapes[player_num] = rand_shape
 	player.get_node("Shaper").create_from_shape(GlobalDict.shape_list[rand_shape].points, { 'type': rand_shape })
 	
-	var room = route_generator.cur_path[0]
-	player.set_position(get_spread_out_position(room))
+	var start_pos
+	if is_menu:
+		start_pos = 0.5*Vector2(1024,200)
+	else:
+		var room = map.route_generator.cur_path[0]
+		start_pos = get_spread_out_position(room)
+	
+	player.set_position(start_pos)
 	map.add_child(player)
 	
 	player.get_node("Status").set_shape_name(rand_shape)

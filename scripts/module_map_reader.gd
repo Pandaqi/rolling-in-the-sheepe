@@ -222,9 +222,8 @@ func finish():
 	status.make_ghost()
 	
 	var finish_data = main_node.player_finished(body)
-	if not finish_data.already_finished: 
-		show_gui()
-		set_gui_rank(finish_data.rank)
+	show_gui()
+	set_gui_rank(finish_data.rank)
 
 func has_gui():
 	return gui != null

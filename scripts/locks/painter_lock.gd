@@ -77,8 +77,8 @@ func create_lowres_grid():
 		lowres_grid[x].resize(lowres_size.y)
 		for y in range(lowres_size.y):
 			var val = false
-			var real_pos = get_real_pos_from_lowres(Vector2(x,y))
-			var is_filled = my_room.tilemap.is_cell_filled(real_pos)
+			var global_pos = get_real_pos_from_lowres(Vector2(x,y))
+			var is_filled = my_room.tilemap.is_cell_filled(global_pos)
 			if is_filled: val = true
 			
 			if sub_type == "erase": val = not val
@@ -161,8 +161,8 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 			var temp_pos = pos + Vector2(x,y)
 			if out_of_mask_bounds(temp_pos): continue
 			
-			var real_pos = my_room.rect.get_real_pos() + Vector2(x,y)*my_room.rect.TILE_SIZE
-			if sub_type == "holes" and cannot_fill_cell(real_pos): continue
+			var global_pos = (temp_pos + my_room.rect.shrunk.pos).floor()
+			if sub_type == "holes" and cannot_fill_cell(global_pos): continue
 			
 			surface_image.set_pixelv(temp_pos, col)
 			
@@ -177,5 +177,5 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 func out_of_mask_bounds(pos):
 	return pos.x < 0 or pos.x >= image_size.x or pos.y < 0 or pos.y >= image_size.y
 
-func cannot_fill_cell(real_pos):
-	return my_room.tilemap.is_cell_filled(real_pos)
+func cannot_fill_cell(global_pos):
+	return my_room.tilemap.is_cell_filled(global_pos)

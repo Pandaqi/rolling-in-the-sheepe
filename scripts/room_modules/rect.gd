@@ -5,6 +5,9 @@ const TILE_SIZE : float = 64.0
 var pos : Vector2
 var size : Vector2
 
+var positions : Array = []
+var shrunk_positions : Array = []
+
 # a shrunken version of ourselves (by 1), which is the "real" room
 # (the original grown version is used for better terrain painting and overlap checking)
 var shrunk = {}
@@ -14,6 +17,20 @@ onready var map = get_node("/root/Main/Map")
 func update_from(new_rect):
 	set_pos(new_rect.pos)
 	set_size(new_rect.size)
+	
+	update_positions_array()
+
+func update_positions_array():
+	positions = []
+	for x in range(size.x):
+		for y in range(size.y):
+			positions.append(pos + Vector2(x,y))
+
+func update_shrunk_positions_array():
+	shrunk_positions = []
+	for x in range(shrunk.size.x):
+		for y in range(shrunk.size.y):
+			shrunk_positions.append(shrunk.pos + Vector2(x,y))
 
 func set_pos(new_pos):
 	pos = new_pos
@@ -49,14 +66,15 @@ func make_local(p):
 func get_shrunk():
 	return shrunk
 
+func save_cur_size_as_shrunk():
+	shrunk = { 'pos': pos, 'size': size }
+	update_shrunk_positions_array()
+
 func inside_growth_area(p:Vector2):
 	return (p.x == 0 or p.x == (size.x-1) or p.y == 0 or p.y == (size.y - 1))
 
 func inside_growth_area_global(p:Vector2):
 	return inside_growth_area(p - pos)
-
-func save_cur_size_as_shrunk():
-	shrunk = { 'pos': pos, 'size': size }
 
 #func has_real_point(p : Vector2) -> bool:
 #	return p.x >= pos.x*TILE_SIZE and p.x <= (pos.x+size.x)*TILE_SIZE and p.y >= pos.y*TILE_SIZE and p.y <= (pos.y+size.y)*TILE_SIZE

@@ -24,6 +24,11 @@ func delete():
 func turn_into_teleporter():
 	tilemap.update_map_to_new_rect()
 	lock.add_teleporter()
+	
+	if map.num_teleporters_placed <= 0:
+		map.dynamic_tutorial.place_tutorial(self)
+	
+	map.num_teleporters_placed += 1
 
 func place(params):
 	# we AUTO-GROW rooms by 1 when saving them in the map (and painting terrain)
@@ -32,6 +37,7 @@ func place(params):
 	rect.save_cur_size_as_shrunk()
 	rect.set_pos(rect.pos - Vector2(1,1))
 	rect.set_size(rect.size + Vector2(1,1)*2)
+	rect.update_positions_array()
 	
 #	print("RECT PLACED")
 #	print({ 'pos': rect.pos, 'size': rect.size })

@@ -1,16 +1,27 @@
-extends Node
+extends Node2D
 
 onready var map = get_node("/root/Main/Map")
 onready var GUI = get_node("/root/Main/GUI")
 onready var sprite = $Sprite
 onready var body = get_parent()
 
+const MAX_TIME_BETWEEN_STEPS : int = 15
+onready var timer = $Timer
+
 var tutorial_step : int = -1
 var base_frames = [0,5]
 
-var listen_for_changes : bool = true
+const MOVEMENT_BEFORE_NEXT_STEP : float = 3.0 # in _seconds_, regardless of speed
+var player_movement : float = 0.0
+
+var active : bool = false
+
+func _ready():
+	activate()
 
 func activate():
+	active = true
+	
 	remove_child(sprite)
 	GUI.add_child(sprite)
 	
@@ -20,6 +31,7 @@ func load_next_step():
 	tutorial_step += 1
 	
 	if tutorial_step >= base_frames.size():
+		player_movement = 0.0
 		sprite.queue_free()
 		queue_free()
 		return
@@ -32,20 +44,26 @@ func load_next_step():
 		base_frame += 4
 	
 	sprite.set_frame(base_frame)
+	player_movement = 0.0
 	
-	pause_listening_for_changes()
+	timer.stop()
+	timer.wait_time = MAX_TIME_BETWEEN_STEPS
+	timer.start()
 
-func _physics_process(_dt):
-	check_for_progression()
+func _physics_process(dt):
+	if not active: return
+	check_player_movement(dt)
 	position_sprite_above_player()
 
-func check_for_progression():
-	if not listen_for_changes: return
+func check_player_movement(dt):
+	var epsilon = 1.0
 	
-	var cur_room = map.get_cell_from_node(body).room
-	if tutorial_step == 0 and cur_room.dir != 0:
-		load_next_step()
-	elif tutorial_step == 1 and cur_room.dir != 2:
+	if tutorial_step == 0 and body.angular_velocity > epsilon:
+		player_movement += dt
+	elif tutorial_step == 1 and body.angular_velocity < -epsilon:
+		player_movement += dt
+	
+	if player_movement > MOVEMENT_BEFORE_NEXT_STEP:
 		load_next_step()
 
 func position_sprite_above_player():
@@ -54,9 +72,5 @@ func position_sprite_above_player():
 	
 	sprite.set_position(pos + offset)
 
-func pause_listening_for_changes():
-	$Timer.start()
-	listen_for_changes = false
-
 func _on_Timer_timeout():
-	listen_for_changes = true
+	pass # Replace with function body.

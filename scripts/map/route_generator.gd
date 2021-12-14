@@ -3,7 +3,7 @@ extends Node
  # how many back rooms should stay on screen until they are DELETED
 const NUM_ROOMS_BACK_BUFFER : int = 4
 
-# how many rooms should be CREATED in front of the leading player
+# how many rooms should be CREATED (AT MOST) in front of the leading player
 const NUM_ROOMS_FRONT_BUFFER : int = 25
 
 # with how many pre-created rooms we start each game
@@ -42,6 +42,7 @@ func initialize_rooms():
 	for _i in range(NUM_STARTING_ROOMS):
 		room_picker.create_new_room()
 	
+	$Timer.wait_time = (1.0 / GlobalDict.cfg.generation_speed)
 	$Timer.start()
 
 func set_global_parameters():
@@ -126,6 +127,7 @@ func get_new_room_index():
 
 # TO DO: 
 # On big rooms, it might be faster to check against ROOMS, not individual cells???? Not sure if that is the case. (So check overlap with the other room rect, AABB, for all rooms on path.)
+# NOTE: This gets a _rectangle_ not a _room_, so we can't go through rect.positions
 func room_rect_overlaps_path(rect, params):
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):

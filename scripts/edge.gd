@@ -16,6 +16,13 @@ func set_type(new_type : String):
 	if my_gate: my_gate.queue_free()
 	if GlobalDict.edge_types[new_type].has('gate'): make_gate()
 
+func link_to_room(params):
+	my_room = params.room
+	if my_gate:
+		if params.has('param'):
+			my_gate.general_parameter = params.param
+		my_room.lock.gates.append(self)
+
 func make_gate():
 	my_gate = gate_scene.instance()
 	add_child(my_gate)

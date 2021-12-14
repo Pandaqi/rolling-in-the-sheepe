@@ -9,7 +9,12 @@ var cfg = {
 
 	'wall_jump_strength': 0.3, # set to 0.0 for no wall jump, 1.0 for full effect
 	
+	'time_penalty_unfinished_bodies': 10.0, # set to 0.0 to eliminate this rule
+	
+	'wolf_takes_coins': true,
+	
 	# TO DO: make toggelable in (technical) settings
+	'generation_speed': 2.0, # higher is faster; inverted (1/X) on game start
 	"dynamic_tutorials": true,
 	"paint_on_tilemap": false,
 }
@@ -65,12 +70,12 @@ var edge_types = {
 # (otherwise they are not filtered out (during terrain picking) nor registered as being a "locking" room)
 var lock_types = {
 	"coin_lock": { "terrain": "lock", "tut": 35 },
-	"coin_lock_gate": { "coin": true, "terrain": "coin_gate_lock", "tut": 36 },
+	"coin_lock_gate": { "coin_related": true, "terrain": "coin_gate_lock", "tut": 36 },
 	
 	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 37 },
 	
 	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice", "tut": 39 },
-	"sacrifice_coin_gate": { "coin": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
+	"sacrifice_coin_gate": { "coin_related": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
 	
 	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "regular", "tut":41 },
 	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "timed", "tut": 42 },
@@ -81,13 +86,15 @@ var lock_types = {
 	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
 	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49 },
 	
-	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular" },
-	"painter_holes_lock": { "terrain": "painter_holes_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "holes" },
-	"painter_erase_lock": { "terrain": "painter_erase_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "erase" }
+	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular", "tut": 50 },
+	"painter_holes_lock": { "terrain": "painter_holes_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "holes", "tut": 52 },
+	"painter_erase_lock": { "terrain": "painter_erase_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "erase", "tut": 51 },
+	
+	# "shop_lock": { "terrain": "shop_lock", "edge_type": "regular", "coin_related": true }
 }
 
 var item_types = {
-	"spikes": { "frame": 0, "immediate": true, "delete": true, "invincible": true },
+	"spikes": { "frame": 0, "immediate": true, "delete": true, "invincible": true, "tut": 45 },
 	"button_regular": { "frame": 1, "immediate": true, "delete": true, "unpickable": true },
 	"button_timed": { "frame": 2, "immediate": true, "unpickable": true },
 	"button_order": { "frame": 3, "immediate": true, "unpickable": true, "needs_label": true },
@@ -106,7 +113,7 @@ var terrain_types = {
 	"spiderman": { "frame": 7, 'category': 'physics', 'tut': 14 },
 	"speed_boost": { "frame": 8, 'category': 'speed', 'tut': 15 },
 	"speed_slowdown": { "frame": 9, 'category': 'speed', 'tut': 21 },
-	"glue": { "frame": 10, 'category': 'slicing', 'tut': 22 },
+	"glue": { "frame": 10, 'category': 'slicing', 'tut': 22, "glue_related": true },
 	"reverse_controls": { "frame": 11, 'category': 'misc', 'tut': 23 },
 	
 	"spikes": { "frame": 12, 'category': 'slicing', 'tut': 25 },
@@ -115,11 +122,11 @@ var terrain_types = {
 	"no_wolf": { "frame": 15, "category": "misc", 'tut': 28 },
 	"body_limit": { "frame": 16, "category": "slicing", 'tut': 29 },
 	
-	"invincibility": { "frame": 17, "category": "coin", 'tut': 30 },
-	"rounder": { "frame": 18, "category": "coin", 'tut': 31 },
-	"halver": { "frame": 19, "category": "coin", 'tut': 32 },
-	"slower": { "frame": 20, "category": "coin", 'tut': 33 },
-	"bomb": { "frame": 21, "category": "coin", 'tut': 34 },
+	"invincibility": { "frame": 17, "category": "coin", "coin_related": true, 'tut': 30 },
+	"rounder": { "frame": 18, "category": "coin", "coin_related": true, 'tut': 31 },
+	"halver": { "frame": 19, "category": "coin", "coin_related": true, 'tut': 32 },
+	"slower": { "frame": 20, "category": "coin", "coin_related": true, 'tut': 33 },
+	"bomb": { "frame": 21, "category": "coin", "coin_related": true, 'tut': 34 },
 	
 	"coin_gate_lock": { "frame": 22, "category": "lock" },
 	"mass_gate_lock": { "frame": 23, "category": "lock" },

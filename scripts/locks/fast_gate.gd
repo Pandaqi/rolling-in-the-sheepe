@@ -20,14 +20,14 @@ func change_state():
 		cur_mode = "closed"
 		timer_bounds = CLOSED_TIMER
 		
-		for gate in my_room.gates:
+		for gate in my_room.lock.gates:
 			gate.close()
 	
 	elif cur_mode == "closed":
 		cur_mode = "open"
 		timer_bounds = OPEN_TIMER
 		
-		for gate in my_room.gates:
+		for gate in my_room.lock.gates:
 			gate.open()
 
 	timer.wait_time = rand_range(timer_bounds.min, timer_bounds.max)
