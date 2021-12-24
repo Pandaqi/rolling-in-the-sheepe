@@ -8,11 +8,11 @@ var item_scene = preload("res://scenes/special_element.tscn")
 var available_item_types
 
 func _ready():
-	available_item_types = GlobalDict.item_types.keys()
+	available_item_types = GDict.item_types.keys()
 	
 	for i in range(available_item_types.size()-1,-1,-1):
 		var key = available_item_types[i]
-		if GlobalDict.item_types[key].has("unpickable"):
+		if GDict.item_types[key].has("unpickable"):
 			available_item_types.remove(i)
 
 func add_special_items_to_room(room):
@@ -29,13 +29,13 @@ func get_random_type(room):
 	return map.dynamic_tutorial.get_random('item', room)
 
 func type_is_immediate(tp):
-	return GlobalDict.item_types[tp].has('immediate')
+	return GDict.item_types[tp].has('immediate')
 
 func type_is_ongoing(tp):
-	return GlobalDict.item_types[tp].has('ongoing')
+	return GDict.item_types[tp].has('ongoing')
 
 func delete_on_activation(obj):
-	if not GlobalDict.item_types[obj.type].has('delete'): return
+	if not GDict.item_types[obj.type].has('delete'): return
 	
 	var my_room = map.get_cell_from_node(obj).room
 	if not my_room: return # TO DO: This should actually never happen, but it's not so bad if it triggers from time to time

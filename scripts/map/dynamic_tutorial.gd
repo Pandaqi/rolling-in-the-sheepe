@@ -35,12 +35,12 @@ func determine_included_types():
 	var rng = RandomNumberGenerator.new()
 	rng.randomize()
 	
-	var all_terrains = GlobalDict.terrain_types.keys()
+	var all_terrains = GDict.terrain_types.keys()
 	all_terrains.shuffle()
 	
 	for i in range(all_terrains.size()-1, -1, -1):
 		var key = all_terrains[i]
-		if GlobalDict.terrain_types[key].has('unpickable'): 
+		if GDict.terrain_types[key].has('unpickable'): 
 			all_terrains.remove(i)
 			continue
 			
@@ -50,17 +50,17 @@ func determine_included_types():
 	
 	var num_terrains = rng.randi_range(NUM_TERRAIN_BOUNDS.min, NUM_TERRAIN_BOUNDS.max)
 
-	var all_locks = GlobalDict.lock_types.keys()
+	var all_locks = GDict.lock_types.keys()
 	all_locks.shuffle()
 	var num_locks = rng.randi_range(NUM_LOCK_BOUNDS.min, NUM_LOCK_BOUNDS.max)
 
-	var all_items = GlobalDict.item_types.keys()
+	var all_items = GDict.item_types.keys()
 	all_items.shuffle()
 	var num_items = rng.randi_range(NUM_ITEM_BOUNDS.min, NUM_ITEM_BOUNDS.max)
 	
 	for i in range(all_items.size()-1,-1,-1):
 		var key = all_items[i]
-		if GlobalDict.item_types[key].has('unpickable'):
+		if GDict.item_types[key].has('unpickable'):
 			all_items.remove(i)
 	
 	things_to_teach = {
@@ -89,7 +89,7 @@ func count_things_of_type(tp : String):
 	for key in things_to_teach:
 		var list_key = key + "_types"
 		for thing in things_to_teach[key]:
-			if GlobalDict[list_key][thing].has(tp):
+			if GDict[list_key][thing].has(tp):
 				sum += 1
 	return sum
 
@@ -97,8 +97,8 @@ func add_something_of_type(tp : String):
 	var all_available = []
 	for key in things_to_teach:
 		var list_key = key + "_types"
-		for thing in GlobalDict[list_key]:
-			if not GlobalDict[list_key][thing].has(tp): continue
+		for thing in GDict[list_key]:
+			if not GDict[list_key][thing].has(tp): continue
 			if (thing in things_to_teach[key]): continue
 			
 			all_available.append({ 'key': key, 'thing': thing })
@@ -107,7 +107,7 @@ func add_something_of_type(tp : String):
 	things_to_teach[rand.key].append(rand.thing)
 
 func terrain_is_lock(key):
-	return GlobalDict.terrain_types[key].category == 'lock'
+	return GDict.terrain_types[key].category == 'lock'
 
 func is_thing_already_used(kind : String, type : String):
 	return type in things_taught[kind]
@@ -115,7 +115,7 @@ func is_thing_already_used(kind : String, type : String):
 func can_teach_something_new():
 	print("CAN TEACH SOMETHING NEW?")
 	
-	if Global.in_tutorial_mode(): return false
+	if G.in_tutorial_mode(): return false
 	
 	var too_soon = abs(map.route_generator.get_new_room_index() - last_tutorial_index) < MIN_ROOMS_BETWEEN_TUTORIALS
 	if too_soon: return false
@@ -191,7 +191,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
-	if not GlobalDict.cfg.dynamic_tutorials:
+	if not GDict.cfg.dynamic_tutorials:
 		thing_planned.tutorial_placed = true
 	
 	print("THING PLANNED")
@@ -229,7 +229,7 @@ func place_tutorial(room):
 
 func get_planned_frame():
 	var key = thing_planned.kind + "_types"
-	var list = GlobalDict[key]
+	var list = GDict[key]
 	
 	# DEBUGGING => for as long as I don't have all tutorials yet
 	if not list[thing_planned.type].has('tut'): return 0

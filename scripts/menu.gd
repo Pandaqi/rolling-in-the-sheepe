@@ -5,6 +5,7 @@ onready var play_helper = $PlayArea/Helper
 
 onready var tween = $Tween
 onready var players = $PlayerManager
+onready var settings = $TechnicalSettings
 
 var helpers_shown : bool = false
 
@@ -13,6 +14,7 @@ func _ready():
 	play_helper.modulate.a = 0.0
 	
 	players.activate()
+	settings.activate()
 
 func on_player_logged_in():
 	if helpers_shown: return

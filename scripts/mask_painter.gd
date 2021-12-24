@@ -15,7 +15,7 @@ onready var cam = get_node("/root/Main/Camera2D")
 onready var map = get_parent()
 
 func _ready():
-	if not GlobalDict.cfg.paint_on_tilemap:
+	if not GDict.cfg.paint_on_tilemap:
 		active = false
 		return
 	

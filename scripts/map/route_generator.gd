@@ -42,7 +42,7 @@ func initialize_rooms():
 	for _i in range(NUM_STARTING_ROOMS):
 		room_picker.create_new_room()
 	
-	$Timer.wait_time = (1.0 / GlobalDict.cfg.generation_speed)
+	$Timer.wait_time = (1.0 / GDict.cfg.generation_speed)
 	$Timer.start()
 
 func set_global_parameters():

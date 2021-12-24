@@ -102,7 +102,7 @@ func check_new_player(ev):
 func check_new_controller(ev):
 	if not (ev is InputEventJoypadButton): return DEF_ERROR_CODE
 	if ev.pressed: return DEF_ERROR_CODE
-	if GlobalInput.device_already_registered(ev.device): return DEF_ERROR_CODE
+	if GInput.device_already_registered(ev.device): return DEF_ERROR_CODE
 	
 	return add_new_player('controller', ev.device)
 
@@ -134,7 +134,7 @@ func check_remove_controller(ev):
 	if not (ev is InputEventJoypadButton): return DEF_ERROR_CODE
 	if ev.pressed: return DEF_ERROR_CODE
 	
-	if not GlobalInput.device_already_registered(ev.device): return DEF_ERROR_CODE
+	if not GInput.device_already_registered(ev.device): return DEF_ERROR_CODE
 	if ev.button_index != 1: return DEF_ERROR_CODE
 	
 	return remove_player('controller', ev.device)
@@ -164,7 +164,7 @@ func add_new_player(type, id = -1):
 	if type == "keyboard":
 		num_keyboard_players += 1
 	
-	#GlobalAudio.play_static_sound("Success")
+	#GAudio.play_static_sound("Success")
 	
 	return id
 
@@ -184,7 +184,7 @@ func remove_player(type, id = null, return_num : bool = false):
 	if type == "keyboard":
 		num_keyboard_players -= 1
 	
-	#GlobalAudio.play_static_sound("Fail")
+	#GAudio.play_static_sound("Fail")
 	
 	if return_num:
 		return index

@@ -122,7 +122,7 @@ func do_effect_of_cell(cell):
 		
 		"body_limit":
 			# NOTE: at this point we've already added ourself to the room, so its "size before" is 1 smaller than it is now
-			var body_max = GlobalInput.get_player_count()
+			var body_max = GInput.get_player_count()
 			var body_count = (cell.room.entities.count() - 1)
 			
 			if body_count >= body_max:

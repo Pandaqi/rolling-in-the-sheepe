@@ -24,10 +24,10 @@ func activate():
 	load_predefined_shapes()
 	
 	if not is_menu:
-		if GlobalInput.get_player_count() <= 0:
-			GlobalInput.create_debugging_players()
+		if GInput.get_player_count() <= 0:
+			GInput.create_debugging_players()
 		
-		num_players = GlobalInput.get_player_count()
+		num_players = GInput.get_player_count()
 		create_players()
 
 func create_players():
@@ -44,7 +44,7 @@ func create_players():
 
 func get_player_shape_frame(player_num : int):
 	var shape_name = player_shapes[player_num]
-	return GlobalDict.shape_list[shape_name].frame
+	return GDict.shape_list[shape_name].frame
 
 func create_menu_player(player_num : int):
 	create_player(player_num)
@@ -65,11 +65,11 @@ func create_player(player_num : int):
 		player = player_scene.instance()
 	
 	var rand_shape = available_shapes.pop_front()
-	if Global.make_all_players_round():
+	if G.make_all_players_round():
 		rand_shape = 'circle'
 	
 	player_shapes[player_num] = rand_shape
-	player.get_node("Shaper").create_from_shape(GlobalDict.shape_list[rand_shape].points, { 'type': rand_shape })
+	player.get_node("Shaper").create_from_shape(GDict.shape_list[rand_shape].points, { 'type': rand_shape })
 	
 	var start_pos
 	if is_menu:
@@ -155,7 +155,7 @@ func load_predefined_shapes():
 		var key = child.name.to_lower()
 		var val = scale_shape( Array(child.polygon) )
 
-		GlobalDict.shape_list[key].points = val
+		GDict.shape_list[key].points = val
 		available_shapes.append(key)
 	
 	available_shapes.shuffle()

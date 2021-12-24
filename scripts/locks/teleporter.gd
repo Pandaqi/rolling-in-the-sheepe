@@ -16,7 +16,7 @@ var time_left = 15
 var timer_is_running : bool = false
 
 func _ready():
-	for i in GlobalInput.get_player_count():
+	for i in GInput.get_player_count():
 		players_here[i] = []
 	
 	$Label.set_position(my_room.rect.get_free_real_pos_inside())
@@ -39,7 +39,7 @@ func update_label():
 	$Label/Label.set_text(str(time_left))
 
 func _physics_process(_dt):
-	var wanted_num_players = GlobalInput.get_player_count()
+	var wanted_num_players = GInput.get_player_count()
 	num_players_here = count_players_here()
 	
 	if num_players_here >= wanted_num_players:
@@ -88,7 +88,7 @@ func perform_teleport():
 	# teleport all players there
 	var unteleported_players = []
 	var teleported_bodies = []
-	for i in range(GlobalInput.get_player_count()):
+	for i in range(GInput.get_player_count()):
 		unteleported_players.append(i)
 	
 	var teleport_target_pos = route_generator.cur_path[0].rect.get_center()

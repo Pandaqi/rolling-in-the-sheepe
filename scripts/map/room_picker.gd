@@ -27,7 +27,7 @@ var tutorial_course = null
 func _ready():
 	default_starting_pos *= map.WORLD_SIZE
 	
-	if Global.in_tutorial_mode():
+	if G.in_tutorial_mode():
 		tutorial_course = tutorial_course_scene.instance()
 		add_child(tutorial_course)
 

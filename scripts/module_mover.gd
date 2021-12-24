@@ -213,7 +213,7 @@ func determine_normal_vec():
 
 		# TO DO: move outside this if-statement? Nah, would cause other troubles
 		var extra_vec = Vector2.ZERO
-		var factor = GlobalDict.cfg.wall_jump_strength
+		var factor = GDict.cfg.wall_jump_strength
 		
 		if sides_with_hit[0]:
 			extra_vec += Vector2.LEFT

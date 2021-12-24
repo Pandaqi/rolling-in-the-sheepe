@@ -15,7 +15,7 @@ func set_general_parameter(val):
 func set_type(tp):
 	type = tp
 	
-	var data = GlobalDict.item_types[tp]
+	var data = GDict.item_types[tp]
 	
 	$Sprite.set_frame(data.frame)
 	

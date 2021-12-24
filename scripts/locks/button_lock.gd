@@ -46,7 +46,7 @@ func spawn_buttons():
 	var num_buttons = 2 + randi() % 4
 	if sub_type == "simultaneous":
 		num_buttons = 2
-		if GlobalInput.get_player_count() >= 4: 
+		if GInput.get_player_count() >= 4: 
 			num_buttons = 2 + randi() % 2
 	
 	print("AVAILABLE_TILES")

@@ -42,7 +42,7 @@ func show_game_over_screen():
 	screen.populate(player_ranks, player_times)
 
 func check_if_game_over():
-	if num_players_finished < GlobalInput.get_player_count(): return
+	if num_players_finished < GInput.get_player_count(): return
 	
 	print("GAME OVER")
 	game_over_mode = true
@@ -68,7 +68,7 @@ func player_finished(b):
 		time_modifiers += body.get_node("Status").time_penalty
 		
 		if body.get_node("Status").has_finished: continue
-		time_modifiers += GlobalDict.cfg.time_penalty_unfinished_bodies
+		time_modifiers += GDict.cfg.time_penalty_unfinished_bodies
 	
 	# Calculate final time (from raw time of first body + modifiers)
 	var final_time = raw_time + time_modifiers
@@ -97,7 +97,7 @@ func update_ranks():
 	player_ranks_helper.sort_custom(self, "rank_sort_function")
 	
 	player_ranks = []
-	player_ranks.resize(GlobalInput.get_player_count())
+	player_ranks.resize(GInput.get_player_count())
 	
 	for i in range(player_ranks_helper.size()):
 		player_ranks[player_ranks_helper[i].num] = i

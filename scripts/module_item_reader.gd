@@ -52,7 +52,7 @@ func register_contact(obj):
 	if not cell.special: return
 	var type = cell.special.type
 	
-	var reject_by_invincibility = (status.is_invincible and GlobalDict.item_types[type].has('invincibility'))
+	var reject_by_invincibility = (status.is_invincible and GDict.item_types[type].has('invincibility'))
 	if reject_by_invincibility: return
 	
 	var already_registered_cell = false

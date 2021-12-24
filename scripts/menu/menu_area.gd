@@ -27,7 +27,7 @@ func _on_Area2D_body_exited(body):
 	anim_player.stop(true)
 
 func check_if_filled():
-	var num_players = GlobalInput.get_player_count()
+	var num_players = GInput.get_player_count()
 	if players_here < num_players: return
 	
 	preparing_load = true
@@ -41,4 +41,4 @@ func _physics_process(dt):
 	finalize_load()
 
 func finalize_load():
-	Global.load_game(type)
+	G.load_game(type)

@@ -3,7 +3,7 @@ extends Node
 var available_types = []
 
 func _ready():
-	available_types = GlobalDict.lock_types.keys()
+	available_types = GDict.lock_types.keys()
 
 func get_random_type():
 	# DEBUGGING

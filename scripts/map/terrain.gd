@@ -14,7 +14,7 @@ func _ready():
 
 func read_terrain_list_from_campaign():
 	# TO DO: do what the function says
-	available_terrains = GlobalDict.terrain_types.keys()
+	available_terrains = GDict.terrain_types.keys()
 	
 	available_terrains.erase("finish")
 	available_terrains.erase("teleporter")
@@ -55,7 +55,7 @@ func get_random_terrain_type(room):
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
 	if last_terrain != "":
-		if not GlobalDict.terrain_types[last_terrain].has('disable_consecutive') and not terrain_is_lock(last_terrain):
+		if not GDict.terrain_types[last_terrain].has('disable_consecutive') and not terrain_is_lock(last_terrain):
 			if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
 				return last_terrain
 	
@@ -74,12 +74,12 @@ func get_random_terrain_type(room):
 			key = ""
 			break
 		
-		if GlobalDict.terrain_types[key].has('unpickable'):
+		if GDict.terrain_types[key].has('unpickable'):
 			continue
 		
 		# UPGRADE: don't allow two consecutive terrains of the same general category
 		if last_terrain and num_tries < RESTRICTION_CUTOFF:
-			if GlobalDict.terrain_types[last_terrain].category == GlobalDict.terrain_types[key].category:
+			if GDict.terrain_types[last_terrain].category == GDict.terrain_types[key].category:
 				continue
 		
 		# RESTRICTION: No reverse gravity when going down
@@ -94,10 +94,10 @@ func paint(room, type):
 	if not type or type == "": return
 	
 	var tile_id = -1
-	if GlobalDict.terrain_types.has(type):
-		tile_id = GlobalDict.terrain_types[type].frame
+	if GDict.terrain_types.has(type):
+		tile_id = GDict.terrain_types[type].frame
 
-	var overwrites_terrain = GlobalDict.terrain_types[type].has('overwrite')
+	var overwrites_terrain = GDict.terrain_types[type].has('overwrite')
 	
 	var rect = room.rect
 	for temp_pos in rect.positions:
@@ -129,7 +129,7 @@ func erase(room):
 # 		 or under a _specific condition_, not just all of them??
 
 func someone_entered(node, terrain):
-	var is_coin_terrain = (GlobalDict.terrain_types[terrain].has('coin_related'))
+	var is_coin_terrain = (GDict.terrain_types[terrain].has('coin_related'))
 	if is_coin_terrain: node.get_node("Coins").show()
 
 func someone_exited(node, terrain):

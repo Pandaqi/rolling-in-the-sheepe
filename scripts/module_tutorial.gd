@@ -36,7 +36,7 @@ func load_next_step():
 		queue_free()
 		return
 	
-	var device_id = GlobalInput.get_device_id(body.get_node("Status").player_num)
+	var device_id = GInput.get_device_id(body.get_node("Status").player_num)
 	var base_frame = base_frames[tutorial_step]
 	if device_id < 0:
 		base_frame += abs(device_id + 1)

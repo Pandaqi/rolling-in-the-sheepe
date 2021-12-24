@@ -13,7 +13,7 @@ var col_layers = 1 + 8
 func set_type(new_type : String):
 	type = new_type
 	
-	$Sprite.set_frame(GlobalDict.edge_types[type].frame)
+	$Sprite.set_frame(GDict.edge_types[type].frame)
 
 func link_to_room(params):
 	my_room = params.room

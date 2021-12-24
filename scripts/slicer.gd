@@ -66,7 +66,7 @@ func create_basic_body(b, type, shrinker : float = 1.0):
 	var base_pos = b.get_global_position()
 	var radius = b.get_node("Shaper").approximate_radius_for_basic_body(shrinker)
 	
-	var num_points = GlobalDict.points_per_shape[type]
+	var num_points = GDict.points_per_shape[type]
 	
 	var arr = []
 	for a in range(num_points):
@@ -85,10 +85,10 @@ func slice_body(b, p1, p2):
 		print("Player already has too many bodies")
 		return
 	
-	if GlobalDict.cfg.unrealistic_slicing:
+	if GDict.cfg.unrealistic_slicing:
 		b.get_node("Status").delete()
 		
-		var new_type = GlobalDict.cfg.slicing_yields
+		var new_type = GDict.cfg.slicing_yields
 		var new_shapes = []
 		for _i in range(2):
 			new_shapes.append( create_basic_body(b, new_type, 0.5) )

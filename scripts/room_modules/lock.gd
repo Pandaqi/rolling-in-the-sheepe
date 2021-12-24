@@ -31,7 +31,7 @@ func has_lock():
 # (if a fail, we don't definitively set it, so the algorithm will keep trying on subsequent rooms)
 func add_lock() -> bool:
 	var rand_type = map.dynamic_tutorial.get_random('lock', parent)
-	var data = GlobalDict.lock_types[rand_type]
+	var data = GDict.lock_types[rand_type]
 	
 	# some locks have many different (similar) variants, 
 	# so we instantiate the same scene for them

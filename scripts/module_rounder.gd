@@ -44,7 +44,7 @@ func _on_Timer_timeout():
 	if average_airtime > 0.5: what_to_do = "malform"
 		
 	else:
-		if GlobalDict.cfg.unrealistic_rounding:
+		if GDict.cfg.unrealistic_rounding:
 			become_more_round_unrealistic()
 		else:
 			become_more_round()
@@ -54,12 +54,12 @@ func _on_Timer_timeout():
 		else: what_to_do = "round"
 	
 	if what_to_do == "round":
-		if GlobalDict.cfg.unrealistic_rounding:
+		if GDict.cfg.unrealistic_rounding:
 			become_more_round_unrealistic()
 		else:
 			become_more_round()
 	elif what_to_do == "malform":
-		if GlobalDict.cfg.unrealistic_rounding:
+		if GDict.cfg.unrealistic_rounding:
 			become_more_malformed_unrealistic()
 		else:
 			become_more_malformed()
@@ -110,14 +110,14 @@ func make_fully_malformed():
 
 func change_shape_index(val):
 	var cur_shape = shaper.shape_type
-	var cur_index = GlobalDict.shape_order.find(cur_shape)
+	var cur_index = GDict.shape_order.find(cur_shape)
 	
 	if cur_index < 0:
-		var related_basic_shape = GlobalDict.shape_list[cur_shape].basic
-		cur_index = GlobalDict.shape_order.find(related_basic_shape)
+		var related_basic_shape = GDict.shape_list[cur_shape].basic
+		cur_index = GDict.shape_order.find(related_basic_shape)
 	
-	var next_index = clamp(cur_index + val, 0, GlobalDict.shape_order.size()-1)
-	return GlobalDict.shape_order[next_index]
+	var next_index = clamp(cur_index + val, 0, GDict.shape_order.size()-1)
+	return GDict.shape_order[next_index]
 
 #
 # Deforming
