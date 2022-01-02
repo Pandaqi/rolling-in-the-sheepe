@@ -76,13 +76,13 @@ func create_border_around_world():
 
 
 # not sure if this should be here, but where else? SlopePainter? (rename to Tiles?)
-func explode_cell(attacker, cell):
-	change_cell(cell.pos, -1)
+func explode_cell(attacker, pos : Vector2):
+	change_cell(pos, -1)
 	attacker.get_node("Coins").get_paid(1)
 	attacker.get_node("MapPainter").disable_paint = true
-	mask_painter.clear_rectangle(cell.pos*TILE_SIZE, Vector2(1,1)*TILE_SIZE)
+	mask_painter.clear_rectangle(pos*TILE_SIZE, Vector2(1,1)*TILE_SIZE)
 	
-	update_bitmask(cell.pos-Vector2(2,2), Vector2(5,5))
+	update_bitmask(pos-Vector2(2,2), Vector2(5,5))
 
 ####
 #

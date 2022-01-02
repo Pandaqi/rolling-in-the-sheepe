@@ -15,9 +15,13 @@ var bounding_box
 var color : Color = Color(1.0, 0.0, 0.0)
 
 var shape_type : String = ""
+var starting_shape : String = ""
 
 onready var body = get_parent()
 onready var slicer = get_node("/root/Main/Slicer")
+
+func set_starting_shape(shape_key : String):
+	starting_shape = shape_key
 
 #####
 #
@@ -28,6 +32,9 @@ func destroy():
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	for _i in range(num_shapes):
 		body.shape_owner_remove_shape(0, 0)
+
+func create_new_from_shape_key(key : String):
+	create_new_from_shape(GDict.shape_list[key], { 'type': key })
 
 func create_new_from_shape(shp, params):
 	destroy()
@@ -81,6 +88,9 @@ func create_random_shape():
 		ang += (1.0 + (randf()-0.5)*ang_jump_error)*avg_ang_jump
 	
 	return shape
+
+func reset_to_starting_shape():
+	create_new_from_shape_key(starting_shape)
 
 #####
 #

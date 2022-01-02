@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://tileset.tres" type="TileSet" id=1]
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://scripts/player_manager.gd" type="Script" id=9]
 [ext_resource path="res://scenes/menu/menu_area.tscn" type="PackedScene" id=10]
 [ext_resource path="res://scenes/settings/technical_settings.tscn" type="PackedScene" id=11]
+[ext_resource path="res://scenes/menu/menu_door.tscn" type="PackedScene" id=12]
 
 [sub_resource type="Animation" id=1]
 resource_name = "PreparingPlay"
@@ -143,3 +144,8 @@ anims/RESET = SubResource( 4 )
 [node name="GUI" type="CanvasLayer" parent="."]
 
 [node name="TechnicalSettings" parent="." instance=ExtResource( 11 )]
+
+[node name="TutorialDoor" parent="." instance=ExtResource( 12 )]
+
+[node name="PlayDoor" parent="." instance=ExtResource( 12 )]
+position = Vector2( 769, 60 )

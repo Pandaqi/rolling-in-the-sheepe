@@ -31,6 +31,30 @@ var thing_planned = null
 
 var first_thing : bool = true
 
+func draw_list_weighted(ref, list : Array, num : int):
+	var total_prob : int = 0
+	for key in list:
+		if not ref[key].has('prob'):
+			ref[key].prob = 1
+		total_prob += ref[key].prob
+	
+	var arr = []
+	
+	while arr.size() < num:
+		var running_sum : float = 0.0
+		var target : float = randf()
+		
+		var chosen_key
+		for key in list:
+			running_sum += ref[key].prob / float(total_prob) 
+			chosen_key = key
+			if running_sum >= target: break
+		
+		arr.append(chosen_key)
+		list.erase(chosen_key)
+	
+	return arr
+
 func determine_included_types():
 	var rng = RandomNumberGenerator.new()
 	rng.randomize()
@@ -64,9 +88,9 @@ func determine_included_types():
 			all_items.remove(i)
 	
 	things_to_teach = {
-		'terrain': all_terrains.slice(0, num_terrains),
-		'lock': all_locks.slice(0, num_locks),
-		'item': all_items.slice(0, num_items)
+		'terrain': draw_list_weighted(GDict.terrain_types, all_terrains, num_terrains),
+		'lock': draw_list_weighted(GDict.lock_types, all_locks, num_locks),
+		'item': draw_list_weighted(GDict.item_types, all_items, num_items)
 	}
 	
 	# UPGRADE: ensure at least several coin related things, so coins are not useless

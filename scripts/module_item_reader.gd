@@ -1,56 +1,57 @@
 extends Node
 
-const ITEM_EFFECT_DURATION : float = 5.0
 const TIMEOUT_DURATION : float = 1.0
-
 const MIN_VELOCITY_FOR_BOMB : float = 180.0
+
+const SPEED_ITEM_FORCE : float = 20.0
+const TRAMPOLINE_FORCE : float = 100.0
 
 onready var body = get_parent()
 onready var status = get_node("../Status")
 onready var glue = get_node("../Glue")
 onready var mover = get_node("../Mover")
+onready var shaper = get_node("../Shaper")
+onready var rounder = get_node("../Rounder")
 
 onready var slicer = get_node("/root/Main/Slicer")
 
 onready var map = get_node("/root/Main/Map")
 
-onready var ongoing_timer = $OngoingTimer
 onready var timeout_timer = $TimeoutTimer
 
+var toggled_items = []
 var immediate_items = []
-var ongoing_items = []
 
-var is_bomb : bool = false
+var we_are_bomb : bool = false
 var on_timeout : bool = false
 
 func _physics_process(_dt):
 	if status.is_invincible: return
 	
-	reset_immediate_items()
+	for obj in toggled_items:
+		execute_toggled_item(obj)
 	
-	var cur_items = ongoing_items.size()
+	reset_immediate_items()
 	for obj in body.contact_data:
 		if not (obj.body is TileMap): continue
-
 		register_contact(obj)
-	
-	var received_ongoing_effect = ongoing_items.size() > cur_items
-	if received_ongoing_effect:
-		start_ongoing_timer()
 	
 	do_something_with_items()
 
 func register_contact(obj):
-	var grid_pos = map.get_grid_pos(obj.pos - 0.5*obj.normal*map.TILE_SIZE)
+	var safety_margin = 0.5*obj.normal*map.TILE_SIZE
+	var grid_pos = map.get_grid_pos(obj.pos - safety_margin)
 	if map.out_of_bounds(grid_pos): return
 	
 	var cell = map.get_cell(grid_pos)
-	if is_bomb and mover.velocity_last_frame.length() > MIN_VELOCITY_FOR_BOMB:
-		map.explode_cell(body, cell)
+	if we_are_bomb and mover.velocity_last_frame.length() > MIN_VELOCITY_FOR_BOMB:
+		map.explode_cell(body, grid_pos)
 		return
 	
 	if not cell.special: return
+	
 	var type = cell.special.type
+	if not map.special_elements.type_is_immediate(type): return
 	
 	var reject_by_invincibility = (status.is_invincible and GDict.item_types[type].has('invincibility'))
 	if reject_by_invincibility: return
@@ -78,11 +79,57 @@ func register_contact(obj):
 		'col_data': obj
 	}
 	
-	if map.special_elements.type_is_immediate(type):
-		immediate_items.append(better_obj)
-	else:
-		ongoing_items.append(better_obj)
-		do_ongoing(better_obj)
+	immediate_items.append(better_obj)
+
+#
+# Toggled items
+# (when inside area, they toggle on, when outside, they toggle off again)
+#
+func turn_on_item(block, tp : String):
+	if not map.special_elements.type_is_toggle(tp): return
+	
+	var obj = { 'block': block, 'type': tp }
+	toggled_items.append(obj)
+	
+	match tp:
+		'ghost': status.make_ghost()
+		'shield': status.make_invincible()
+		'rounder': rounder.enable_fast_mode('round')
+		'sharper': rounder.enable_fast_mode('sharp')
+
+func turn_off_item(block, tp : String):
+	if not map.special_elements.type_is_toggle(tp): return
+	
+	match tp:
+		'ghost': status.undo_ghost()
+		'shield': status.make_vincible()
+		'rounder': rounder.disable_fast_mode()
+		'sharper': rounder.disable_fast_mode()
+	
+	for obj in toggled_items:
+		if obj.type != tp: continue
+		toggled_items.erase(obj)
+
+func execute_toggled_item(obj):
+	var type = obj.type
+	
+	# get normal + which direction player is going (the most)
+	var rot = obj.block.rotation
+	var normal = Vector2(cos(rot), sin(rot))
+	var norm_vel = body.get_linear_velocity().normalized()
+	
+	var dotA = normal.rotated(0.5*PI).dot(norm_vel)
+	var dotB = normal.rotated(-0.5*PI).dot(norm_vel)
+	
+	var move_dir = normal.rotated(0.5*PI)
+	if dotB > dotA: move_dir *= -1
+	
+	match type:
+		'speedup':
+			body.apply_central_impulse(move_dir * SPEED_ITEM_FORCE)
+		
+		'slowdown':
+			body.apply_central_impulse(-move_dir * SPEED_ITEM_FORCE)
 
 #
 # Immediate items
@@ -114,6 +161,21 @@ func handle_item(obj):
 		"button_order":
 			var res = obj.item.my_room.lock.record_button_push(obj.item)
 			if not res: prevent_deletion = true
+		
+		"trampoline":
+			var normal = obj.col_data.collider.transform.x
+			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
+		
+		"breakable":
+			map.explode_cell(body, obj.pos)
+		
+		"reset_shape":
+			shaper.reset_to_starting_shape()
+		
+		"change_shape":
+			# TO DO: This resets to original size; rescale to roughly match the new size?
+			var shape_key = obj.item.my_module.get_shape_key()
+			shaper.create_new_from_shape_key(shape_key)
 	
 	if prevent_deletion: return
 	
@@ -130,31 +192,8 @@ func _on_TimeoutTimer_timeout():
 func reset_immediate_items():
 	immediate_items = []
 
-#
-# Ongoing items
-# (once triggered, they stay with you for a while (like a powerup, that wears off eventually))
-#
-func _on_OngoingTimer_timeout():
-	reset_ongoing_items()
-
-func do_ongoing(_obj):
-	pass
-
-func undo_ongoing(_obj):
-	pass
-
-func reset_ongoing_items():
-	for item in ongoing_items:
-		undo_ongoing(item)
-	
-	ongoing_items = []
-
-func start_ongoing_timer():
-	ongoing_timer.wait_time = ITEM_EFFECT_DURATION
-	ongoing_timer.start()
-
 func make_bomb():
-	is_bomb = true
+	we_are_bomb = true
 
 func undo_bomb():
-	is_bomb = false
+	we_are_bomb = false

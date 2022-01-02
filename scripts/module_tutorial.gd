@@ -9,7 +9,7 @@ const MAX_TIME_BETWEEN_STEPS : int = 15
 onready var timer = $Timer
 
 var tutorial_step : int = -1
-var base_frames = [0,5]
+var base_frames = [0,8]
 
 const MOVEMENT_BEFORE_NEXT_STEP : float = 3.0 # in _seconds_, regardless of speed
 var player_movement : float = 0.0

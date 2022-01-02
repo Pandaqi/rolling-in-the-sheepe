@@ -1,6 +1,7 @@
 extends Node
 
 const GROW_FACTOR : float = 0.2
+const GROW_TIMER_DURATION : float = 3.0
 const BASE_TIMER_DURATION : float = 5.0
 var final_timer_duration
 
@@ -15,6 +16,9 @@ var is_malformed : float = false
 
 var grow_instead_of_rounding : float = false
 var reverse_rounding : float = false
+
+var fast_mode : bool = false
+var fast_mode_dir : String = ""
 
 var grow_mode = ""
 
@@ -35,8 +39,31 @@ func _ready():
 func _physics_process(dt):
 	if mover.in_air: average_airtime += dt
 
+func restart_timer():
+	round_algo_timer.stop()
+	
+	var mult = 1.0
+	if fast_mode: mult = 0.25
+	round_algo_timer.wait_time = mult*final_timer_duration
+	
+	round_algo_timer.start()
+
+func restart_grow_timer():
+	grow_timer.stop()
+	
+	var mult = 1.0
+	if fast_mode: mult = 0.25
+	grow_timer.wait_time = mult*GROW_TIMER_DURATION
+	
+	grow_timer.start()
+
 func _on_Timer_timeout():
 	average_airtime /= final_timer_duration
+	
+	# ITEM: going fast-tracked to a certain value
+	if fast_mode:
+		if fast_mode_dir == 'round': average_airtime = 0.0
+		else: average_airtime = 1.0
 	
 	# We now have a value between 0->1 which tells us which FRACTION
 	# of that time we spent not-rolling
@@ -306,3 +333,28 @@ func _on_GrowTimer_timeout():
 		grow(0.1)
 	elif grow_mode == "shrink":
 		shrink(0.1)
+
+#
+# Fast mode => used by items/powerups to more quickly go towards something
+#
+func enable_fast_mode(dir : String):
+	fast_mode = true
+	fast_mode_dir = dir
+	
+	restart_timer()
+	restart_grow_timer()
+	
+	var mode = 'grow'
+	if dir == 'sharp': mode = 'shrink'
+	start_grow_mode(dir)
+	
+	_on_Timer_timeout()
+	_on_GrowTimer_timeout()
+
+func disable_fast_mode():
+	fast_mode = false
+	fast_mode_dir = ""
+	
+	restart_timer()
+	restart_grow_timer()
+	end_grow_mode()

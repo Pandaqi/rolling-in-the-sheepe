@@ -31,8 +31,8 @@ func get_random_type(room):
 func type_is_immediate(tp):
 	return GDict.item_types[tp].has('immediate')
 
-func type_is_ongoing(tp):
-	return GDict.item_types[tp].has('ongoing')
+func type_is_toggle(tp):
+	return GDict.item_types[tp].has('toggle')
 
 func delete_on_activation(obj):
 	if not GDict.item_types[obj.type].has('delete'): return

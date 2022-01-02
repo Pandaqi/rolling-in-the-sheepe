@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://assets/special_elements.png" type="Texture" id=1]
 [ext_resource path="res://scripts/special_element.gd" type="Script" id=2]
 [ext_resource path="res://assets/fonts/main_tiny.tres" type="DynamicFont" id=3]
+[ext_resource path="res://scripts/item_modules/shape_changer.gd" type="Script" id=4]
+[ext_resource path="res://assets/ui/predefined_shapes.png" type="Texture" id=5]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 7.1072, 28.5941 )
@@ -30,9 +32,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Timer" type="Timer" parent="."]
-one_shot = true
-
 [node name="Area2D" type="Area2D" parent="."]
 position = Vector2( 31.0734, 0 )
 collision_layer = 4
@@ -42,6 +41,15 @@ collision_mask = 4
 position = Vector2( 0.151222, -0.732462 )
 shape = SubResource( 1 )
 
-[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+[node name="ShapeChanger" type="Node" parent="."]
+script = ExtResource( 4 )
+
+[node name="Sprite" type="Sprite" parent="ShapeChanger"]
+position = Vector2( 31, 0 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 5 )
+hframes = 8
+vframes = 4
+
 [connection signal="body_entered" from="Area2D" to="." method="_on_Area2D_body_entered"]
 [connection signal="body_exited" from="Area2D" to="." method="_on_Area2D_body_exited"]

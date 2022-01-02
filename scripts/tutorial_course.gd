@@ -54,6 +54,17 @@ var wolf_active : bool = false
 var tiles_inside_allowed : bool = false # TO DO
 var simple_route_generation : bool = true
 
+var solo_mode : bool = false
+
+func _ready():
+	solo_mode = GInput.get_player_count() == 1
+	
+	# in solo mode, the wolf doesn't exist, so also don't show that tutorial
+	if solo_mode:
+		for obj in tuts:
+			if obj.key == "last_player_is_wolf":
+				tuts.erase(obj)
+
 func on_new_room_created(room):
 	var too_soon = abs(room.route.index - last_tut_index) < MIN_DIST_BETWEEN_TUTORIALS
 	if too_soon: return

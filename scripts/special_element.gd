@@ -2,17 +2,19 @@ extends Node2D
 
 var type : String = ""
 var general_parameter
-var my_room
+var my_room = null
+var my_module = null
 
 onready var label = $Label
 onready var area = $Area2D
-onready var timer = $Timer
 
 func set_general_parameter(val):
 	general_parameter = val
 	label.get_node("Label").set_text(str(general_parameter+1))
 
 func set_type(tp):
+	if my_module: my_module.queue_free()
+	
 	type = tp
 	
 	var data = GDict.item_types[tp]
@@ -24,24 +26,28 @@ func set_type(tp):
 		label.set_rotation(-rotation)
 	else:
 		label.set_visible(false)
-
-func _on_Area2D_body_entered(body):
-	if type != "button_timed": return
 	
-	var timer_already_running = (timer.time_left > 0)
-	if timer_already_running: return
-	
-	timer.wait_time = 3.0
-	timer.start()
-
-func _on_Area2D_body_exited(body):
-	if type != "button_timed": return
-	
-	timer.stop()
+	if data.has('module'):
+		my_module = load("res://scenes/item_modules/" + type + ".tscn").instance()
+		
+		if my_module.has_method("_on_Area2D_body_entered"):
+			area.connect("body_entered", my_module, "_on_Area2D_body_entered")
+		
+		if my_module.has_method("_on_Area2D_body_exited"):
+			area.connect("body_exited", my_module, "_on_Area2D_body_exited")
+		
+		add_child(my_module)
 
 func has_overlapping_bodies():
 	return area.get_overlapping_bodies().size()
 
-func _on_Timer_timeout():
-	if type == "button_timed":
-		my_room.lock.lock_module.record_button_push(self)
+func get_lock_module():
+	return my_room.lock.lock_module
+
+func _on_Area2D_body_entered(body):
+	if not body.is_in_group("Players"): return
+	body.get_node("ItemReader").turn_on_item(self, type)
+
+func _on_Area2D_body_exited(body):
+	if not body.is_in_group("Players"): return
+	body.get_node("ItemReader").turn_off_item(self, type)

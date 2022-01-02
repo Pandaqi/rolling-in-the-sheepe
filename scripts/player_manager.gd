@@ -69,6 +69,7 @@ func create_player(player_num : int):
 		rand_shape = 'circle'
 	
 	player_shapes[player_num] = rand_shape
+	player.get_node("Shaper").set_starting_shape(rand_shape)
 	player.get_node("Shaper").create_from_shape(GDict.shape_list[rand_shape].points, { 'type': rand_shape })
 	
 	var start_pos
