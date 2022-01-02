@@ -6,6 +6,8 @@ var contact_data = []
 
 const SHOOT_AWAY_FORCE : float = 4.0
 
+onready var map = get_node("/root/Main/Map")
+
 func _ready():
 	physics_material_override = PhysicsMaterial.new()
 
@@ -34,6 +36,7 @@ func check_shoot_away(_state):
 	shoot_away_vec = Vector2.ZERO
 
 func plan_teleport(pos):
+	map.player_progression.on_player_teleported(self)
 	teleport_pos = pos
 
 func plan_shoot_away(vec):

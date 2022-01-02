@@ -40,6 +40,9 @@ func pay(c):
 	num_coins = int(clamp(num_coins - c, 0, MAX_COINS))
 	show()
 
+func pay_half():
+	pay(round(0.5*num_coins))
+
 func _physics_process(_dt):
 	check_for_collision_with_self()
 	position_gui_above_player()

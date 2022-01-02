@@ -1,6 +1,6 @@
 extends Node
 
-const DELAY_BETWEEN_SWITCH : float = 1.0 # in seconds
+const DELAY_BETWEEN_SWITCH : float = 1.5 # in seconds
 
 var leading_player = null
 var trailing_player = null
@@ -79,9 +79,9 @@ func determine_leading_and_trailing_player():
 	
 	if (cur_time - time_since_trail_switch)/1000.0 > DELAY_BETWEEN_SWITCH:
 		set_trailing_player(wanted_trailing_player)
-	
-	# change new one to a wolf
-	check_wolf()
+		
+		# change new one to a wolf
+		check_wolf()
 
 #
 # Helpers/Queries
@@ -118,6 +118,12 @@ func disable_wolf():
 	if not has_trailing_player(): return
 	
 	trailing_player.get_node("Status").make_sheep()
+
+func on_player_teleported(body):
+	if not GDict.cfg.temp_remove_wolf_on_teleport: return
+	
+	body.get_node("Status").make_sheep()
+	time_since_trail_switch = OS.get_ticks_msec()
 
 #
 # Helper functions (for ourself but also all other nodes accesssing us)

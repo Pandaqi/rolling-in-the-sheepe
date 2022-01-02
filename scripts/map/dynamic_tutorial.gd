@@ -14,19 +14,20 @@ onready var map = get_parent()
 
 var tutorial_scene = preload("res://scenes/dynamic_tutorial.tscn")
 
-var things_taught = {
+var things_taught : Dictionary = {
 	'terrain': [],
 	'lock': [],
 	'item': []
 }
 
-var things_to_teach = {
+var things_to_teach : Dictionary = {
 	'terrain': [],
 	'lock': [],
 	'item': []
 }
 
 var last_tutorial_index : int = -MIN_ROOMS_BETWEEN_TUTORIALS + MIN_ROOMS_BEFORE_TUTORIALS_START
+var final_tut_room : int = -1
 var thing_planned = null
 
 var first_thing : bool = true
@@ -208,6 +209,10 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var types_list = things_to_teach[rand_kind]
 	var rand_type = types_list[randi() % types_list.size()]
 	
+	# DEBUGGING => FOR TESTING NEW STUFF
+	rand_kind = 'item'
+	rand_type = 'change_shape'
+	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
 	# DEBUGGING
@@ -227,7 +232,13 @@ func place_tutorial_custom(room, params):
 	var tut = tutorial_scene.instance()
 	tut.set_position(room.rect.get_center())
 	tut.get_node("Sprite").set_frame(params.frame)
+	
 	map.add_child(tut)
+	room.connect_related_item(tut)
+	room.has_tutorial = true
+	
+	if is_everything_taught():
+		final_tut_room = map.route_generator.get_new_room_index()
 
 func place_tutorial(room):
 	var self_placement = room.tilemap.terrain == "teleporter"
@@ -241,6 +252,9 @@ func place_tutorial(room):
 	else: frame = get_planned_frame()
 	
 	tut.get_node("Sprite").set_frame(frame)
+	
+	room.connect_related_item(tut)
+	room.has_tutorial = true
 	map.add_child(tut)
 	
 	if self_placement: return
@@ -250,12 +264,19 @@ func place_tutorial(room):
 	
 	print("PLACED TUTORIAL FOR")
 	print(thing_planned)
+	
+	if is_everything_taught():
+		final_tut_room = map.route_generator.get_new_room_index()
 
 func get_planned_frame():
 	var key = thing_planned.kind + "_types"
 	var list = GDict[key]
-	
-	# DEBUGGING => for as long as I don't have all tutorials yet
 	if not list[thing_planned.type].has('tut'): return 0
 	
 	return list[thing_planned.type].tut
+
+func is_everything_taught() -> bool:
+	if G.in_tutorial_mode():
+		return map.room_picker.tutorial_course.is_finished()
+	else:
+		return things_to_teach.keys().size() <= 0

@@ -32,6 +32,7 @@ onready var room_picker = get_node("../RoomPicker")
 onready var player_progression = get_node("../PlayerProgression")
 onready var edges = get_node("../Edges")
 onready var mask_painter = get_node("../MaskPainter")
+onready var dynamic_tutorial = get_node("../DynamicTutorial")
 
 var create_phase : bool = false
 
@@ -117,6 +118,13 @@ func placed_lock():
 # Queries into the route
 #
 func should_place_finish():
+	if GDict.cfg.delay_finish_until_all_taught:
+		if not dynamic_tutorial.is_everything_taught(): 
+			return false
+		else:
+			if (get_new_room_index() - dynamic_tutorial.last_tut_room) < GDict.cfg.min_rooms_between_last_tut_and_finish:
+				return false
+			
 	return (total_rooms_created > rooms_until_finish)
 
 func should_place_lock():

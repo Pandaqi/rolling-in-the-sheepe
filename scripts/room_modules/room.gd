@@ -12,7 +12,9 @@ onready var route = $Route
 onready var tilemap = $Tilemap
 onready var items = $Items
 
+var has_tutorial : bool = false
 var is_finish : bool = false
+var related_items : Array = []
 
 func initialize(pos, size):
 	rect.set_pos(pos)
@@ -22,6 +24,12 @@ func delete():
 	lock.delete()
 	tilemap.delete()
 	items.delete()
+	
+	for node in related_items:
+		node.queue_free()
+
+func connect_related_item(node):
+	related_items.append(node)
 
 # NOTE: called AFTER the whole placement for this room is done
 func turn_into_finish():

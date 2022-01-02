@@ -37,6 +37,8 @@ func set_type(tp):
 			area.connect("body_exited", my_module, "_on_Area2D_body_exited")
 		
 		add_child(my_module)
+		
+		print("ADDED MODULE")
 
 func has_overlapping_bodies():
 	return area.get_overlapping_bodies().size()

@@ -85,10 +85,20 @@ func slice_body(b, p1, p2):
 		print("Player already has too many bodies")
 		return
 	
+	if GDict.cfg.cant_slice_triangles:
+		if b.get_node("Shaper").is_fully_malformed():
+			print("Can't slice triangles/completely malformed things")
+			return
+	
 	if GDict.cfg.unrealistic_slicing:
+		var prev_shape_index = b.get_node("Rounder").get_next_index(-1)
+		
 		b.get_node("Status").delete()
 		
 		var new_type = GDict.cfg.slicing_yields
+		if GDict.cfg.slicing_goes_back_one_shape:
+			new_type = GDict.shape_order[prev_shape_index]
+		
 		var new_shapes = []
 		for _i in range(2):
 			new_shapes.append( create_basic_body(b, new_type, 0.5) )

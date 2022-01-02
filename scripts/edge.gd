@@ -44,4 +44,5 @@ func open():
 func close():
 	collision_layer = col_layers
 	collision_mask = col_layers
+	get_node("CollisionShape2D").one_way_collision = false
 	modulate.a = 1.0

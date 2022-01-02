@@ -88,3 +88,6 @@ func load_next_tutorial(room):
 		elif s == "allow_placing_locks": can_place_locks = true
 		elif s == "remove_simple_generation": simple_route_generation = false
 		elif s == "allow_tiles_inside": tiles_inside_allowed = true
+
+func is_finished() -> bool:
+	return cur_tut >= tuts.size()

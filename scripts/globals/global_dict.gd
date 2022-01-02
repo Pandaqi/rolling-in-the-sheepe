@@ -2,7 +2,11 @@ extends Node
 
 var cfg = {
 	"unrealistic_slicing": true,
+	
+	# either slicing yields the exact same shape each time (first option)
+	# or it just goes back one step
 	"slicing_yields": "triangle",
+	"slicing_goes_back_one_shape": true,
 	
 	"unrealistic_glueing": true,
 	"unrealistic_rounding": true,
@@ -11,7 +15,22 @@ var cfg = {
 	
 	'time_penalty_unfinished_bodies': 10.0, # set to 0.0 to eliminate this rule
 	
+	'cant_slice_triangles': true,
+	
 	'wolf_takes_coin': true,
+	
+	'delay_finish_until_all_taught': true,
+	'min_rooms_between_last_tut_and_finish': 12,
+	
+	# no rounding/malforming takes place on every cycle
+	# only if you've been on the ground _a lot_ or in the air _a lot_
+	'only_round_if_airtime_at_extremes': true,
+	
+	'dont_place_tiles_inside_rooms_with_tut': true,
+	
+	'temp_remove_wolf_on_teleport': true,
+	
+	'reset_players_to_start_shape_at_finish': true,
 	
 	# TO DO: make toggelable in (technical) settings
 	'generation_speed': 2.0, # higher is faster; inverted (1/X) on game start
@@ -94,6 +113,7 @@ var lock_types = {
 	# "shop_lock": { "terrain": "shop_lock", "edge_type": "regular", "coin_related": true }
 }
 
+# NOTE: items can be immediate, toggle, or _none of both_ (don't work on player interaction)
 var item_types = {
 	"spikes": { "frame": 0, "immediate": true, "delete": true, "invincible": true, "tut": 45, "prob": 3 },
 	"button_regular": { "frame": 1, "immediate": true, "delete": true, "unpickable": true },
@@ -109,9 +129,12 @@ var item_types = {
 	"rounder": { "frame": 10, "toggle": true },
 	"sharper": { "frame": 11, "toggle": true },
 	
-	"breakable": { "frame": 12, "immediate": true },
+	"breakable": { "frame": 12, "immediate": true, "delete": true },
 	"reset_shape": { "frame": 13, "immediate": true },
-	"change_shape": { "frame": 14, "immediate": true, "module": true }
+	"change_shape": { "frame": 14, "immediate": true, "module": true },
+	
+	"cannon": { "frame": 15, "module": true, "prob": 3 },
+	"laser": { "frame": 16, "module": true, "prob": 3 }
 }
 
 var terrain_types = {

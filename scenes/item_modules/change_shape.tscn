@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/ui/predefined_shapes.png" type="Texture" id=1]
+[ext_resource path="res://scripts/item_modules/shape_changer.gd" type="Script" id=2]
+[ext_resource path="res://assets/special_elements.png" type="Texture" id=3]
+
+[node name="ShapeChanger" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="TestBG" type="Sprite" parent="."]
+visible = false
+texture = ExtResource( 3 )
+hframes = 8
+vframes = 8
+frame = 14
+
+[node name="Sprite" type="Sprite" parent="."]
+position = Vector2( 22, 0 )
+scale = Vector2( 0.15, 0.15 )
+texture = ExtResource( 1 )
+hframes = 8
+vframes = 4

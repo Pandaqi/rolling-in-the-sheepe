@@ -2,7 +2,7 @@ extends Node
 
 const GROW_FACTOR : float = 0.2
 const GROW_TIMER_DURATION : float = 3.0
-const BASE_TIMER_DURATION : float = 5.0
+const BASE_TIMER_DURATION : float = 7.0
 var final_timer_duration
 
 # if the algorithm moved the points LESS than this,
@@ -11,16 +11,17 @@ const MOVEMENT_THRESHOLD_BEFORE_ROUND : float = 7.0
 const RADIUS_INCREASE_FOR_ROUNDING : float = 3.0
 
 var average_airtime : float = 0.0
-var is_round : float = false
-var is_malformed : float = false
 
 var grow_instead_of_rounding : float = false
 var reverse_rounding : float = false
 
+const FAST_MODE_SPEEDUP : float = 0.45 # lower is faster; it's a percentage of the total time; 1.0 is the neutral operation
 var fast_mode : bool = false
 var fast_mode_dir : String = ""
 
 var grow_mode = ""
+
+const ROUNDING_THRESHOLD : float = 0.25
 
 onready var body = get_parent()
 onready var status = get_node("../Status")
@@ -43,7 +44,7 @@ func restart_timer():
 	round_algo_timer.stop()
 	
 	var mult = 1.0
-	if fast_mode: mult = 0.25
+	if fast_mode: mult = FAST_MODE_SPEEDUP
 	round_algo_timer.wait_time = mult*final_timer_duration
 	
 	round_algo_timer.start()
@@ -52,7 +53,7 @@ func restart_grow_timer():
 	grow_timer.stop()
 	
 	var mult = 1.0
-	if fast_mode: mult = 0.25
+	if fast_mode: mult = FAST_MODE_SPEEDUP
 	grow_timer.wait_time = mult*GROW_TIMER_DURATION
 	
 	grow_timer.start()
@@ -60,25 +61,28 @@ func restart_grow_timer():
 func _on_Timer_timeout():
 	average_airtime /= final_timer_duration
 	
-	# ITEM: going fast-tracked to a certain value
-	if fast_mode:
-		if fast_mode_dir == 'round': average_airtime = 0.0
-		else: average_airtime = 1.0
-	
-	# We now have a value between 0->1 which tells us which FRACTION
-	# of that time we spent not-rolling
+	# We now have a value between 0->1 which tells us which FRACTION of that time we spent not-rolling
 	var what_to_do = "round"
 	if average_airtime > 0.5: what_to_do = "malform"
+	
+	if GDict.cfg.only_round_if_airtime_at_extremes:
+		what_to_do = null
+		var threshold = ROUNDING_THRESHOLD
 		
-	else:
-		if GDict.cfg.unrealistic_rounding:
-			become_more_round_unrealistic()
-		else:
-			become_more_round()
+		if average_airtime < threshold: what_to_do = "round"
+		elif average_airtime > (1.0 - threshold): what_to_do = "malform"
+	
+	# ITEM: going fast-tracked to a certain value
+	if fast_mode:
+		if fast_mode_dir == 'round': what_to_do = "round"
+		else: what_to_do = "malform"
 	
 	if reverse_rounding:
 		if what_to_do == "round": what_to_do = "malform"
 		else: what_to_do = "round"
+	
+	print("WHAT TO DO?")
+	print(what_to_do)
 	
 	if what_to_do == "round":
 		if GDict.cfg.unrealistic_rounding:
@@ -99,15 +103,16 @@ func become_more_round_unrealistic():
 	if grow_instead_of_rounding:
 		grow(GROW_FACTOR)
 		return
-	if is_round: return
+	
+	print("SHOULD BECOME MORE ROUND NOW 1")
+	if shaper.is_fully_round(): return
 	
 	var new_shape_name = change_shape_index(+1)
 	var new_body = slicer.create_basic_body(body, new_shape_name)
 	
-	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
+	print("SHOULD BECOME MORE ROUND NOW 2")
 	
-	is_round = false
-	if new_shape_name == "circle": is_round = true
+	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
 
 func become_more_malformed_unrealistic():
 	if status.is_wolf: return
@@ -115,15 +120,12 @@ func become_more_malformed_unrealistic():
 	if grow_instead_of_rounding:
 		shrink(GROW_FACTOR)
 		return
-	if is_malformed: return
+	if shaper.is_fully_malformed(): return
 	
 	var new_shape_name = change_shape_index(-1)
 	var new_body = slicer.create_basic_body(body, new_shape_name)
 	
 	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
-	
-	is_malformed = false
-	if new_shape_name == "triangle": is_malformed = true
 
 func make_fully_round():
 	var new_body = slicer.create_basic_body(body, "circle")
@@ -135,7 +137,7 @@ func make_fully_malformed():
 	
 	shaper.create_new_from_shape(new_body, { 'type': "triangle" })
 
-func change_shape_index(val):
+func get_next_index(val):
 	var cur_shape = shaper.shape_type
 	var cur_index = GDict.shape_order.find(cur_shape)
 	
@@ -143,7 +145,10 @@ func change_shape_index(val):
 		var related_basic_shape = GDict.shape_list[cur_shape].basic
 		cur_index = GDict.shape_order.find(related_basic_shape)
 	
-	var next_index = clamp(cur_index + val, 0, GDict.shape_order.size()-1)
+	return clamp(cur_index + val, 0, GDict.shape_order.size()-1)
+
+func change_shape_index(val):
+	var next_index = get_next_index(val) 
 	return GDict.shape_order[next_index]
 
 #
@@ -164,7 +169,7 @@ func become_more_malformed():
 	if grow_instead_of_rounding:
 		shrink(GROW_FACTOR*ratio)
 		return
-	if is_malformed: return
+	if shaper.is_fully_malformed(): return
 	
 	# DEBUGGING => have to figure this out first
 	return 
@@ -193,7 +198,7 @@ func become_more_round():
 	if grow_instead_of_rounding:
 		grow(GROW_FACTOR*ratio)
 		return
-	if is_round: return
+	if shaper.is_fully_round(): return
 	
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	var shapes_to_add = []
@@ -255,7 +260,7 @@ func move_points_to_circle(shp, ratio):
 		total_movement += (new_pos - p).length()
 	
 	if total_movement < MOVEMENT_THRESHOLD_BEFORE_ROUND:
-		is_round = true
+		pass # just make it a perfect circle
 	
 	return shp
 
@@ -346,10 +351,16 @@ func enable_fast_mode(dir : String):
 	
 	var mode = 'grow'
 	if dir == 'sharp': mode = 'shrink'
-	start_grow_mode(dir)
+	start_grow_mode(mode)
 	
-	_on_Timer_timeout()
-	_on_GrowTimer_timeout()
+	call_deferred("_on_Timer_timeout")
+	call_deferred("_on_GrowTimer_timeout")
+	
+	print(round_algo_timer.time_left)
+	print(grow_timer.time_left)
+	print(grow_mode)
+	
+	print("FAST MODE ENABLED")
 
 func disable_fast_mode():
 	fast_mode = false

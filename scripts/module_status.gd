@@ -65,6 +65,8 @@ func modify_time_penalty(val):
 	time_penalty += val
 
 func make_ghost():
+	print("I NEED TO BECOME A GHOST")
+	
 	body.collision_layer = 0
 	body.collision_mask = 1
 	
@@ -72,6 +74,8 @@ func make_ghost():
 
 # Layers 1 (2^0; all) and 3 (2^2; players)
 func undo_ghost():
+	print("I NEED TO BECOME NORMAL AGAIN")
+	
 	body.collision_layer = 1 + 4
 	body.collision_mask = 1 + 4
 	

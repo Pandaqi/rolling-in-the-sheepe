@@ -56,6 +56,7 @@ func fill_room(room):
 	if not room: return
 	if room.route.index <= 0: return
 	if map.room_picker.has_tutorial() and not map.room_picker.tutorial_course.tiles_inside_allowed: return
+	if room.has_tutorial and GDict.cfg.dont_place_tiles_inside_rooms_with_tut: return
 	
 	var rect = room.rect
 	var shrunk = rect.get_shrunk()

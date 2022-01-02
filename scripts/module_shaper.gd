@@ -23,6 +23,12 @@ onready var slicer = get_node("/root/Main/Slicer")
 func set_starting_shape(shape_key : String):
 	starting_shape = shape_key
 
+func is_fully_round():
+	return (shape_type == "circle")
+
+func is_fully_malformed():
+	return (shape_type == "triangle")
+
 #####
 #
 # Creation (from given shape/parameters
@@ -34,7 +40,7 @@ func destroy():
 		body.shape_owner_remove_shape(0, 0)
 
 func create_new_from_shape_key(key : String):
-	create_new_from_shape(GDict.shape_list[key], { 'type': key })
+	create_new_from_shape(GDict.shape_list[key].points, { 'type': key })
 
 func create_new_from_shape(shp, params):
 	destroy()

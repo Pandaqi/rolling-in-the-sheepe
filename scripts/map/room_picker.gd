@@ -189,7 +189,8 @@ func find_valid_configuration_better(params):
 	# UPGRADE: remove the direction towards edge, if we're close to it
 	var preferred_dir_order = [last_dir, (last_dir + 2) % 4, 1, 3]
 	if abs(map.dist_to_bounds(last_pos)) < total_max_room_size:
-		preferred_dir_order.erase(map.dir_index_to_bounds(last_pos))
+		for d in map.dir_indices_to_bounds(last_pos, total_max_room_size):
+			preferred_dir_order.erase(d)
 	
 	# EXCEPTION: tutorial wants to stay simple, so no upward
 	if use_simple_generation:

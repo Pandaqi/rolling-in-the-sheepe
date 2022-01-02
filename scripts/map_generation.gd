@@ -18,6 +18,7 @@ onready var terrain = $Terrain
 onready var special_elements = $SpecialElements
 onready var slope_painter = $SlopePainter
 onready var dynamic_tutorial = $DynamicTutorial
+onready var player_progression = $PlayerProgression
 
 onready var lock_module_layer = $LockModuleLayer
 
@@ -214,22 +215,20 @@ func dist_to_bounds(pos):
 	var y = max(0 - pos.y, pos.y - (WORLD_SIZE.y - 1))
 	return max(x,y)
 
-func dir_index_to_bounds(pos):
-	if pos.x < 0.5*WORLD_SIZE.x:
-		var x_dist = pos.x
-		if pos.y < x_dist:
-			return 3
-		elif (WORLD_SIZE.y - pos.y) < x_dist:
-			return 1
-		return 2
+func dir_indices_to_bounds(pos, margin):
+	var arr = []
 	
-	else:
-		var x_dist = (WORLD_SIZE.x - pos.x)
-		if pos.y < x_dist:
-			return 3
-		elif (WORLD_SIZE.y - pos.y) < x_dist:
-			return 1
-		return 0
+	if pos.x < margin:
+		arr.append(2)
+	elif pos.x >= (WORLD_SIZE.x - margin):
+		arr.append(0)
+	
+	if pos.y < margin:
+		arr.append(3)
+	elif pos.y >= (WORLD_SIZE.y - margin):
+		arr.append(1)
+	
+	return arr
 
 func out_of_bounds(pos):
 	return pos.x < 0 or pos.x >= WORLD_SIZE.x or pos.y < 0 or pos.y >= WORLD_SIZE.y

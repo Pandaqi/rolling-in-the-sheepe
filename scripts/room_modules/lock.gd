@@ -54,6 +54,7 @@ func add_lock() -> bool:
 	
 	var related_edge = "regular"
 	if data.has("edge_type"): related_edge = data.edge_type
+	if GDict.edge_types[related_edge].has("gate"): scene.gate_type = related_edge
 	outline.create_border_around_us({ 'type': related_edge })
 	
 	var related_terrain = data.terrain

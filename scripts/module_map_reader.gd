@@ -230,6 +230,9 @@ func finish():
 	status.has_finished = true
 	status.make_ghost()
 	
+	if GDict.cfg.reset_players_to_start_shape_at_finish:
+		shaper.reset_to_starting_shape()
+	
 	var finish_data = main_node.player_finished(body)
 	show_gui()
 	set_gui_rank(finish_data.rank)
@@ -298,12 +301,6 @@ func last_cell_has_terrain(t):
 
 func last_cell_has_lock():
 	if not last_cell: return false
-	var terrain = last_cell.terrain
-	if terrain == "" or not terrain: return false
+	if not last_cell.room: return false
 	
-	return terrain.right(terrain.length() - 4) == "lock"
-	
-#	if not last_cell: return false
-#	if not last_cell.room: return false
-#
-#	return last_cell.room.has_lock()
+	return last_cell.room.lock.has_lock()

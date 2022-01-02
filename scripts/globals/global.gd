@@ -1,7 +1,8 @@
 extends Node
 
-var type : String = "tutorial"
-var in_game : bool = false
+# Options: "tutorial" or "play"
+var type : String = "play"
+var in_game : bool = true
 var scenes = {
 	'main': preload("res://Main.tscn"),
 	'menu': preload("res://Menu.tscn")

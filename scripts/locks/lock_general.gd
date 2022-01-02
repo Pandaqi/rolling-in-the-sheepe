@@ -32,12 +32,17 @@ func convert_connection_to_gate():
 
 	if gate_type == "": return
 	
+	print("What gate?")
+	print(gate_type)
+	
 	var outline = my_room.outline.get_edges()
 	for edge in outline:
 		var other_side = my_room.outline.edge_links_to(edge)
 		if other_side and other_side.route.index > my_room.route.index:
 			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
 			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter, 'gate': true })
+			
+			print("An edge was succesfully linked")
 
 func perform_update():
 	pass

@@ -3,8 +3,9 @@ extends Node
 const TIMEOUT_DURATION : float = 1.0
 const MIN_VELOCITY_FOR_BOMB : float = 180.0
 
-const SPEED_ITEM_FORCE : float = 20.0
-const TRAMPOLINE_FORCE : float = 100.0
+const SPEED_ITEM_FORCE : float = 50.0
+const SLOWDOWN_ITEM_FORCE : float = 25.0
+const TRAMPOLINE_FORCE : float = 800.0
 
 onready var body = get_parent()
 onready var status = get_node("../Status")
@@ -86,10 +87,16 @@ func register_contact(obj):
 # (when inside area, they toggle on, when outside, they toggle off again)
 #
 func turn_on_item(block, tp : String):
+	print("TRYING TO TURN ON")
+	print(tp)
+	
 	if not map.special_elements.type_is_toggle(tp): return
 	
 	var obj = { 'block': block, 'type': tp }
 	toggled_items.append(obj)
+	
+	print("TURNING ON")
+	print(tp)
 	
 	match tp:
 		'ghost': status.make_ghost()
@@ -129,7 +136,7 @@ func execute_toggled_item(obj):
 			body.apply_central_impulse(move_dir * SPEED_ITEM_FORCE)
 		
 		'slowdown':
-			body.apply_central_impulse(-move_dir * SPEED_ITEM_FORCE)
+			body.apply_central_impulse(-move_dir * SLOWDOWN_ITEM_FORCE)
 
 #
 # Immediate items
@@ -163,8 +170,12 @@ func handle_item(obj):
 			if not res: prevent_deletion = true
 		
 		"trampoline":
-			var normal = obj.col_data.collider.transform.x
+			print("TRAMPOLINE!")
+			
+			var normal = obj.item.transform.x
 			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
+			
+			print(normal)
 		
 		"breakable":
 			map.explode_cell(body, obj.pos)
