@@ -6,6 +6,7 @@ const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
 const MIN_SIZE_PER_SIDE : float = 3.0 # TO DO: need to fix this anyway
 
 onready var map = get_node("/root/Main/Map")
+onready var feedback = get_node("/root/Main/Feedback")
 onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
 var body_scene = preload("res://scenes/body.tscn")
@@ -82,12 +83,12 @@ func slice_body(b, p1, p2):
 	
 	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
 	if player_is_at_body_limit: 
-		print("Player already has too many bodies")
+		feedback.create_for_node(b, "Too many bodies!")
 		return
 	
 	if GDict.cfg.cant_slice_triangles:
 		if b.get_node("Shaper").is_fully_malformed():
-			print("Can't slice triangles/completely malformed things")
+			feedback.create_for_node(b, "Can't slice triangles!")
 			return
 	
 	if GDict.cfg.unrealistic_slicing:
@@ -153,6 +154,7 @@ func slice_body(b, p1, p2):
 		return
 	
 	# destroy the old body
+	feedback.create_for_node(b, "Slice!")
 	b.get_node("Status").delete()
 	
 	# create bodies for each set of points left over

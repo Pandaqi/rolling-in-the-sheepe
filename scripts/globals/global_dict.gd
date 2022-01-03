@@ -121,20 +121,31 @@ var item_types = {
 	"button_order": { "frame": 3, "immediate": true, "unpickable": true, "needs_label": true },
 	"button_simultaneous": { "frame": 4, "immediate": true, "unpickable": true },
 	
-	"trampoline": { "frame": 5, "immediate": true, "prob": 3 },
-	"speedup": { "frame": 6, "toggle": true, "prob": 2 },
-	"slowdown": { "frame": 7, "toggle": true, "prob": 2 },
-	"ghost": { "frame": 8, "toggle": true },
-	"shield": { "frame": 9, "toggle": true },
-	"rounder": { "frame": 10, "toggle": true },
-	"sharper": { "frame": 11, "toggle": true },
+	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58 },
+	"speedup": { "frame": 6, "toggle": true, "prob": 2, "tut": 59 },
+	"slowdown": { "frame": 7, "toggle": true, "prob": 2, "tut": 60 },
+	"ghost": { "frame": 8, "toggle": true, "tut": 61 },
+	"shield": { "frame": 9, "toggle": true, "tut": 62 },
+	"rounder": { "frame": 10, "toggle": true, "tut": 63 },
+	"sharper": { "frame": 11, "toggle": true, "tut": 64 },
 	
-	"breakable": { "frame": 12, "immediate": true, "delete": true },
-	"reset_shape": { "frame": 13, "immediate": true },
-	"change_shape": { "frame": 14, "immediate": true, "module": true },
+	"breakable": { "frame": 12, "immediate": true, "delete": true, "tut": 65 },
+	"reset_shape": { "frame": 13, "immediate": true, "tut": 66 },
+	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67 },
 	
-	"cannon": { "frame": 15, "module": true, "prob": 3 },
-	"laser": { "frame": 16, "module": true, "prob": 3 }
+	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68 },
+	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69 },
+	
+	"ice": { "frame": 17, "toggle": true, "tut": 70 },
+	"spiderman": { "frame": 18, "toggle": true, "tut": 71 },
+	"glue": { "frame": 19, "immediate": true, "prob": 2, "tut": 72 },
+	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73 },
+	
+	"freeze": { "frame": 21, "immediate": true, "delete": true, "tut": 74 },
+	"time_bonus": { "frame": 22, "immediate": true, "delete": true, "prob": 2, "tut": 75 },
+	"time_penalty": { "frame": 23, "immediate": true, "delete": true, "prob": 2, "tut": 76 },
+	"fast_forward": { "frame": 24, "immediate": true, "prob": 0.5, "tut": 77 },
+	"fast_backward": { "frame": 25, "immediate": true, "prob": 0.5, "tut": 78 }
 }
 
 var terrain_types = {

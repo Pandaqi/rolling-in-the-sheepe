@@ -3,7 +3,7 @@ extends Node
 export var is_menu : bool = false
 
 const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
-const PREDEFINED_SHAPE_SCALE : float = 1.5
+const PREDEFINED_SHAPE_SCALE : float = 1.25
 
 var player_scene = preload("res://scenes/body.tscn")
 var menu_player_scene = preload("res://scenes/menu_body.tscn")

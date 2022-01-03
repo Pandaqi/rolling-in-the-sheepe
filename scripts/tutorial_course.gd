@@ -34,16 +34,16 @@ var tuts = [
 	},
 	{
 		"key": "unfinished_body_penalty",
-		"frame": 0 # TO DO
+		"frame": 55
 	},
 	{
 		"key": "coin_lock",
-		"frame": 0, # TO DO
+		"frame": 56,
 		"special": "allow_placing_locks"
 	},
 	{
 		"key": "wolf_takes_coins",
-		"frame": 0 # TO DO
+		"frame": 57
 	}
 ]
 

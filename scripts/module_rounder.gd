@@ -113,6 +113,8 @@ func become_more_round_unrealistic():
 	print("SHOULD BECOME MORE ROUND NOW 2")
 	
 	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
+	
+	if feedback_enabled(): body.feedback.create_for_node(body, "+ Rounder!")
 
 func become_more_malformed_unrealistic():
 	if status.is_wolf: return
@@ -126,6 +128,8 @@ func become_more_malformed_unrealistic():
 	var new_body = slicer.create_basic_body(body, new_shape_name)
 	
 	shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
+	
+	if feedback_enabled(): body.feedback.create_for_node(body, "- Sharper!")
 
 func make_fully_round():
 	var new_body = slicer.create_basic_body(body, "circle")
@@ -150,6 +154,9 @@ func get_next_index(val):
 func change_shape_index(val):
 	var next_index = get_next_index(val) 
 	return GDict.shape_order[next_index]
+
+func feedback_enabled():
+	return not fast_mode
 
 #
 # Deforming
@@ -299,10 +306,12 @@ func end_grow_mode():
 
 func grow(val):
 	if shaper.at_max_size(): return
+	if feedback_enabled(): body.feedback.create_for_node(body, "Grow!")
 	change_size(1.0 + val)
 
 func shrink(val):
 	if shaper.at_min_size(): return
+	if feedback_enabled(): body.feedback.create_for_node(body, "Shrink!")
 	change_size(1.0 - val)
 
 func change_size(factor):

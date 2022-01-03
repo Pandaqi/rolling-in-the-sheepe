@@ -2,7 +2,7 @@ extends Node2D
 
 var bullet_scene = preload("res://scenes/projectiles/bullet.tscn")
 
-const BULLET_INTERVAL : float = 1.5
+const BULLET_INTERVAL : float = 2.25
 const BULLET_FORCE : float = 150.0
 
 onready var timer = $Timer

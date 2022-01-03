@@ -7,12 +7,17 @@ const SPEED_ITEM_FORCE : float = 50.0
 const SLOWDOWN_ITEM_FORCE : float = 25.0
 const TRAMPOLINE_FORCE : float = 800.0
 
+# less time = better, so a time bonus is a negative number
+const TIME_BONUS_VAL : float = -15.0
+const TIME_PENALTY_VAL : float = 5.0
+
 onready var body = get_parent()
 onready var status = get_node("../Status")
 onready var glue = get_node("../Glue")
 onready var mover = get_node("../Mover")
 onready var shaper = get_node("../Shaper")
 onready var rounder = get_node("../Rounder")
+onready var map_reader = get_node("../MapReader")
 
 onready var slicer = get_node("/root/Main/Slicer")
 
@@ -103,6 +108,9 @@ func turn_on_item(block, tp : String):
 		'shield': status.make_invincible()
 		'rounder': rounder.enable_fast_mode('round')
 		'sharper': rounder.enable_fast_mode('sharp')
+		'ice': map_reader.do_ice()
+		'spiderman': map_reader.do_spiderman()
+		'glue': map_reader.do_glue()
 
 func turn_off_item(block, tp : String):
 	if not map.special_elements.type_is_toggle(tp): return
@@ -112,6 +120,9 @@ func turn_off_item(block, tp : String):
 		'shield': status.make_vincible()
 		'rounder': rounder.disable_fast_mode()
 		'sharper': rounder.disable_fast_mode()
+		'ice': map_reader.undo_ice()
+		'spiderman': map_reader.undo_spiderman()
+		'glue': map_reader.undo_glue()
 	
 	for obj in toggled_items:
 		if obj.type != tp: continue
@@ -170,12 +181,8 @@ func handle_item(obj):
 			if not res: prevent_deletion = true
 		
 		"trampoline":
-			print("TRAMPOLINE!")
-			
 			var normal = obj.item.transform.x
 			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
-			
-			print(normal)
 		
 		"breakable":
 			map.explode_cell(body, obj.pos)
@@ -187,6 +194,26 @@ func handle_item(obj):
 			# TO DO: This resets to original size; rescale to roughly match the new size?
 			var shape_key = obj.item.my_module.get_shape_key()
 			shaper.create_new_from_shape_key(shape_key)
+		
+		"coin":
+			body.get_node("Coins").get_paid(1)
+		
+		"freeze":
+			body.freeze()
+		
+		"time_bonus":
+			status.modify_time_penalty(TIME_BONUS_VAL)
+		
+		"time_penalty":
+			status.modify_time_penalty(TIME_PENALTY_VAL)
+		
+		"fast_forward":
+			var p = map.player_progression.get_leading_player()
+			body.plan_teleport(p.global_position)
+		
+		"fast_backward":
+			var p = map.player_progression.get_trailing_player()
+			body.plan_teleport(p.global_position)
 	
 	if prevent_deletion: return
 	

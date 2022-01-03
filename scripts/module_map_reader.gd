@@ -88,13 +88,13 @@ func do_effect_of_cell(cell):
 			mover.gravity_dir = 0
 		
 		"ice":
-			body.physics_material_override.friction = ICE_FRICTION
+			do_ice()
 		
 		"bouncy": 
 			body.physics_material_override.bounce = BOUNCE_VAL
 		
 		"spiderman":
-			body.get_node("Clinger").active = true
+			do_spiderman()
 		
 		"speed_boost":
 			mover.speed_multiplier = 2.0
@@ -103,9 +103,10 @@ func do_effect_of_cell(cell):
 			mover.speed_multiplier = 0.5
 		
 		"glue":
-			body.get_node("Glue").glue_active = true
+			do_glue()
 		
 		"reverse_controls":
+			body.feedback.create_for_node(body, "Reversed Controls!")
 			body.get_node("Input").reverse = true
 		
 		"spikes":
@@ -177,13 +178,13 @@ func undo_effect_of_cell(cell):
 			mover.gravity_dir = 1
 		
 		"ice":
-			body.physics_material_override.friction = 1.0
+			undo_ice()
 		
 		"bouncy": 
 			body.physics_material_override.bounce = 0.0
 		
 		"spiderman":
-			body.get_node("Clinger").active = false
+			undo_spiderman()
 		
 		"speed_boost":
 			mover.speed_multiplier = 1.0
@@ -192,9 +193,10 @@ func undo_effect_of_cell(cell):
 			mover.speed_multiplier = 1.0
 		
 		"glue":
-			body.get_node("Glue").glue_active = false
+			undo_glue()
 		
 		"reverse_controls":
+			body.feedback.create_for_node(body, "Normal Controls!")
 			body.get_node("Input").reverse = false
 		
 		"spikes":
@@ -224,6 +226,30 @@ func undo_effect_of_cell(cell):
 		"magnet":
 			body.get_node("Magnet").deactivate()
 
+#
+# Specific do/undos, so I can re-use them in the item_reader
+#
+func do_ice():
+	body.physics_material_override.friction = ICE_FRICTION
+
+func undo_ice():
+	body.physics_material_override.friction = 1.0
+
+func do_spiderman():
+	body.get_node("Clinger").active = true
+
+func undo_spiderman():
+	body.get_node("Clinger").active = false
+
+func do_glue():
+	body.get_node("Glue").glue_active = true
+
+func undo_glue():
+	body.get_node("Glue").glue_active = false
+
+#
+# Misc
+#
 func finish():
 	has_finished = true
 	

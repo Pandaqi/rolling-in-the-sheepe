@@ -63,9 +63,14 @@ func set_player_num(num : int):
 
 func modify_time_penalty(val):
 	time_penalty += val
+	
+	if val < 0:
+		body.feedback.create_for_node(body, "Time bonus!")
+	elif val > 0:
+		body.feedback.create_for_node(body, "Time penalty!")
 
 func make_ghost():
-	print("I NEED TO BECOME A GHOST")
+	body.feedback.create_for_node(body, "Ghost!")
 	
 	body.collision_layer = 0
 	body.collision_mask = 1
@@ -74,7 +79,7 @@ func make_ghost():
 
 # Layers 1 (2^0; all) and 3 (2^2; players)
 func undo_ghost():
-	print("I NEED TO BECOME NORMAL AGAIN")
+	body.feedback.create_for_node(body, "Unghosted!")
 	
 	body.collision_layer = 1 + 4
 	body.collision_mask = 1 + 4
@@ -82,6 +87,8 @@ func undo_ghost():
 	body.modulate.a = 1.0
 
 func make_wolf():
+	if not is_wolf: body.feedback.create_for_node(body, "Wolf!")
+	
 	is_wolf = true
 	face.make_wolf()
 	
@@ -90,6 +97,8 @@ func make_wolf():
 		rounder.start_grow_mode("shrink")
 
 func make_sheep():
+	if is_wolf: body.feedback.create_for_node(body, "Sheep!")
+	
 	is_wolf = false
 	face.make_sheep()
 	
@@ -100,11 +109,16 @@ func make_sheep():
 func make_invincible(start_timer = true):
 	is_invincible = true
 	
+	# if we start a timer, it means its an automatic invincibility (which I apply behind the scenes), so don't show feedback
 	if start_timer:
 		invincibility_timer.start()
+	else:
+		body.feedback.create_for_node(body, "Invincible!")
 
-func make_vincible():
+func make_vincible(from_timer = false):
+	if not from_timer: body.feedback.create_for_node(body, "Not invincible!")
+	
 	is_invincible = false
 
 func _on_InvincibilityTimer_timeout():
-	make_vincible()
+	make_vincible(true)

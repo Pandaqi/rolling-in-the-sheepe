@@ -121,6 +121,7 @@ func disable_wolf():
 
 func on_player_teleported(body):
 	if not GDict.cfg.temp_remove_wolf_on_teleport: return
+	if not body.get_node("Status").is_wolf: return
 	
 	body.get_node("Status").make_sheep()
 	time_since_trail_switch = OS.get_ticks_msec()
