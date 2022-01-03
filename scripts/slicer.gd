@@ -65,7 +65,7 @@ func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 
 func create_basic_body(b, type, shrinker : float = 1.0):
 	var base_pos = b.get_global_position()
-	var radius = b.get_node("Shaper").approximate_radius_for_basic_body(shrinker)
+	var radius = b.shaper.approximate_radius_for_basic_body(shrinker)
 	
 	var num_points = GDict.points_per_shape[type]
 	
@@ -78,8 +78,8 @@ func create_basic_body(b, type, shrinker : float = 1.0):
 	return arr
 
 func slice_body(b, p1, p2):
-	var original_player_num = b.get_node("Status").player_num
-	var original_coins = b.get_node("Coins").count()
+	var original_player_num = b.status.player_num
+	var original_coins = b.coins.count()
 	
 	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
 	if player_is_at_body_limit: 
@@ -87,14 +87,14 @@ func slice_body(b, p1, p2):
 		return
 	
 	if GDict.cfg.cant_slice_triangles:
-		if b.get_node("Shaper").is_fully_malformed():
+		if b.shaper.is_fully_malformed():
 			feedback.create_for_node(b, "Can't slice triangles!")
 			return
 	
 	if GDict.cfg.unrealistic_slicing:
-		var prev_shape_index = b.get_node("Rounder").get_next_index(-1)
+		var prev_shape_index = b.rounder.get_next_index(-1)
 		
-		b.get_node("Status").delete()
+		b.status.delete()
 		
 		var new_type = GDict.cfg.slicing_yields
 		if GDict.cfg.slicing_goes_back_one_shape:
@@ -155,7 +155,7 @@ func slice_body(b, p1, p2):
 	
 	# destroy the old body
 	feedback.create_for_node(b, "Slice!")
-	b.get_node("Status").delete()
+	b.status.delete()
 	
 	# create bodies for each set of points left over
 	var vec = (p2 - p1)
@@ -317,13 +317,14 @@ func create_body_from_shape_list(player_num : int, shapes : Array, coins : int) 
 	body.position = avg_pos
 	
 	# now we ask the body to create a collision thing from our shapes
+	# NOTE: Keep the "get_node" call here, as the body hasn't been added as child yet
 	body.get_node("Shaper").create_from_shape_list(shapes)
 	
 	map.add_child(body)
 	
 	# and we make sure it has the same parent as the original body
-	body.get_node("Status").set_player_num(player_num)
-	body.get_node("Coins").get_paid(coins)
+	body.status.set_player_num(player_num)
+	body.coins.get_paid(coins)
 	
 	return body
 
@@ -337,8 +338,8 @@ func create_body_from_shape(shp : Array, params = {}) -> RigidBody2D:
 	map.add_child(body)
 	
 	# and we make sure it has the same parent as the original body
-	body.get_node("Status").set_player_num(params.player_num)
-	body.get_node("Coins").get_paid(params.coins)
+	body.status.set_player_num(params.player_num)
+	body.coins.get_paid(params.coins)
 	
 	return body
 

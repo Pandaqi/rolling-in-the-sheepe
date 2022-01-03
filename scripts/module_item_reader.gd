@@ -12,17 +12,6 @@ const TIME_BONUS_VAL : float = -15.0
 const TIME_PENALTY_VAL : float = 5.0
 
 onready var body = get_parent()
-onready var status = get_node("../Status")
-onready var glue = get_node("../Glue")
-onready var mover = get_node("../Mover")
-onready var shaper = get_node("../Shaper")
-onready var rounder = get_node("../Rounder")
-onready var map_reader = get_node("../MapReader")
-
-onready var slicer = get_node("/root/Main/Slicer")
-
-onready var map = get_node("/root/Main/Map")
-
 onready var timeout_timer = $TimeoutTimer
 
 var toggled_items = []
@@ -32,7 +21,7 @@ var we_are_bomb : bool = false
 var on_timeout : bool = false
 
 func _physics_process(_dt):
-	if status.is_invincible: return
+	if body.status.is_invincible: return
 	
 	for obj in toggled_items:
 		execute_toggled_item(obj)
@@ -45,12 +34,13 @@ func _physics_process(_dt):
 	do_something_with_items()
 
 func register_contact(obj):
+	var map = body.map
 	var safety_margin = 0.5*obj.normal*map.TILE_SIZE
 	var grid_pos = map.get_grid_pos(obj.pos - safety_margin)
 	if map.out_of_bounds(grid_pos): return
 	
 	var cell = map.get_cell(grid_pos)
-	if we_are_bomb and mover.velocity_last_frame.length() > MIN_VELOCITY_FOR_BOMB:
+	if we_are_bomb and body.mover.velocity_last_frame.length() > MIN_VELOCITY_FOR_BOMB:
 		map.explode_cell(body, grid_pos)
 		return
 	
@@ -59,7 +49,7 @@ func register_contact(obj):
 	var type = cell.special.type
 	if not map.special_elements.type_is_immediate(type): return
 	
-	var reject_by_invincibility = (status.is_invincible and GDict.item_types[type].has('invincibility'))
+	var reject_by_invincibility = (body.status.is_invincible and GDict.item_types[type].has('invincibility'))
 	if reject_by_invincibility: return
 	
 	var already_registered_cell = false
@@ -95,7 +85,7 @@ func turn_on_item(block, tp : String):
 	print("TRYING TO TURN ON")
 	print(tp)
 	
-	if not map.special_elements.type_is_toggle(tp): return
+	if not body.map.special_elements.type_is_toggle(tp): return
 	
 	var obj = { 'block': block, 'type': tp }
 	toggled_items.append(obj)
@@ -104,25 +94,25 @@ func turn_on_item(block, tp : String):
 	print(tp)
 	
 	match tp:
-		'ghost': status.make_ghost()
-		'shield': status.make_invincible()
-		'rounder': rounder.enable_fast_mode('round')
-		'sharper': rounder.enable_fast_mode('sharp')
-		'ice': map_reader.do_ice()
-		'spiderman': map_reader.do_spiderman()
-		'glue': map_reader.do_glue()
+		'ghost': body.status.make_ghost()
+		'shield': body.status.make_invincible()
+		'rounder': body.rounder.enable_fast_mode('round')
+		'sharper': body.rounder.enable_fast_mode('sharp')
+		'ice': body.map_reader.do_ice()
+		'spiderman': body.map_reader.do_spiderman()
+		'glue': body.map_reader.do_glue()
 
-func turn_off_item(block, tp : String):
-	if not map.special_elements.type_is_toggle(tp): return
+func turn_off_item(_block, tp : String):
+	if not body.map.special_elements.type_is_toggle(tp): return
 	
 	match tp:
-		'ghost': status.undo_ghost()
-		'shield': status.make_vincible()
-		'rounder': rounder.disable_fast_mode()
-		'sharper': rounder.disable_fast_mode()
-		'ice': map_reader.undo_ice()
-		'spiderman': map_reader.undo_spiderman()
-		'glue': map_reader.undo_glue()
+		'ghost': body.status.undo_ghost()
+		'shield': body.status.make_vincible()
+		'rounder': body.rounder.disable_fast_mode()
+		'sharper': body.rounder.disable_fast_mode()
+		'ice': body.map_reader.undo_ice()
+		'spiderman': body.map_reader.undo_spiderman()
+		'glue': body.map_reader.undo_glue()
 	
 	for obj in toggled_items:
 		if obj.type != tp: continue
@@ -170,8 +160,8 @@ func handle_item(obj):
 	
 	match type:
 		"spikes":
-			var slice_line = glue.get_realistic_slice_line(obj.col_data)
-			slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
+			var slice_line = body.glue.get_realistic_slice_line(obj.col_data)
+			body.slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
 		
 		"button_regular":
 			obj.item.my_room.lock.record_button_push(obj.item) 
@@ -185,39 +175,39 @@ func handle_item(obj):
 			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
 		
 		"breakable":
-			map.explode_cell(body, obj.pos)
+			body.map.explode_cell(body, obj.pos)
 		
 		"reset_shape":
-			shaper.reset_to_starting_shape()
+			body.shaper.reset_to_starting_shape()
 		
 		"change_shape":
 			# TO DO: This resets to original size; rescale to roughly match the new size?
 			var shape_key = obj.item.my_module.get_shape_key()
-			shaper.create_new_from_shape_key(shape_key)
+			body.shaper.create_new_from_shape_key(shape_key)
 		
 		"coin":
-			body.get_node("Coins").get_paid(1)
+			body.coins.get_paid(1)
 		
 		"freeze":
 			body.freeze()
 		
 		"time_bonus":
-			status.modify_time_penalty(TIME_BONUS_VAL)
+			body.status.modify_time_penalty(TIME_BONUS_VAL)
 		
 		"time_penalty":
-			status.modify_time_penalty(TIME_PENALTY_VAL)
+			body.status.modify_time_penalty(TIME_PENALTY_VAL)
 		
 		"fast_forward":
-			var p = map.player_progression.get_leading_player()
+			var p = body.map.player_progression.get_leading_player()
 			body.plan_teleport(p.global_position)
 		
 		"fast_backward":
-			var p = map.player_progression.get_trailing_player()
+			var p = body.map.player_progression.get_trailing_player()
 			body.plan_teleport(p.global_position)
 	
 	if prevent_deletion: return
 	
-	map.special_elements.delete_on_activation(obj.item)
+	body.map.special_elements.delete_on_activation(obj.item)
 
 func timeout():
 	on_timeout = true

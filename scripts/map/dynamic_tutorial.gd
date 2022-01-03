@@ -168,6 +168,7 @@ func on_usage_of(kind : String, type : String):
 	
 	things_to_teach[kind].erase(type)
 	if things_to_teach[kind].size() <= 0:
+# warning-ignore:return_value_discarded
 		things_to_teach.erase(kind)
 	
 	if thing_planned.kind == kind and thing_planned.type == type:

@@ -12,7 +12,7 @@ var shrunk_positions : Array = []
 # (the original grown version is used for better terrain painting and overlap checking)
 var shrunk = {}
 
-onready var map = get_node("/root/Main/Map")
+onready var parent = get_parent()
 
 func update_from(new_rect):
 	set_pos(new_rect.pos)
@@ -109,7 +109,7 @@ func get_free_real_pos_inside():
 	
 	while bad_choice:
 		rand_pos = shrunk.pos + Vector2(randi() % int(shrunk.size.x), randi() % int(shrunk.size.y))
-		bad_choice = (map.tilemap.get_cellv(rand_pos) != -1)
+		bad_choice = (parent.map.tilemap.get_cellv(rand_pos) != -1)
 	
 	return (rand_pos + Vector2(0.5, 0.5))*TILE_SIZE
 

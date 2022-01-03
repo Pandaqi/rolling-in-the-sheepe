@@ -6,7 +6,7 @@ onready var edge : StaticBody2D = get_parent()
 
 func passthrough_allowed(body):
 	if edge.type == "coin_gate" or edge.type == "sacrifice_coin":
-		return (body.get_node("Coins").count() >= general_parameter)
+		return (body.coins.count() >= general_parameter)
 
 	return true
 
@@ -22,15 +22,15 @@ func _on_Area2D_body_entered(body):
 		gate.add_collision_exception_with(body)
 
 	if edge.type == "coin_gate":
-		body.get_node("Coins").pay(general_parameter)
+		body.coins.pay(general_parameter)
 		edge.my_room.lock.perform_update()
 	
 	elif edge.type == "sacrifice":
-		body.get_node("Glue").call_deferred("slice_along_halfway_line")
+		body.glue.call_deferred("slice_along_halfway_line")
 		edge.my_room.lock.delete()
 	
 	elif edge.type == "sacrifice_coin":
-		body.get_node("Coins").pay(general_parameter)
+		body.coins.pay(general_parameter)
 		edge.my_room.lock.delete()
 
 func _on_Area2D_body_exited(_body):

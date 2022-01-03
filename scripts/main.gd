@@ -50,7 +50,7 @@ func check_if_game_over():
 	show_game_over_screen()
 
 func player_finished(b):
-	var player_num = b.get_node("Status").player_num
+	var player_num = b.status.player_num
 	var player_already_finished = player_times.has(player_num)
 
 	var raw_time = (OS.get_ticks_msec() - game_start) / 1000.0
@@ -65,9 +65,9 @@ func player_finished(b):
 	for body in player_manager.bodies_per_player[player_num]:
 		
 		# Can come from anything: being too far behind, standing still too long, missing a teleport, ...
-		time_modifiers += body.get_node("Status").time_penalty
+		time_modifiers += body.status.time_penalty
 		
-		if body.get_node("Status").has_finished: continue
+		if body.status.has_finished: continue
 		time_modifiers += GDict.cfg.time_penalty_unfinished_bodies
 	
 	# Calculate final time (from raw time of first body + modifiers)
@@ -104,7 +104,7 @@ func update_ranks():
 	
 	var players = get_tree().get_nodes_in_group("Players")
 	for p in players:
-		if not p.get_node("MapReader").has_gui(): continue
+		if not p.map_reader.has_gui(): continue
 		
-		var player_num = p.get_node("Status").player_num
-		p.get_node("MapReader").set_gui_rank(get_player_rank(player_num))
+		var player_num = p.status.player_num
+		p.map_reader.set_gui_rank(get_player_rank(player_num))

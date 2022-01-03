@@ -1,12 +1,6 @@
 extends Node
 
 onready var body = get_parent()
-onready var face = get_node("../Face")
-onready var glue = get_node("../Glue")
-onready var rounder = get_node("../Rounder")
-
-onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
-onready var player_manager = get_node("/root/Main/PlayerManager")
 
 var player_num : int = -1
 var shape_name : String = ""
@@ -23,12 +17,12 @@ var is_invincible : bool = false
 # Deletes the whole body, but not before (re)setting all sorts of other properties
 # that _should_ be properly reset
 func delete():
-	player_progression.on_body_removed(body)
-	player_manager.deregister_body(body)
+	body.map.player_progression.on_body_removed(body)
+	body.player_manager.deregister_body(body)
 	
-	body.get_node("Glue").disable_glue()
-	body.get_node("RoomTracker").get_cur_room().entities.remove_player(body)
-	body.get_node("Coins").delete()
+	body.glue.disable_glue()
+	body.room_tracker.get_cur_room().entities.remove_player(body)
+	body.coins.delete()
 	
 	body.queue_free()
 
@@ -38,25 +32,11 @@ func set_shape_name(nm : String):
 func set_player_num(num : int):
 	player_num = num
 	
-	if has_node("../Input"):
-		get_node("../Input").set_player_num(num)
-	
-	if has_node("../Glue"):
-		get_node("../Glue").set_player_num(num)
-	
-	if has_node("../Shaper"):
-		get_node("../Shaper").set_color(player_manager.player_colors[num])
+	if body.has_module("input"): body.input.set_player_num(num)
+	if body.has_module("glue"): body.glue.set_player_num(num)
+	if body.has_module("shaper"): body.shaper.set_color(body.player_manager.player_colors[num])
 
-# TO DO: Need to completely rewrite tutorial module anyway
-#	if has_node("../Tutorial"):
-#		var global_tutorial = get_node("/root/Main/Tutorial")
-#		var module_tutorial = get_node("../Tutorial")
-#		if global_tutorial.is_active():
-#			module_tutorial.activate()
-#		else:
-#			module_tutorial.queue_free()
-	
-	player_manager.register_body(body)
+	body.player_manager.register_body(body)
 	
 	make_sheep()
 	make_invincible()
@@ -90,21 +70,21 @@ func make_wolf():
 	if not is_wolf: body.feedback.create_for_node(body, "Wolf!")
 	
 	is_wolf = true
-	face.make_wolf()
+	body.face.make_wolf()
 	
 	if not is_menu:
-		glue.make_wolf()
-		rounder.start_grow_mode("shrink")
+		body.glue.make_wolf()
+		body.rounder.start_grow_mode("shrink")
 
 func make_sheep():
 	if is_wolf: body.feedback.create_for_node(body, "Sheep!")
 	
 	is_wolf = false
-	face.make_sheep()
+	body.face.make_sheep()
 	
 	if not is_menu:
-		glue.make_sheep()
-		rounder.end_grow_mode()
+		body.glue.make_sheep()
+		body.rounder.end_grow_mode()
 
 func make_invincible(start_timer = true):
 	is_invincible = true

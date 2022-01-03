@@ -82,8 +82,8 @@ func create_player(player_num : int):
 	player.set_position(start_pos)
 	map.add_child(player)
 	
-	player.get_node("Status").set_shape_name(rand_shape)
-	player.get_node("Status").set_player_num(player_num)
+	player.status.set_shape_name(rand_shape)
+	player.status.set_player_num(player_num)
 
 func get_spread_out_position(room):
 	var start_pos = room.rect.get_real_pos()
@@ -114,8 +114,8 @@ func remove_furthest_body_of(p_num : int):
 	var lowest_room_index = INF
 	var dist_in_room = INF
 	for b in body_list:
-		var my_index = b.get_node("RoomTracker").cur_room.route.index
-		var my_dist = b.get_node("RoomTracker").get_dist_in_room()
+		var my_index = b.room_tracker.get_cur_room().route.index
+		var my_dist = b.room_tracker.get_dist_in_room()
 		if my_index > lowest_room_index: continue
 		
 		if my_index == lowest_room_index:
@@ -126,7 +126,7 @@ func remove_furthest_body_of(p_num : int):
 		furthest_body = b
 		dist_in_room = my_dist
 	
-	furthest_body.get_node("Status").delete()
+	furthest_body.status.delete()
 
 func closest_dist_to_player(pos):
 	var other_players = get_tree().get_nodes_in_group("Players")
@@ -173,8 +173,8 @@ func count_bodies_of_player(num):
 
 func register_body(p):
 	p.add_to_group("Players")
-	bodies_per_player[p.get_node("Status").player_num].append(p)
+	bodies_per_player[p.status.player_num].append(p)
 
 func deregister_body(p):
 	p.remove_from_group("Players")
-	bodies_per_player[p.get_node("Status").player_num].erase(p)
+	bodies_per_player[p.status.player_num].erase(p)

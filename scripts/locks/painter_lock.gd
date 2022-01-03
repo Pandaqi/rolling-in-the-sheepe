@@ -111,7 +111,7 @@ func make_entities_paint():
 		var global_pos = entity.global_position
 		var local_pos = global_pos - canvas.get_position()
 		
-		var player_num = entity.get_node("Status").player_num
+		var player_num = entity.status.player_num
 		
 		paint(entity, local_pos, player_num)
 		did_something = true
@@ -144,7 +144,7 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 	surface_image.lock()
 
 	var radius = floor(rand_range(HOLE_SIZE.min, HOLE_SIZE.max+1))
-	if entity: radius = entity.get_node("Shaper").approximate_radius()
+	if entity: radius = entity.shaper.approximate_radius()
 	
 	var col = player_manager.player_colors[p_num]
 	

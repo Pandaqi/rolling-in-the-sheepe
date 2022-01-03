@@ -5,9 +5,6 @@ var lock_planned : bool = false
 
 var gates = []
 
-onready var map = get_node("/root/Main/Map")
-onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
-onready var outline = get_node("../Outline")
 onready var parent = get_parent()
 
 func on_body_enter(p):
@@ -30,7 +27,7 @@ func has_lock():
 # Returns whether it was a SUCCESS or a FAIL
 # (if a fail, we don't definitively set it, so the algorithm will keep trying on subsequent rooms)
 func add_lock() -> bool:
-	var rand_type = map.dynamic_tutorial.get_random('lock', parent)
+	var rand_type = parent.map.dynamic_tutorial.get_random('lock', parent)
 	var data = GDict.lock_types[rand_type]
 	
 	# some locks have many different (similar) variants, 
@@ -46,7 +43,7 @@ func add_lock() -> bool:
 	
 	if rand_sub_type: scene.set_sub_type(rand_sub_type)
 	
-	map.lock_module_layer.add_child(scene)
+	parent.map.lock_module_layer.add_child(scene)
 	
 	if scene.is_invalid(): 
 		scene.delete()
@@ -55,19 +52,19 @@ func add_lock() -> bool:
 	var related_edge = "regular"
 	if data.has("edge_type"): related_edge = data.edge_type
 	if GDict.edge_types[related_edge].has("gate"): scene.gate_type = related_edge
-	outline.create_border_around_us({ 'type': related_edge })
+	parent.outline.create_border_around_us({ 'type': related_edge })
 	
 	var related_terrain = data.terrain
-	map.terrain.paint(parent, related_terrain)
+	parent.map.terrain.paint(parent, related_terrain)
 	
 	lock_module = scene
-	map.dynamic_tutorial.on_usage_of('lock', rand_type)
+	parent.map.dynamic_tutorial.on_usage_of('lock', rand_type)
 	
 	print("Should add lock now")
 	return true
 
 func remove_lock():
-	outline.remove_border_around_us()
+	parent.outline.remove_border_around_us()
 	lock_module = null
 	
 	print("Should remove lock now")
@@ -78,12 +75,12 @@ func add_teleporter():
 	
 	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
 	lock_module.my_room = parent
-	map.lock_module_layer.add_child(lock_module)
+	parent.map.lock_module_layer.add_child(lock_module)
 	
-	map.terrain.paint(parent, "teleporter")
+	parent.map.terrain.paint(parent, "teleporter")
 	
 	# this basically just blows away any edges that might obstruct passage towards this
-	outline.create_border_around_us({ 'open_all_linked_edges': true })
+	parent.outline.create_border_around_us({ 'open_all_linked_edges': true })
 
 func recalculate_gates():
 	if not has_lock(): return
@@ -96,7 +93,7 @@ func check_planned_lock():
 	if not success: return 
 	
 	lock_planned = false
-	route_generator.placed_lock()
+	parent.map.route_generator.placed_lock()
 
 func record_button_push(pusher):
 	return lock_module.record_button_push(pusher)

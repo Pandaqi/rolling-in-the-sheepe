@@ -62,8 +62,8 @@ func _on_Area2D_body_entered(body):
 	timer.wait_time = DISABLE_DURATION
 	timer.start()
 	
-	body.get_node("Glue").call_deferred("slice_along_halfway_line")
-	body.get_node("Coins").pay_half()
+	body.glue.call_deferred("slice_along_halfway_line")
+	body.coins.pay_half()
 
 func _on_Timer_timeout():
 	disabled = false

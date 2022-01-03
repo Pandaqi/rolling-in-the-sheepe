@@ -1,13 +1,11 @@
 extends Node
 
-var cur_room = null
-
-onready var map = get_node("/root/Main/Map")
-onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 onready var body = get_parent()
 
-func _ready():
-	cur_room = route_generator.get_cur_room(body)
+var cur_room = null
+
+func _module_ready():
+	cur_room = body.map.route_generator.get_cur_room(body)
 	if not cur_room: return
 	cur_room.entities.add_player(body)
 
@@ -19,7 +17,7 @@ func get_room_after_forced_update():
 	return cur_room
 
 func check_current_room():
-	var new_room = route_generator.get_cur_room(body)
+	var new_room = body.map.route_generator.get_cur_room(body)
 	if not new_room: return
 	
 	if new_room != cur_room:

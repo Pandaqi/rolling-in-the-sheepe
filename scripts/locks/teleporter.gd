@@ -53,14 +53,14 @@ func count_players_here():
 	return sum
 
 func register_player(p):
-	var player_num = p.get_node("Status").player_num
+	var player_num = p.status.player_num
 	players_here[player_num].append(p)
 	
 	var first_entry = (not timer_is_running)
 	if first_entry: start_timer()
 
 func deregister_player(p):
-	var player_num = p.get_node("Status").player_num
+	var player_num = p.status.player_num
 	players_here[player_num].erase(p)
 
 func delete():
@@ -97,7 +97,7 @@ func perform_teleport():
 			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
 			body.plan_teleport(final_pos)
 			
-			unteleported_players.erase(body.get_node("Status").player_num)
+			unteleported_players.erase(body.status.player_num)
 			teleported_bodies.append(body)
 	
 	# ensure each player has at least ONE piece teleported (even if they didn't make it)
@@ -105,14 +105,14 @@ func perform_teleport():
 	for body in all_bodies:
 		if unteleported_players.size() <= 0: break
 		
-		var num = body.get_node("Status").player_num
+		var num = body.status.player_num
 		var index = unteleported_players.find(num)
 		if index < 0: 
 			continue
 		
 		var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
 		
-		body.get_node("Status").modify_time_penalty(TIME_PENALTY_FOR_MISSING_TELEPORT)
+		body.status.modify_time_penalty(TIME_PENALTY_FOR_MISSING_TELEPORT)
 		
 		body.plan_teleport(final_pos)
 		unteleported_players.remove(index)
@@ -121,4 +121,4 @@ func perform_teleport():
 	# clean up all remaining pieces (that didn't make it at all)
 	for body in all_bodies:
 		if (body in teleported_bodies): continue
-		body.get_node("Status").delete()
+		body.status.delete()

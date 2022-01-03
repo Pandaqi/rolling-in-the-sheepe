@@ -40,6 +40,15 @@ var settings = [
 		"comp": "Checkbox", 
 		"def": true 
 	},
+	
+	# GAMEPLAY (performance mode)
+	{
+		"sec": "settings",
+		"label": "Performance Mode",
+		"name": "performance_mode",
+		"comp": "Checkbox",
+		"def": false
+	}
 ]
 
 func _ready():

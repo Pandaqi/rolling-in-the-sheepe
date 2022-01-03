@@ -13,7 +13,7 @@ func _ready():
 
 func _physics_process(dt):
 	for entity in my_room.entities.get_them():
-		if entity.get_node("Mover").in_air: time_spent_in_air += dt
+		if entity.mover.in_air: time_spent_in_air += dt
 	
 	check_if_condition_fulfilled()
 

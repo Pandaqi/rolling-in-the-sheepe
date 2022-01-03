@@ -2,16 +2,15 @@ extends Node
 
 var players_inside = []
 
-onready var lock = get_node("../Lock")
-onready var outline = get_node("../Outline")
+onready var parent = get_parent()
 
 func add_player(p):
 	players_inside.append(p)
-	lock.on_body_enter(p)
+	parent.lock.on_body_enter(p)
 
 func remove_player(p):
 	players_inside.erase(p)
-	lock.on_body_exit(p)
+	parent.lock.on_body_exit(p)
 
 func get_them():
 	return players_inside

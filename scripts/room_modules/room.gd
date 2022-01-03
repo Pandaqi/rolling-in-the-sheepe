@@ -1,9 +1,11 @@
 extends Node2D
 
+# global nodes
 onready var map = get_node("/root/Main/Map")
 onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
 
+# modules
 onready var rect = $Rect
 onready var entities = $Entities
 onready var lock = $Lock

@@ -12,12 +12,7 @@ var is_wolf : bool = false
 
 var player_num : int = -1
 
-onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
-
 onready var body = get_parent()
-onready var slicer = get_node("/root/Main/Slicer")
-onready var shaper = get_node("../Shaper")
-onready var rounder = get_node("../Rounder")
 
 func set_player_num(num):
 	player_num = num
@@ -45,7 +40,7 @@ func check_glue():
 		var other_body = obj.body
 		
 		if not other_body.is_in_group("Players"): continue
-		if other_body.get_node("Status").player_num != player_num: continue
+		if other_body.status.player_num != player_num: continue
 		
 		if unrealistic_glueing:
 			eat_and_grow_object(obj)
@@ -54,30 +49,30 @@ func check_glue():
 		break
 
 func eat_and_grow_object(obj):
-	var their_area : float = obj.body.get_node("Shaper").get_area()
-	var our_area : float = shaper.get_area()
+	var their_area : float = obj.body.shaper.get_area()
+	var our_area : float = body.shaper.get_area()
 	
 	# if they are bigger than us, they should eat us
 	# and they will, because a collision goes both ways
 	if their_area > our_area: return
 	
-	obj.body.get_node("Status").delete()
+	obj.body.status.delete()
 	
 	var grow_ratio = 2.0 * (our_area / their_area - 1.0)
-	rounder.grow(grow_ratio)
+	body.rounder.grow(grow_ratio)
 
 func glue_object_to_me(obj):
 	var num_shapes = obj.body.shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
 		var shape = obj.body.shape_owner_get_shape(0, i)
-		var points = obj.body.get_node("Shaper").make_global(Array(shape.points))
-		var local_points = shaper.make_local_external(points)
-		shaper.append_shape(local_points)
+		var points = obj.body.shaper.make_global(Array(shape.points))
+		var local_points = body.shaper.make_local_external(points)
+		body.shaper.append_shape(local_points)
 	
-	obj.body.get_node("Status").delete()
+	obj.body.status.delete()
 	
-	var extra_coins = obj.body.get_node("Coins").count()
-	get_node("Coins").get_paid(extra_coins)
+	var extra_coins = obj.body.coins.count()
+	body.coins.get_paid(extra_coins)
 
 	disable_glue()
 
@@ -99,12 +94,12 @@ func check_spikes():
 		var other_body = obj.body
 		
 		if not other_body.is_in_group("Players"): continue
-		if other_body.get_node("Status").player_num == player_num: continue
+		if other_body.status.player_num == player_num: continue
 		
 		if GDict.cfg.wolf_takes_coin:
-			if is_wolf and other_body.get_node("Coins").has_some():
-				other_body.get_node("Coins").pay(1)
-				body.coins.get_node("Coins").get_paid(1)
+			if is_wolf and other_body.coins.has_some():
+				other_body.coins.pay(1)
+				body.coins.get_paid(1)
 				break
 		
 		spike_object(obj)
@@ -116,36 +111,36 @@ func get_realistic_slice_line(obj):
 	var end = obj.pos + extended_normal
 	
 	# DEBUGGING
-	slicer.start_point = start
-	slicer.end_point = end
-	slicer.update()
+	body.slicer.start_point = start
+	body.slicer.end_point = end
+	body.slicer.update()
 	
 	return { 'start': start, 'end': end }
 
 func get_halfway_slice_line(other_body):
-	#var bb = body.get_node("Shaper").bounding_box
+	#var bb = body.shaper.bounding_box
 	
 	var center_pos = other_body.get_global_position()
 	var start = center_pos - 100*Vector2(1,1)
 	var end = center_pos + 100*Vector2(1,1)
 	
 	# DEBUGGING
-	slicer.start_point = start
-	slicer.end_point = end
-	slicer.update()
+	body.slicer.start_point = start
+	body.slicer.end_point = end
+	body.slicer.update()
 	
 	return { 'start': start, 'end': end }
 
 func slice_along_halfway_line():
 	var slice_line = get_halfway_slice_line(body)
-	slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
+	body.slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
 
 func spike_object(obj):
 	var slice_line = get_realistic_slice_line(obj)
 	if is_wolf: 
 		slice_line = get_halfway_slice_line(obj.body)
 	
-	slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [obj.body])
+	body.slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [obj.body])
 	
 	disable_spikes()
 

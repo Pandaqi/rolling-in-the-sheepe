@@ -35,8 +35,8 @@ func determine_leading_and_trailing_player():
 	for p in players:
 		if not is_instance_valid(p): continue
 		
-		var index = p.get_node("RoomTracker").get_cur_room().route.index
-		var dist_in_room = p.get_node("RoomTracker").get_dist_in_room()
+		var index = p.room_tracker.get_cur_room().route.index
+		var dist_in_room = p.room_tracker.get_dist_in_room()
 		
 		if index > max_room:
 			max_room = index
@@ -89,7 +89,7 @@ func determine_leading_and_trailing_player():
 func get_distance_to_generation_end():
 	if not has_leading_player(): return
 	
-	var index = leading_player.get_node("RoomTracker").get_cur_room().route.index
+	var index = leading_player.room_tracker.get_cur_room().route.index
 	return (route_generator.cur_path.size() - index)
 
 #
@@ -101,13 +101,13 @@ func check_wolf():
 	if not has_trailing_player(): return
 	if room_picker.has_tutorial() and not room_picker.tutorial_course.wolf_active: return
 	
-	var wolf_creation_is_allowed = (trailing_player.get_node("RoomTracker").get_cur_room().route.index > 1) and (not wolf_disabled)
+	var wolf_creation_is_allowed = (trailing_player.room_tracker.get_cur_room().route.index > 1) and (not wolf_disabled)
 	if not wolf_creation_is_allowed: return
 	
-	var already_is_wolf = trailing_player.get_node("Status").is_wolf
+	var already_is_wolf = trailing_player.status.is_wolf
 	if already_is_wolf: return
 	
-	trailing_player.get_node("Status").make_wolf()
+	trailing_player.status.make_wolf()
 
 func enable_wolf():
 	wolf_disabled = false
@@ -117,13 +117,13 @@ func disable_wolf():
 	wolf_disabled = true
 	if not has_trailing_player(): return
 	
-	trailing_player.get_node("Status").make_sheep()
+	trailing_player.status.make_sheep()
 
 func on_player_teleported(body):
 	if not GDict.cfg.temp_remove_wolf_on_teleport: return
-	if not body.get_node("Status").is_wolf: return
+	if not body.status.is_wolf: return
 	
-	body.get_node("Status").make_sheep()
+	body.status.make_sheep()
 	time_since_trail_switch = OS.get_ticks_msec()
 
 #
@@ -140,7 +140,7 @@ func set_trailing_player(p):
 
 	# change old trailing player back to sheep
 	if has_trailing_player():
-		trailing_player.get_node("Status").make_sheep()
+		trailing_player.status.make_sheep()
 	
 	trailing_player = p
 	

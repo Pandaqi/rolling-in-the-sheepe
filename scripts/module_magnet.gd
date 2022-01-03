@@ -14,7 +14,7 @@ func activate():
 func deactivate():
 	active = false
 
-func _physics_process(dt):
+func _physics_process(_dt):
 	if not active: return
 	
 	# TO DO: Use collision layers instead of all this checking for Players?
@@ -26,6 +26,6 @@ func _physics_process(dt):
 		var magnitude = radius/vec_to_us.length()
 		
 		# smaller bodies should be attracted less, as they are more easily moved
-		var mass_compensation =  other_body.get_node("Shaper").approximate_radius_as_ratio()
+		var mass_compensation =  other_body.shaper.approximate_radius_as_ratio()
 		
 		other_body.apply_central_impulse(vec_to_us.normalized() * magnitude * mass_compensation * ATTRACT_FORCE)

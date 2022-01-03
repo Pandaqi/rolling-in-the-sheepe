@@ -1,9 +1,9 @@
 extends Node2D
 
-onready var map = get_node("/root/Main/Map")
-onready var GUI = get_node("/root/Main/GUI")
-onready var sprite = $Sprite
 onready var body = get_parent()
+
+onready var map = get_node("/root/Main/Map")
+onready var sprite = $Sprite
 
 const MAX_TIME_BETWEEN_STEPS : int = 15
 onready var timer = $Timer
@@ -16,14 +16,14 @@ var player_movement : float = 0.0
 
 var active : bool = false
 
-func _ready():
+func _module_ready():
 	activate()
 
 func activate():
 	active = true
 	
 	remove_child(sprite)
-	GUI.add_child(sprite)
+	body.GUI.add_child(sprite)
 	
 	load_next_step()
 
@@ -36,7 +36,7 @@ func load_next_step():
 		queue_free()
 		return
 	
-	var device_id = GInput.get_device_id(body.get_node("Status").player_num)
+	var device_id = GInput.get_device_id(body.status.player_num)
 	var base_frame = base_frames[tutorial_step]
 	if device_id < 0:
 		base_frame += abs(device_id + 1)

@@ -14,6 +14,18 @@ func make_all_players_round():
 func load_game(tp : String):
 	type = tp
 	in_game = true
+	
+	# custom config toggleable through main settings
+	# should only be a few, so do manually here
+	var perf_mode = GConfig.read_game_config("settings", "performance_mode")
+	GDict.cfg.performance_mode = perf_mode
+	GDict.cfg.paint_on_tilemap = (not perf_mode)
+	
+	var gen_speed = 2.0
+	if perf_mode: gen_speed = 1.0
+	GDict.cfg.generation_speed = gen_speed
+	GDict.cfg.hide_heavy_particles = perf_mode
+
 # warning-ignore:return_value_discarded
 	get_tree().change_scene_to(scenes.main)
 

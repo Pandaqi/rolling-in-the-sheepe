@@ -68,7 +68,7 @@ func check_for_new_room():
 	if has_finished: return
 	
 	var lead = player_progression.get_leading_player()
-	var index = lead.get_node("RoomTracker").get_cur_room().route.index
+	var index = lead.room_tracker.get_cur_room().route.index
 	var num_rooms_threshold = NUM_ROOMS_FRONT_BUFFER
 	var far_enough_forward = (index > cur_path.size() - num_rooms_threshold)
 	
@@ -79,7 +79,7 @@ func check_for_old_room_deletion():
 	if not player_progression.has_trailing_player(): return
 	
 	var trail = player_progression.get_trailing_player()
-	var index = trail.get_node("RoomTracker").get_cur_room().route.index
+	var index = trail.room_tracker.get_cur_room().route.index
 	var num_rooms_threshold = NUM_ROOMS_BACK_BUFFER
 	var far_enough_from_last_room = (index > num_rooms_threshold)
 	
@@ -183,7 +183,7 @@ func get_pos_just_ahead():
 	if not player_progression.has_leading_player(): return null
 	
 	var lead = player_progression.get_leading_player()
-	var index = lead.get_node("RoomTracker").get_cur_room().route.index
+	var index = lead.room_tracker.get_cur_room().route.index
 	if index == (cur_path.size()-1): return null
 	
 	var coming_positions : Vector2 = Vector2.ZERO
@@ -207,15 +207,15 @@ func get_pos_just_ahead():
 	return lead.get_global_position() + norm_vec*dist
 
 func get_next_best_player(p):
-	var my_index = p.get_node("RoomTracker").get_cur_room().route.index
-	var my_num = p.get_node("Status").player_num
+	var my_index = p.room_tracker.get_cur_room().route.index
+	var my_num = p.status.player_num
 	for i in range(my_index+1, cur_path.size()):
 		var room = cur_path[i]
 		
-		for p in room.entities.get_them():
-			var num = p.get_node("Status").player_num
+		for other_p in room.entities.get_them():
+			var num = other_p.status.player_num
 			if num == my_num: continue
 			
-			return p
+			return other_p
 	
 	return player_progression.get_leading_player()

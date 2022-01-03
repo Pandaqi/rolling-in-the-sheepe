@@ -19,10 +19,10 @@ func _physics_process(dt):
 
 func _on_Area2D_body_entered(body):
 	if not body.is_in_group("Players"): return
-	if body.get_node("Status").is_invincible: return
+	if body.status.is_invincible: return
 	
-	body.get_node("Glue").call_deferreed("slice_along_halfway_line")
-	body.get_node("Coins").pay_half()
+	body.glue.call_deferreed("slice_along_halfway_line")
+	body.coins.pay_half()
 	
 	self.queue_free()
 

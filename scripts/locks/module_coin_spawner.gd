@@ -36,7 +36,7 @@ func on_coin_grab(body, coin):
 	coins.erase(coin)
 	coin.queue_free()
 	
-	body.get_node("Coins").get_paid(1)
+	body.coins.get_paid(1)
 	coins_grabbed += 1
 	
 	if feedback_enabled:

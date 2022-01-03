@@ -6,22 +6,18 @@ const MAX_COINS : int = 10
 var num_coins : int = 0
 var coin_sprite_scene = preload("res://scenes/ui/coin_sprite.tscn")
 
-onready var main_gui = get_node("/root/Main/GUI")
-
 onready var body = get_parent()
-onready var status = get_node("../Status")
-onready var shaper = get_node("../Shaper")
 onready var my_gui = $GUI
 onready var tween = $Tween
 
-func _ready():
+func _module_ready():
 	for _i in range(MAX_COINS):
 		var coin_sprite = coin_sprite_scene.instance()
 		coin_sprite.set_visible(false)
 		my_gui.add_child(coin_sprite)
 	
 	remove_child(my_gui)
-	main_gui.add_child(my_gui)
+	body.GUI.add_child(my_gui)
 
 func has_some():
 	return (num_coins > 0)
@@ -48,27 +44,27 @@ func _physics_process(_dt):
 	position_gui_above_player()
 
 func check_for_collision_with_self():
-	var player_num = status.player_num
+	var player_num = body.status.player_num
 	for obj in body.contact_data:
 		var other_body = obj.body
 		
 		if not other_body.is_in_group("Players"): continue
-		if other_body.get_node("Status").player_num != player_num: continue
+		if other_body.status.player_num != player_num: continue
 		
 		transfer_coins_to_biggest_shape(obj)
 		break
 
 func transfer_coins_to_biggest_shape(obj):
-	var my_radius = shaper.approximate_radius()
-	var their_radius = obj.body.get_node("Shaper").approximate_radius()
+	var my_radius = body.shaper.approximate_radius()
+	var their_radius = obj.body.shaper.approximate_radius()
 	
 	if my_radius > their_radius:
-		var paysum = obj.body.get_node("Coins").count()
+		var paysum = obj.body.coins.count()
 		get_paid(paysum)
-		obj.body.get_node("Coins").pay(paysum)
+		obj.body.coins.pay(paysum)
 	else:
 		var paysum = count()
-		obj.body.get_node("Coins").get_paid(paysum)
+		obj.body.coins.get_paid(paysum)
 		pay(paysum)
 
 # TO DO: Show the current num_coins in some neat configuration

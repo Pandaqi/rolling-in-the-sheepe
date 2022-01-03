@@ -3,9 +3,10 @@ extends Node2D
 var sprite_size : float = 256.0
 
 onready var animation_player = $AnimationPlayer
-onready var shaper = get_node("../Shaper")
-onready var face_sprite = $FaceSprite
-onready var ear_sprite = get_node("../Shaper/EarSprite")
+
+var shaper
+var face_sprite
+var ear_sprite
 
 func link_sprites():
 	face_sprite = $FaceSprite

@@ -48,8 +48,8 @@ func get_lock_module():
 
 func _on_Area2D_body_entered(body):
 	if not body.is_in_group("Players"): return
-	body.get_node("ItemReader").turn_on_item(self, type)
+	body.item_reader.turn_on_item(self, type)
 
 func _on_Area2D_body_exited(body):
 	if not body.is_in_group("Players"): return
-	body.get_node("ItemReader").turn_off_item(self, type)
+	body.item_reader.turn_off_item(self, type)

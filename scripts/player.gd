@@ -7,11 +7,46 @@ var is_frozen : bool = false
 
 const SHOOT_AWAY_FORCE : float = 4.0
 
+# global nodes
+onready var main_node = get_node("/root/Main")
+
 onready var feedback = get_node("/root/Main/Feedback")
+onready var player_manager = get_node("/root/Main/PlayerManager")
+onready var slicer = get_node("/root/Main/Slicer")
 onready var map = get_node("/root/Main/Map")
+onready var GUI = get_node("/root/Main/GUI")
+
+# modules => only look them up once here, then use body.<name> in modules
+var status
+var room_tracker
+var shaper
+var input
+var mover
+var clinger
+var map_reader
+var map_painter
+var item_reader
+var glue
+var face
+var rounder
+var coins
+var edge_reader
+var magnet
 
 func _ready():
 	physics_material_override = PhysicsMaterial.new()
+	
+	for child in get_children():
+		var conv_name = child.name.to_lower()
+		set(conv_name, child)
+		
+		if not child.script: continue
+		if not child.has_method("_module_ready"): continue
+		
+		child._module_ready()
+
+func has_module(name : String):
+	return get(name) and is_instance_valid(get(name))
 
 func _integrate_forces(state):
 	contact_data = []

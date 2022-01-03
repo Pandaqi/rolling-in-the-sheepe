@@ -13,15 +13,9 @@ var debug_cling_raycasts = []
 var ceiling_clung_last_frame : bool = false
 
 onready var body = get_parent()
-onready var shaper = get_node("../Shaper")
-onready var mover = get_node("../Mover")
-var map_reader = null
 
 var disabled : bool = false
 onready var disable_timer = $DisableTimer
-
-func _ready():
-	if has_node("../MapReader"): map_reader  = get_node("../MapReader")
 
 func disable():
 	disabled = true
@@ -37,7 +31,7 @@ func _physics_process(_dt):
 		return
 	
 	ceiling_clung_last_frame = false
-	size_force_multiplier = shaper.approximate_radius_as_ratio()
+	size_force_multiplier = body.shaper.approximate_radius_as_ratio()
 	execute_wall_cling()
 
 func has_influence():
@@ -46,7 +40,8 @@ func has_influence():
 func execute_ceiling_cling():
 	cling_vec = Vector2.ZERO
 	
-	if map_reader and map_reader.last_cell_has_terrain("reverse_gravity"): return
+	if body.has_module("map_reader"):
+		if body.map_reader.last_cell_has_terrain("reverse_gravity"): return
 
 	var result = shoot_raycast_in_dir(Vector2.UP)
 	if not result: 
@@ -58,16 +53,15 @@ func execute_ceiling_cling():
 
 	var movement_help_factor : float = 0.33
 	cling_vec = Vector2.UP
-	if mover.keys_down.left:
+	if body.mover.keys_down.left:
 		cling_vec += movement_help_factor*Vector2.RIGHT
-	elif mover.keys_down.right:
+	elif body.mover.keys_down.right:
 		cling_vec += movement_help_factor*Vector2.LEFT
 	
 	ceiling_clung_last_frame = true
 	
 	# TESTING: smaller vector, smaller force
 	cling_vec = 0.5*cling_vec.normalized()
-	
 	
 	apply_cling_vec(cling_vec)
 
@@ -119,27 +113,12 @@ func apply_cling_vec(vec):
 	body.apply_central_impulse(vec * my_cling_force)
 	
 	if vec.y < 0:
-		body.get_node("Mover").modify_gravity_strength(CLING_GRAVITY_REDUCTION)
-	
-	debug_draw()
-
-func debug_draw():
-	return
-	$ClingVec.rotation = cling_vec.angle()
-	update()
-
-func _draw():
-	set_rotation(-body.rotation)
-	
-	for rc in debug_cling_raycasts:
-		draw_line(Vector2.ZERO, rc - get_global_position(), Color(1,0,0), 5)
-	
-	debug_cling_raycasts = []
+		body.mover.modify_gravity_strength(CLING_GRAVITY_REDUCTION)
 
 func shoot_raycast_in_dir(dir):
 	var space_state = get_world_2d().direct_space_state
 	var start = body.get_global_position()
-	var raycast_dist = shaper.get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
+	var raycast_dist = body.shaper.get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
 	var end = start + dir*raycast_dist
 	
 	debug_cling_raycasts.append(end)

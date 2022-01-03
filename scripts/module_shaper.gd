@@ -18,7 +18,6 @@ var shape_type : String = ""
 var starting_shape : String = ""
 
 onready var body = get_parent()
-onready var slicer = get_node("/root/Main/Slicer")
 
 func set_starting_shape(shape_key : String):
 	starting_shape = shape_key
@@ -170,7 +169,7 @@ func on_shape_updated():
 	update() # => updates the visual drawing of the shape
 	recalculate_bounding_box() 
 	recalculate_area()
-	get_node("../Face").update_size(bounding_box)
+	body.get_node("Face").update_size(bounding_box)
 
 func _draw():
 	var num_shapes = get_parent().shape_owner_get_shape_count(0)

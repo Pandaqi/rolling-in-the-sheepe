@@ -14,24 +14,7 @@ const MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT : float = 1500.0
 
 const TIME_PENALTY_TOO_FAR_BEHIND : float = 10.0
 
-onready var main_node = get_node("/root/Main")
-onready var GUI = get_node("/root/Main/GUI")
-
-onready var map = get_node("/root/Main/Map")
-onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
-onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
-
-onready var player_manager = get_node("/root/Main/PlayerManager")
-
 onready var body = get_parent()
-onready var status = get_node("../Status")
-onready var coins = get_node("../Coins")
-onready var shaper = get_node("../Shaper")
-onready var mover = get_node("../Mover")
-onready var rounder = get_node("../Rounder")
-onready var item_reader = get_node("../ItemReader")
-onready var room_tracker = get_node("../RoomTracker")
-
 
 var player_gui_scene = preload("res://scenes/player_gui.tscn")
 var gui
@@ -52,7 +35,7 @@ func _physics_process(_dt):
 	check_if_too_far_behind()
 
 func read_map():
-	var cur_cell = map.get_cell_from_node(body)
+	var cur_cell = body.map.get_cell_from_node(body)
 	if cur_cell == last_cell: return
 	if cur_cell.terrain == last_cell.terrain: return
 	
@@ -67,25 +50,25 @@ func do_effect_of_cell(cell):
 	var terrain = cell.terrain
 	if not terrain: return
 	
-	map.terrain.someone_entered(body, terrain)
+	body.map.terrain.someone_entered(body, terrain)
 	
 	# TO DO: not necessarily correct; might take a frame to update
 	# better to use => cell.room?
-	var room = room_tracker.get_cur_room()
+	var room = body.room_tracker.get_cur_room()
 	
 	match terrain:
 		"finish":
 			finish()
 	
 		"teleporter":
-			room = room_tracker.get_room_after_forced_update()
+			room = body.room_tracker.get_room_after_forced_update()
 			room.lock_module.register_player(body)
 		
 		"reverse_gravity":
-			mover.gravity_dir = -1
+			body.mover.gravity_dir = -1
 		
 		"no_gravity":
-			mover.gravity_dir = 0
+			body.mover.gravity_dir = 0
 		
 		"ice":
 			do_ice()
@@ -97,29 +80,29 @@ func do_effect_of_cell(cell):
 			do_spiderman()
 		
 		"speed_boost":
-			mover.speed_multiplier = 2.0
+			body.mover.speed_multiplier = 2.0
 		
 		"speed_slowdown":
-			mover.speed_multiplier = 0.5
+			body.mover.speed_multiplier = 0.5
 		
 		"glue":
 			do_glue()
 		
 		"reverse_controls":
 			body.feedback.create_for_node(body, "Reversed Controls!")
-			body.get_node("Input").reverse = true
+			body.input.reverse = true
 		
 		"spikes":
-			body.get_node("Glue").spikes_active = true
+			body.glue.spikes_active = true
 		
 		"ghost":
-			status.make_ghost()
+			body.status.make_ghost()
 		
 		"grower":
-			body.get_node("Rounder").grow_instead_of_rounding = true
+			body.rounder.grow_instead_of_rounding = true
 		
 		"no_wolf":
-			player_progression.disable_wolf()
+			body.map.player_progression.disable_wolf()
 		
 		"body_limit":
 			# NOTE: at this point we've already added ourself to the room, so its "size before" is 1 smaller than it is now
@@ -131,32 +114,32 @@ func do_effect_of_cell(cell):
 				body.apply_central_impulse(-last_move_dir*REPEL_FORCE)
 		
 		"invincibility":
-			if coins.count() >= MIN_COIN_LIMIT:
-				status.make_invincible(false) # start no timer, so invincibility is "permanent" while in terrain
+			if body.coins.count() >= MIN_COIN_LIMIT:
+				body.status.make_invincible(false) # start no timer, so invincibility is "permanent" while in terrain
 		
 		"rounder":
-			if coins.count() >= MIN_COIN_LIMIT:
-				rounder.make_fully_round()
+			if body.coins.count() >= MIN_COIN_LIMIT:
+				body.rounder.make_fully_round()
 			else:
-				rounder.make_fully_malformed()
+				body.rounder.make_fully_malformed()
 		
 		"halver":
-			coins.pay(floor(0.5*coins.count()))
+			body.coins.pay_half()
 		
 		"slower":
-			mover.speed_multiplier = clamp(coins.as_ratio()*2.0, 0.5, 2.0) 
+			body.mover.speed_multiplier = clamp(body.coins.as_ratio()*2.0, 0.5, 2.0) 
 		
 		"bomb":
-			item_reader.make_bomb()
+			body.item_reader.make_bomb()
 		
 		"reverse_rounding":
-			body.get_node("Rounder").reverse_rounding = true
+			body.rounder.reverse_rounding = true
 		
 		"magnet":
-			body.get_node("Magnet").activate()
+			body.magnet.activate()
 		
 		"body_cleanup":
-			player_manager.remove_furthest_body_of(body.get_node("Status").player_num)
+			body.player_manager.remove_furthest_body_of(body.status.player_num)
 
 func undo_effect_of_cell(cell):
 	if not cell: return
@@ -164,18 +147,18 @@ func undo_effect_of_cell(cell):
 	var terrain = cell.terrain
 	if not terrain: return
 	
-	map.terrain.someone_exited(body, terrain)
-	var room = map.get_room_at(cell.pos)
+	body.map.terrain.someone_exited(body, terrain)
+	var room = body.map.get_room_at(cell.pos)
 	
 	match terrain:
 		"teleporter":
 			room.lock_module.deregister_player(body)
 		
 		"reverse_gravity":
-			mover.gravity_dir = 1
+			body.mover.gravity_dir = 1
 		
 		"no_gravity":
-			mover.gravity_dir = 1
+			body.mover.gravity_dir = 1
 		
 		"ice":
 			undo_ice()
@@ -187,44 +170,44 @@ func undo_effect_of_cell(cell):
 			undo_spiderman()
 		
 		"speed_boost":
-			mover.speed_multiplier = 1.0
+			body.mover.speed_multiplier = 1.0
 		
 		"speed_slowdown":
-			mover.speed_multiplier = 1.0
+			body.mover.speed_multiplier = 1.0
 		
 		"glue":
 			undo_glue()
 		
 		"reverse_controls":
 			body.feedback.create_for_node(body, "Normal Controls!")
-			body.get_node("Input").reverse = false
+			body.input.reverse = false
 		
 		"spikes":
-			body.get_node("Glue").spikes_active = false
+			body.glue.spikes_active = false
 		
 		"ghost":
-			status.undo_ghost()
+			body.status.undo_ghost()
 		
 		"grower":
-			body.get_node("Rounder").grow_instead_of_rounding = false
+			body.rounder.grow_instead_of_rounding = false
 		
 		"no_wolf":
-			player_progression.enable_wolf()
+			body.map.player_progression.enable_wolf()
 		
 		"invincibility":
-			status.make_vincible()
+			body.status.make_vincible()
 		
 		"slower":
-			mover.speed_multiplier = 1.0
+			body.mover.speed_multiplier = 1.0
 		
 		"bomb":
-			item_reader.undo_bomb()
+			body.item_reader.undo_bomb()
 		
 		"reverse_rounding":
-			body.get_node("Rounder").reverse_rounding = false
+			body.rounder.reverse_rounding = false
 		
 		"magnet":
-			body.get_node("Magnet").deactivate()
+			body.magnet.deactivate()
 
 #
 # Specific do/undos, so I can re-use them in the item_reader
@@ -236,16 +219,16 @@ func undo_ice():
 	body.physics_material_override.friction = 1.0
 
 func do_spiderman():
-	body.get_node("Clinger").active = true
+	body.clinger.active = true
 
 func undo_spiderman():
-	body.get_node("Clinger").active = false
+	body.clinger.active = false
 
 func do_glue():
-	body.get_node("Glue").glue_active = true
+	body.glue.glue_active = true
 
 func undo_glue():
-	body.get_node("Glue").glue_active = false
+	body.glue.glue_active = false
 
 #
 # Misc
@@ -253,13 +236,13 @@ func undo_glue():
 func finish():
 	has_finished = true
 	
-	status.has_finished = true
-	status.make_ghost()
+	body.status.has_finished = true
+	body.status.make_ghost()
 	
 	if GDict.cfg.reset_players_to_start_shape_at_finish:
-		shaper.reset_to_starting_shape()
+		body.shaper.reset_to_starting_shape()
 	
-	var finish_data = main_node.player_finished(body)
+	var finish_data = body.main_node.player_finished(body)
 	show_gui()
 	set_gui_rank(finish_data.rank)
 
@@ -268,7 +251,7 @@ func has_gui():
 
 func show_gui():
 	gui = player_gui_scene.instance()
-	GUI.add_child(gui)
+	body.GUI.add_child(gui)
 
 func set_gui_rank(r):
 	gui.get_node("Label/Label").set_text("#" + str(r+1))
@@ -282,15 +265,15 @@ func position_gui_above_us():
 	gui.set_position(pos + offset)
 
 func check_if_too_far_behind():
-	if player_progression.get_leading_player() == self: return
+	if body.map.player_progression.get_leading_player() == self: return
 	
 	var too_far_behind = false
-	#var my_room = body.get_node("RoomTracker").get_cur_room()
+	#var my_room = body.room_tracker.get_cur_room()
 	
-	var next_player = route_generator.get_next_best_player(body)
+	var next_player = body.map.route_generator.get_next_best_player(body)
 	if not next_player: return
 	
-	var next_player_room = next_player.get_node("RoomTracker").get_cur_room()
+	var next_player_room = next_player.room_tracker.get_cur_room()
 	
 	# if we're still perfectly in view (because very close to next best player)
 	# ignore this whole thing, we don't (yet) need to teleport
@@ -305,21 +288,21 @@ func check_if_too_far_behind():
 	
 	if not too_far_behind: return
 	
-	status.modify_time_penalty(TIME_PENALTY_TOO_FAR_BEHIND)
+	body.status.modify_time_penalty(TIME_PENALTY_TOO_FAR_BEHIND)
 	body.plan_teleport(get_forward_boost_pos(true))
 
 func get_forward_boost_pos(pick_next_best_player = false):
 	var target_room
 	if pick_next_best_player:
-		var next_player = route_generator.get_next_best_player(body)
+		var next_player = body.map.route_generator.get_next_best_player(body)
 		
-		target_room = next_player.get_node("RoomTracker").get_cur_room()
+		target_room = next_player.room_tracker.get_cur_room()
 	else:
-		var cur_room_index = body.get_node("RoomTracker").get_cur_room().route.index
+		var cur_room_index = body.room_tracker.get_cur_room().route.index
 		var target_room_index = (cur_room_index + 1)
-		target_room = route_generator.cur_path[target_room_index]
+		target_room = body.map.route_generator.cur_path[target_room_index]
 	
-	return player_manager.get_spread_out_position(target_room)
+	return body.player_manager.get_spread_out_position(target_room)
 
 func last_cell_has_terrain(t):
 	if not last_cell: return false

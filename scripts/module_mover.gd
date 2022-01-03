@@ -1,5 +1,7 @@
 extends Node2D
 
+onready var body = get_parent()
+
 const MAX_VELOCITY : float = 220.0
 const MAX_VELOCITY_AIR : float = 150.0
 
@@ -35,13 +37,6 @@ var gravity_dir : int = 1
 var air_break : bool = false
 var air_break_start : float = -1
 var air_break_time_limit : float = 230.0
-
-onready var body = get_parent()
-onready var shaper = get_node("../Shaper")
-onready var status = get_node("../Status")
-
-onready var map_reader = get_node("../MapReader")
-onready var clinger = get_node("../Clinger")
 
 var last_input_time : float = -1
 var keys_down = {
@@ -94,7 +89,7 @@ func _on_Input_double_button():
 	if used_input_for_airbreak: return
 	
 	# NOTE: It enables itself again after a (very) short period
-	clinger.disable()
+	body.clinger.disable()
 	
 	var grav_scale_absolute = abs(body.gravity_scale)
 	if grav_scale_absolute == 0: grav_scale_absolute = 1.0
@@ -103,8 +98,8 @@ func _on_Input_double_button():
 	body.apply_central_impulse(final_jump_vec)
 
 func _physics_process(_dt):
-	size_speed_multiplier = shaper.approximate_radius_as_ratio()
-	if status.is_wolf: size_speed_multiplier *= WOLF_BONUS_SPEED
+	size_speed_multiplier = body.shaper.approximate_radius_as_ratio()
+	if body.status.is_wolf: size_speed_multiplier *= WOLF_BONUS_SPEED
 	
 	reset_gravity_strength()
 	
@@ -135,17 +130,17 @@ func check_for_air_break():
 	body.linear_velocity.y = 0.0
 
 func check_for_standstill():
-	if status.is_menu: return
-	if map_reader.last_cell_has_lock(): return
-	if status.has_finished: return
+	if body.status.is_menu: return
+	if body.status.has_finished: return
+	if body.map_reader.last_cell_has_lock(): return
 	
 	var cur_time = OS.get_ticks_msec()
 	
 	var time_since_last_input = (cur_time - last_input_time)/1000.0
 	if time_since_last_input <= STANDSTILL_THRESHOLD: return
 	
-	status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT)
-	body.plan_teleport(map_reader.get_forward_boost_pos())
+	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT)
+	body.plan_teleport(body.map_reader.get_forward_boost_pos())
 	
 	# NOTE: important, otherwise it keeps endlessly teleporting of course!
 	last_input_time = cur_time
@@ -172,8 +167,8 @@ func modify_gravity_strength(val):
 	body.gravity_scale = gravity_dir*val*BASE_GRAVITY_SCALE
 
 func should_modify_jump_normal():
-	if status.is_menu: return false
-	return clinger.has_influence() or map_reader.last_cell_has_terrain("no_gravity")
+	if body.status.is_menu: return false
+	return body.clinger.has_influence() or body.map_reader.last_cell_has_terrain("no_gravity")
 
 func determine_normal_vec():
 	var space_state = get_world_2d().direct_space_state
@@ -187,7 +182,7 @@ func determine_normal_vec():
 	var sides_with_hit = [false,false,false,false]
 	for i in range(4):
 		var dir = dirs[i]
-		var raycast_dist = shaper.get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
+		var raycast_dist = body.shaper.get_bounding_box_along_vec(dir) + EXTRA_RAYCAST_MARGIN
 		var end = start + dir*raycast_dist
 		
 		var exclude = [body]

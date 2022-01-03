@@ -132,5 +132,5 @@ func someone_entered(node, terrain):
 	var is_coin_terrain = (GDict.terrain_types[terrain].has('coin_related'))
 	if is_coin_terrain: node.get_node("Coins").show()
 
-func someone_exited(node, terrain):
+func someone_exited(_node, _terrain):
 	pass

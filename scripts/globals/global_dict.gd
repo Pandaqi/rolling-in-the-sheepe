@@ -1,6 +1,7 @@
 extends Node
 
 var cfg = {
+	"performance_mode": false,
 	"unrealistic_slicing": true,
 	
 	# either slicing yields the exact same shape each time (first option)
@@ -35,7 +36,8 @@ var cfg = {
 	# TO DO: make toggelable in (technical) settings
 	'generation_speed': 2.0, # higher is faster; inverted (1/X) on game start
 	"dynamic_tutorials": true,
-	"paint_on_tilemap": false,
+	"paint_on_tilemap": true,
+	"hide_heavy_particles": false,
 }
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
