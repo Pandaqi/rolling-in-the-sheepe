@@ -64,6 +64,8 @@ func _on_Area2D_body_entered(body):
 	
 	body.glue.call_deferred("slice_along_halfway_line")
 	body.coins.pay_half()
+	
+	GAudio.play_dynamic_sound(body, "laser_hit")
 
 func _on_Timer_timeout():
 	disabled = false

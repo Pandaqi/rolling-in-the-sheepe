@@ -3,6 +3,9 @@ extends Node
 var cfg = {
 	"performance_mode": false,
 	"unrealistic_slicing": true,
+	"max_bodies_per_player": 4,
+	
+	"draw_outlines": true,
 	
 	# either slicing yields the exact same shape each time (first option)
 	# or it just goes back one step
@@ -60,10 +63,10 @@ var shape_list = {
 	'diamond': { 'frame': 15, 'basic': 'pentagon' },
 	'crescent': { 'frame': 16, 'basic': 'pentagon' },
 	'trefoil': { 'frame': 17, 'basic': 'triangle' },
-	'quatrefoil': { 'frame': 18, 'basic': 'octagon' }
+	'quatrefoil': { 'frame': 18, 'basic': 'pentagon' }
 }
 
-var shape_order = ['triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'nonagon', 'circle']
+var shape_order = ['triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'circle']
 var points_per_shape = {
 	'triangle': 3,
 	'square': 4,

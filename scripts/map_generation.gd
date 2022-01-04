@@ -8,6 +8,10 @@ const BORDER_THICKNESS : int = 5
 # the actual map
 var map = []
 
+# global modules
+onready var particles = get_node("../Particles")
+
+# my own modules
 onready var tilemap = $TileMap
 onready var tilemap_copy = $MaskPainter/TilemapTexture/TileMapCopy
 onready var route_generator = $RouteGenerator
@@ -20,6 +24,8 @@ onready var slope_painter = $SlopePainter
 onready var dynamic_tutorial = $DynamicTutorial
 onready var player_progression = $PlayerProgression
 
+# layers for (depth-)sorting stuff
+onready var bg_layer = $BGLayer
 onready var lock_module_layer = $LockModuleLayer
 
 var num_teleporters_placed : int = 0
@@ -83,6 +89,8 @@ func explode_cell(attacker, pos : Vector2):
 	attacker.map_painter.disable_paint = true
 	mask_painter.clear_rectangle(pos*TILE_SIZE, Vector2(1,1)*TILE_SIZE)
 	
+	particles.create_at_pos(pos, "explosion")
+	GAudio.play_dynamic_sound({ 'global_position': pos }, "explode")
 	update_bitmask(pos-Vector2(2,2), Vector2(5,5))
 
 ####

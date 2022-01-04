@@ -12,7 +12,6 @@ var area : float
 var circumcircle_radius : float
 var avg_angle : float
 var bounding_box
-var color : Color = Color(1.0, 0.0, 0.0)
 
 var shape_type : String = ""
 var starting_shape : String = ""
@@ -107,9 +106,6 @@ func reset_to_starting_shape():
 # Helpers
 #
 #####
-func set_color(c):
-	color = c
-
 func make_point_global(point):
 	return get_parent().get_global_transform().xform(point)
 
@@ -171,17 +167,10 @@ func calculate_centroid(shp):
 func on_shape_updated():
 	body = get_parent()
 	
-	update() # => updates the visual drawing of the shape
+	body.get_node("Drawer").update_shape()
 	recalculate_bounding_box() 
 	recalculate_area()
 	body.get_node("Face").update_size(bounding_box)
-
-func _draw():
-	var num_shapes = get_parent().shape_owner_get_shape_count(0)
-	for i in range(num_shapes):
-		var shape = get_parent().shape_owner_get_shape(0, i)
-		var points = shape.points
-		draw_polygon(points, [color])
 
 #####
 #

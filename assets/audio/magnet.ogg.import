@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/magnet.ogg-b8b25ce81bcb5fa50003b15357a6a604.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/magnet.ogg"
+dest_files=[ "res://.import/magnet.ogg-b8b25ce81bcb5fa50003b15357a6a604.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

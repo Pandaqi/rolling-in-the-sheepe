@@ -26,4 +26,4 @@ func shoot_bullet():
 	b.set_starting_velocity(normal * BULLET_FORCE)
 	b.set_position(barrel_tip.global_position)
 	
-	print("SHOT BULLET")
+	GAudio.play_dynamic_sound(barrel_tip, "bullet_shot")

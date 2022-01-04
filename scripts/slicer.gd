@@ -1,7 +1,5 @@
 extends Node2D
 
-const MAX_BODIES_PER_PLAYER : int = 5
-
 const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
 const MIN_SIZE_PER_SIDE : float = 3.0 # TO DO: need to fix this anyway
 
@@ -81,7 +79,7 @@ func slice_body(b, p1, p2):
 	var original_player_num = b.status.player_num
 	var original_coins = b.coins.count()
 	
-	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= MAX_BODIES_PER_PLAYER)
+	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= GDict.cfg.max_bodies_per_player)
 	if player_is_at_body_limit: 
 		feedback.create_for_node(b, "Too many bodies!")
 		return
@@ -156,6 +154,7 @@ func slice_body(b, p1, p2):
 	# destroy the old body
 	feedback.create_for_node(b, "Slice!")
 	GAudio.play_dynamic_sound(b, "plop_multiple")
+	GAudio.play_dynamic_sound(b, "slice")
 	
 	b.status.delete()
 	

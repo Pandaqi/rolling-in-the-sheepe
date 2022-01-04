@@ -34,6 +34,7 @@ func load_game(tp : String):
 func restart():
 	GAudio.play_static_sound("ui_button_press")
 	
+# warning-ignore:return_value_discarded
 	get_tree().reload_current_scene()
 
 func back_to_menu():

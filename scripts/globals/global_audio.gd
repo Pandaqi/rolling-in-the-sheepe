@@ -41,6 +41,13 @@ var audio_preload = {
 		preload("res://assets/audio/login7.ogg")
 	],
 	"game_start": preload("res://assets/audio/game_start.ogg"),
+	"slice": [
+		preload("res://assets/audio/slash1.ogg"),
+		preload("res://assets/audio/slash2.ogg"),
+		preload("res://assets/audio/slash3.ogg"),
+		preload("res://assets/audio/slash4.ogg"),
+		preload("res://assets/audio/slash5.ogg")
+	],
 	
 	# status
 	"plop_single": preload("res://assets/audio/plop_single.ogg"),
@@ -76,11 +83,21 @@ var audio_preload = {
 	# terrains
 	"speedup": preload("res://assets/audio/battery_up.ogg"),
 	"slowdown": preload("res://assets/audio/battery_down.ogg"),
+	"magnet": preload("res://assets/audio/magnet.ogg"),
 	
 	# special tiles
 	"ice": preload("res://assets/audio/ice.ogg"),
 	"spiderman": preload("res://assets/audio/spiderman.ogg"),
-	"glue": preload("res://assets/audio/glue.ogg")
+	"glue": preload("res://assets/audio/glue.ogg"),
+	"freeze": preload("res://assets/audio/freeze.ogg"),
+	"time": preload("res://assets/audio/time.ogg"),
+	"laser_hit": preload("res://assets/audio/laser_hit.ogg"),
+	"bullet_shot": [
+		preload("res://assets/audio/bullet_shot_1.ogg"),
+		preload("res://assets/audio/bullet_shot_2.ogg"),
+	],
+	"bullet_hit": preload("res://assets/audio/bullet_hit.ogg"),
+	"explode": preload("res://assets/audio/explode.ogg")
 }
 
 func _ready():

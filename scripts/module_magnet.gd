@@ -9,9 +9,11 @@ onready var area = $Area2D
 onready var body = get_parent()
 
 func activate():
+	GAudio.play_dynamic_sound(body, "magnet")
 	active = true
 
 func deactivate():
+	GAudio.play_dynamic_sound(body, "magnet")
 	active = false
 
 func _physics_process(_dt):
