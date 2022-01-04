@@ -91,7 +91,7 @@ func perform_teleport():
 	for i in range(GInput.get_player_count()):
 		unteleported_players.append(i)
 	
-	var teleport_target_pos = route_generator.cur_path[0].rect.get_center()
+	var teleport_target_pos = route_generator.cur_path[0].rect.get_real_center()
 	for key in players_here:
 		for body in players_here[key]:
 			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
@@ -122,3 +122,6 @@ func perform_teleport():
 	for body in all_bodies:
 		if (body in teleported_bodies): continue
 		body.status.delete()
+	
+	# do ONE sound effect for all of them
+	GAudio.play_dynamic_sound({ 'global_position': teleport_target_pos }, "teleport")

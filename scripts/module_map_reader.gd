@@ -81,9 +81,11 @@ func do_effect_of_cell(cell):
 		
 		"speed_boost":
 			body.mover.speed_multiplier = 2.0
+			GAudio.play_dynamic_sound(body, "speedup")
 		
 		"speed_slowdown":
 			body.mover.speed_multiplier = 0.5
+			GAudio.play_dynamic_sound(body, "slowdown")
 		
 		"glue":
 			do_glue()
@@ -214,18 +216,21 @@ func undo_effect_of_cell(cell):
 #
 func do_ice():
 	body.physics_material_override.friction = ICE_FRICTION
+	GAudio.play_dynamic_sound(body, "ice")
 
 func undo_ice():
 	body.physics_material_override.friction = 1.0
 
 func do_spiderman():
 	body.clinger.active = true
+	GAudio.play_dynamic_sound(body, "spiderman")
 
 func undo_spiderman():
 	body.clinger.active = false
 
 func do_glue():
 	body.glue.glue_active = true
+	GAudio.play_dynamic_sound(body, "glue")
 
 func undo_glue():
 	body.glue.glue_active = false
@@ -235,6 +240,9 @@ func undo_glue():
 #
 func finish():
 	has_finished = true
+	
+	body.feedback.create_for_node(body, "Finished!")
+	GAudio.play_dynamic_sound(body, "finish")
 	
 	body.status.has_finished = true
 	body.status.make_ghost()
@@ -289,7 +297,7 @@ func check_if_too_far_behind():
 	if not too_far_behind: return
 	
 	body.status.modify_time_penalty(TIME_PENALTY_TOO_FAR_BEHIND)
-	body.plan_teleport(get_forward_boost_pos(true))
+	body.plan_teleport(get_forward_boost_pos(true), "Too far behind leader!")
 
 func get_forward_boost_pos(pick_next_best_player = false):
 	var target_room

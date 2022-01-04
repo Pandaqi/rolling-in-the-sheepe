@@ -7,7 +7,7 @@ const NUM_ROOMS_BACK_BUFFER : int = 4
 const NUM_ROOMS_FRONT_BUFFER : int = 25
 
 # with how many pre-created rooms we start each game
-const NUM_STARTING_ROOMS : int = 5
+const NUM_STARTING_ROOMS : int = 15
 
 # the actual path of rooms, in order
 var cur_path = []
@@ -194,7 +194,7 @@ func get_pos_just_ahead():
 	
 	for i in range(index+1, max_bound):
 		var ratio : float = 1.0 / float(i-index)
-		coming_positions += ratio * cur_path[i].rect.get_center()
+		coming_positions += ratio * cur_path[i].rect.get_real_center()
 		num_positions_considered += ratio
 	
 	coming_positions /= num_positions_considered

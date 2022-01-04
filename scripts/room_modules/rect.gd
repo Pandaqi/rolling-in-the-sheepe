@@ -53,7 +53,7 @@ func get_real_shrunk_size():
 func get_real_size():
 	return size*TILE_SIZE
 
-func get_center():
+func get_real_center():
 	return (pos + 0.5*size)*TILE_SIZE
 
 func get_longest_side():

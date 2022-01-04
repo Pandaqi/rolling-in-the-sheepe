@@ -39,6 +39,10 @@ func destroy():
 		body.shape_owner_remove_shape(0, 0)
 
 func create_new_from_shape_key(key : String):
+	var already_this_shape = (key == shape_type)
+	if already_this_shape: return
+	
+	GAudio.play_dynamic_sound(body, "plop_multiple")
 	create_new_from_shape(GDict.shape_list[key].points, { 'type': key })
 
 func create_new_from_shape(shp, params):
@@ -95,6 +99,7 @@ func create_random_shape():
 	return shape
 
 func reset_to_starting_shape():
+	GAudio.play_dynamic_sound(body, "plop_multiple")
 	create_new_from_shape_key(starting_shape)
 
 #####

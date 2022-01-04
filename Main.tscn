@@ -142,7 +142,7 @@ current = true
 limit_smoothed = true
 script = ExtResource( 4 )
 
-[node name="Map" type="Node" parent="."]
+[node name="Map" type="Node2D" parent="."]
 script = ExtResource( 5 )
 
 [node name="Terrain" type="Node" parent="Map"]
@@ -205,7 +205,7 @@ script = ExtResource( 17 )
 [node name="DynamicTutorial" type="Node" parent="Map"]
 script = ExtResource( 19 )
 
-[node name="LockModuleLayer" type="Node" parent="Map"]
+[node name="LockModuleLayer" type="Node2D" parent="Map"]
 
 [node name="PlayerManager" type="Node" parent="."]
 script = ExtResource( 7 )

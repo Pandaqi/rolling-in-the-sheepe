@@ -231,7 +231,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 
 func place_tutorial_custom(room, params):
 	var tut = tutorial_scene.instance()
-	tut.set_position(room.rect.get_center())
+	tut.set_position(room.rect.get_real_center())
 	tut.get_node("Sprite").set_frame(params.frame)
 	
 	map.add_child(tut)
@@ -246,7 +246,7 @@ func place_tutorial(room):
 	if not has_something_planned() and not self_placement: return
 	
 	var tut = tutorial_scene.instance()
-	tut.set_position(room.rect.get_center())
+	tut.set_position(room.rect.get_real_center())
 	
 	var frame = 0
 	if self_placement: frame = 38

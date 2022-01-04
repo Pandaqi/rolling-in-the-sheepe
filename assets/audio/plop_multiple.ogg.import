@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/plop_multiple.ogg-79f7e730534f75382de42e24eef89db2.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/plop_multiple.ogg"
+dest_files=[ "res://.import/plop_multiple.ogg-79f7e730534f75382de42e24eef89db2.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

@@ -30,7 +30,7 @@ func change_open_gates():
 	
 	var gate_to_open = randi() % my_gates.size()
 	
-	if gate_to_close: gate_to_close.close()
+	if gate_to_close: gate_to_close.close(true)
 	
 	open_gate = my_gates[gate_to_open]
-	open_gate.open()
+	open_gate.open(true)

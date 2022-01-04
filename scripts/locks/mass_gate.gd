@@ -12,5 +12,7 @@ func update_label():
 func on_body_enter(body):
 	.on_body_enter(body)
 	
+	on_progress()
+	
 	if my_room.entities.count() >= general_parameter:
 		delete()

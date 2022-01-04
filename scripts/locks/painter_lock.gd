@@ -1,6 +1,8 @@
 extends "res://scripts/locks/lock_general.gd"
 
 const MIN_PERCENTAGE_FILL : float = 0.995
+const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.1
+const MIN_DIST_BEFORE_AUDIO_FEEDBACK : float = 6.0
 const HOLE_SIZE = { 'min': 6, 'max': 24 }
 
 onready var canvas = $Canvas
@@ -119,6 +121,8 @@ func make_entities_paint():
 	return did_something
 
 func check_if_condition_fulfilled(first_check : bool = false):
+	var old_fill_percentage = fill_percentage
+	
 	fill_percentage = 0.0
 	for x in range(lowres_grid.size()):
 		for y in range(lowres_grid[0].size()):
@@ -135,6 +139,10 @@ func check_if_condition_fulfilled(first_check : bool = false):
 	
 	var success = fill_percentage >= MIN_PERCENTAGE_FILL
 	if sub_type == "erase" or sub_type == "holes": success = (fill_percentage < (1.0 - MIN_PERCENTAGE_FILL))
+	
+	if abs(old_fill_percentage - fill_percentage) > MIN_CHANGE_BEFORE_FEEDBACK:
+		on_progress()
+	
 	return success
 
 func update_canvas_mask():
@@ -173,6 +181,12 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 			lowres_grid[floored_pos.x][floored_pos.y] = val
 	
 	surface_image.unlock()
+	
+	# the only reason we keep track of last position and check all this
+	# is to prevent spawning audio feedback every goddamn frame we're painting
+	if (entity.get_global_position() - entity.map_painter.last_lock_paint_pos).length() > MIN_DIST_BEFORE_AUDIO_FEEDBACK:
+		GAudio.play_dynamic_sound(entity, "paint")
+		entity.map_painter.last_lock_paint_pos = entity.get_global_position()
 
 func out_of_mask_bounds(pos):
 	return pos.x < 0 or pos.x >= image_size.x or pos.y < 0 or pos.y >= image_size.y

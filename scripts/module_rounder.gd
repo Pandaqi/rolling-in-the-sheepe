@@ -97,6 +97,7 @@ func become_more_round_unrealistic():
 	
 	print("SHOULD BECOME MORE ROUND NOW 2")
 	
+	GAudio.play_dynamic_sound(body, "plop_single")
 	body.shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
 	
 	if feedback_enabled(): body.feedback.create_for_node(body, "+ Rounder!")
@@ -112,6 +113,7 @@ func become_more_malformed_unrealistic():
 	var new_shape_name = change_shape_index(-1)
 	var new_body = body.slicer.create_basic_body(body, new_shape_name)
 	
+	GAudio.play_dynamic_sound(body, "plop_single")
 	body.shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
 	
 	if feedback_enabled(): body.feedback.create_for_node(body, "- Sharper!")
@@ -119,11 +121,13 @@ func become_more_malformed_unrealistic():
 func make_fully_round():
 	var new_body = body.slicer.create_basic_body(body, "circle")
 	
+	GAudio.play_dynamic_sound(body, "plop_multiple")
 	body.shaper.create_new_from_shape(new_body, { 'type': "circle" })
 
 func make_fully_malformed():
 	var new_body = body.slicer.create_basic_body(body, "triangle")
 	
+	GAudio.play_dynamic_sound(body, "plop_multiple")
 	body.shaper.create_new_from_shape(new_body, { 'type': "triangle" })
 
 func get_next_index(val):

@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/login5.ogg-226ee6b852f746488560cc3792df7b78.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/login5.ogg"
+dest_files=[ "res://.import/login5.ogg-226ee6b852f746488560cc3792df7b78.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

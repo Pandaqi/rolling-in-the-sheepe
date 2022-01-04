@@ -30,10 +30,12 @@ func as_ratio():
 
 func get_paid(c):
 	num_coins = int(clamp(num_coins + c, 0, MAX_COINS))
+	if c > 0: GAudio.play_dynamic_sound(body, "coin")
 	show()
 
 func pay(c):
 	num_coins = int(clamp(num_coins - c, 0, MAX_COINS))
+	if c > 0: GAudio.play_dynamic_sound(body, "coin")
 	show()
 
 func pay_half():

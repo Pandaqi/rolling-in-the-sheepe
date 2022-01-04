@@ -6,6 +6,7 @@ var general_parameter
 var gate_type = ""
 
 onready var map = get_node("/root/Main/Map")
+onready var feedback = get_node("/root/Main/Feedback")
 
 signal delete()
 
@@ -44,10 +45,21 @@ func convert_connection_to_gate():
 			
 			print("An edge was succesfully linked")
 
+# NOTE: Audio system works from nodes, but we want to give it a _position_ for the sound,
+# so make a fake object for that
+func create_audio_obj():
+	return { 'global_position': my_room.rect.get_real_center() }
+
+func on_progress():
+	GAudio.play_dynamic_sound(create_audio_obj(), "lock_progress")
+
 func perform_update():
 	pass
 
 func delete():
+	feedback.create_at_pos(my_room.rect.get_real_center(), "Unlocked!")
+	GAudio.play_dynamic_sound(create_audio_obj(), "lock_unlocked")
+	
 	emit_signal("delete")
 	self.queue_free()
 	my_room.lock.remove_lock()

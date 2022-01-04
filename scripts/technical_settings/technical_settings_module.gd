@@ -51,9 +51,9 @@ func update_to_config():
 		cont.get_node(comp).pressed = val
 
 func _on_HSlider_value_changed(value):
-	if not G.is_mobile(): GAudio.play_static_sound("button")
+	if not G.is_mobile(): GAudio.play_static_sound("ui_selection_change")
 	GConfig.update_config_val({ "sec": sec, "name": nm}, value)
 
 func _on_Checkbox_toggled(button_pressed):
-	GAudio.play_static_sound("button")
+	GAudio.play_static_sound("ui_button_press")
 	GConfig.update_config_val({ "sec": sec, "name": nm}, button_pressed)

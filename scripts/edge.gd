@@ -36,13 +36,17 @@ func soft_lock():
 	modulate.a = 0.25
 	get_node("CollisionShape2D").one_way_collision = true
 
-func open():
+func open(sfx : bool = false):
 	collision_layer = 0
 	collision_mask = 0
 	modulate.a = 0.1
+	
+	if sfx: GAudio.play_dynamic_sound(self, "gate_open")
 
-func close():
+func close(sfx : bool = false):
 	collision_layer = col_layers
 	collision_mask = col_layers
 	get_node("CollisionShape2D").one_way_collision = false
 	modulate.a = 1.0
+	
+	if sfx: GAudio.play_dynamic_sound(self, "gate_close")

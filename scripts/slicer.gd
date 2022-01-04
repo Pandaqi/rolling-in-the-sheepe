@@ -155,6 +155,8 @@ func slice_body(b, p1, p2):
 	
 	# destroy the old body
 	feedback.create_for_node(b, "Slice!")
+	GAudio.play_dynamic_sound(b, "plop_multiple")
+	
 	b.status.delete()
 	
 	# create bodies for each set of points left over

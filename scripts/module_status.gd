@@ -16,13 +16,17 @@ var is_invincible : bool = false
 
 # Deletes the whole body, but not before (re)setting all sorts of other properties
 # that _should_ be properly reset
-func delete():
+func delete(part_of_slice : bool = true):
 	body.map.player_progression.on_body_removed(body)
 	body.player_manager.deregister_body(body)
 	
 	body.glue.disable_glue()
 	body.room_tracker.get_cur_room().entities.remove_player(body)
 	body.coins.delete()
+	
+	if not part_of_slice:
+		body.feedback.create_for_node(body, "Destroyed!")
+		GAudio.play_dynamic_sound(body, "non_slice_destroy")
 	
 	body.queue_free()
 
@@ -51,6 +55,7 @@ func modify_time_penalty(val):
 
 func make_ghost():
 	body.feedback.create_for_node(body, "Ghost!")
+	GAudio.play_dynamic_sound(body, "ghost")
 	
 	body.collision_layer = 0
 	body.collision_mask = 1
@@ -60,6 +65,7 @@ func make_ghost():
 # Layers 1 (2^0; all) and 3 (2^2; players)
 func undo_ghost():
 	body.feedback.create_for_node(body, "Unghosted!")
+	GAudio.play_dynamic_sound(body, "ghost")
 	
 	body.collision_layer = 1 + 4
 	body.collision_mask = 1 + 4
@@ -67,7 +73,9 @@ func undo_ghost():
 	body.modulate.a = 1.0
 
 func make_wolf():
-	if not is_wolf: body.feedback.create_for_node(body, "Wolf!")
+	if not is_wolf: 
+		body.feedback.create_for_node(body, "Wolf!")
+		GAudio.play_dynamic_sound(body, "wolf")
 	
 	is_wolf = true
 	body.face.make_wolf()
@@ -77,7 +85,9 @@ func make_wolf():
 		body.rounder.start_grow_mode("shrink")
 
 func make_sheep():
-	if is_wolf: body.feedback.create_for_node(body, "Sheep!")
+	if is_wolf: 
+		body.feedback.create_for_node(body, "Sheep!")
+		GAudio.play_dynamic_sound(body, "sheep")
 	
 	is_wolf = false
 	body.face.make_sheep()
@@ -94,9 +104,12 @@ func make_invincible(start_timer = true):
 		invincibility_timer.start()
 	else:
 		body.feedback.create_for_node(body, "Invincible!")
+		GAudio.play_dynamic_sound(body, "shield_start")
 
 func make_vincible(from_timer = false):
-	if not from_timer: body.feedback.create_for_node(body, "Not invincible!")
+	if not from_timer: 
+		body.feedback.create_for_node(body, "Not invincible!")
+		GAudio.play_dynamic_sound(body, "shield_end")
 	
 	is_invincible = false
 

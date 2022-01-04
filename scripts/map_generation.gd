@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 
 # basic world parameters
 const TILE_SIZE : float = 64.0

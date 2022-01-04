@@ -13,7 +13,7 @@ func activate():
 	hide()
 
 func _on_Main_open_settings():
-	GAudio.play_static_sound("button")
+	GAudio.play_static_sound("ui_button_press")
 	show()
 
 func _input(ev):
@@ -74,5 +74,5 @@ func create_interface():
 	cont.add_child(back_btn)
 
 func _on_Back_pressed():
-	GAudio.play_static_sound("button")
+	GAudio.play_static_sound("ui_button_press")
 	self.hide()

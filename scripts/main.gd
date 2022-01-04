@@ -21,15 +21,16 @@ func _ready():
 	player_manager.activate()
 	
 	game_start = OS.get_ticks_msec()
+	GAudio.play_static_sound("game_start")
 
 func _input(ev):
 	if not game_over_mode: return
 	
 	if ev.is_action_released("ui_restart"):
 # warning-ignore:return_value_discarded
-		get_tree().reload_current_scene()
+		G.restart()
 	elif ev.is_action_released("ui_exit"):
-		print("Should exit to menu")
+		G.back_to_menu()
 
 func show_game_over_screen():
 	var screen = game_over_screen.instance()
@@ -40,6 +41,7 @@ func show_game_over_screen():
 	screen.set_position(Vector2.ZERO)
 	
 	screen.populate(player_ranks, player_times)
+	GAudio.play_static_sound("game_start")
 
 func check_if_game_over():
 	if num_players_finished < GInput.get_player_count(): return

@@ -1,6 +1,7 @@
 extends RigidBody2D
 
 var teleport_pos : Vector2 = Vector2.ZERO
+var teleport_reason : String = ""
 var shoot_away_vec : Vector2 = Vector2.ZERO
 var contact_data = []
 var is_frozen : bool = false
@@ -49,6 +50,8 @@ func has_module(name : String):
 	return get(name) and is_instance_valid(get(name))
 
 func _integrate_forces(state):
+	var prev_contact_data = contact_data + []
+	
 	contact_data = []
 	for i in range(state.get_contact_count()):
 		var obj = {
@@ -60,6 +63,15 @@ func _integrate_forces(state):
 		var body_we_hit = obj.body
 		if body_we_hit.is_in_group("Players") and body_we_hit.is_frozen:
 			body_we_hit.unfreeze()
+		
+		var first_hit : bool = true
+		for c in prev_contact_data:
+			if c.body != body_we_hit: continue
+			first_hit = false
+			break
+		
+		if first_hit:
+			GAudio.play_dynamic_sound(self, "hit")
 		
 		contact_data.append(obj)
 	
@@ -80,7 +92,15 @@ func check_teleport(state):
 	if not teleport_pos: return
 	
 	state.transform.origin = teleport_pos
-	feedback.create_at_pos(teleport_pos, "Teleported!")
+	
+	var txt = teleport_reason
+	if txt == "": 
+		txt = "Teleported!"
+	else:
+		GAudio.play_dynamic_sound({ 'global_position': teleport_pos }, "teleport")
+	
+	
+	feedback.create_at_pos(teleport_pos, txt)
 	teleport_pos = Vector2.ZERO
 
 func check_shoot_away(_state):
@@ -89,9 +109,10 @@ func check_shoot_away(_state):
 	apply_central_impulse(shoot_away_vec * SHOOT_AWAY_FORCE)
 	shoot_away_vec = Vector2.ZERO
 
-func plan_teleport(pos):
+func plan_teleport(pos, reason : String = ""):
 	map.player_progression.on_player_teleported(self)
 	teleport_pos = pos
+	teleport_reason = reason
 
 func plan_shoot_away(vec):
 	shoot_away_vec = vec

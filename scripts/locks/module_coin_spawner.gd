@@ -38,6 +38,7 @@ func on_coin_grab(body, coin):
 	
 	body.coins.get_paid(1)
 	coins_grabbed += 1
+	my_lock.on_progress()
 	
 	if feedback_enabled:
 		my_lock.perform_update()

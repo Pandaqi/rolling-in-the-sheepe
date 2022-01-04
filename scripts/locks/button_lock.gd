@@ -20,6 +20,8 @@ func set_sub_type(tp):
 	sub_type = tp
 
 func record_button_push(item):
+	GAudio.play_dynamic_sound(item, "button")
+	
 	if sub_type == "order":
 		if item.general_parameter > buttons_pushed:
 			return false
@@ -32,6 +34,7 @@ func record_button_push(item):
 	elif sub_type == "timed":
 		map.special_elements.erase(item)
 	
+	on_progress()
 	buttons_pushed += 1
 	update_label()
 	check_if_condition_fulfilled()

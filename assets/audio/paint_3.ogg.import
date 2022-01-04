@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/paint_3.ogg-dee8e17b2c7b5f027592cf47362daa62.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/paint_3.ogg"
+dest_files=[ "res://.import/paint_3.ogg-dee8e17b2c7b5f027592cf47362daa62.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

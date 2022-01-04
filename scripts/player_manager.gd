@@ -3,12 +3,13 @@ extends Node
 export var is_menu : bool = false
 
 const MIN_DIST_BETWEEN_PLAYERS : float = 20.0
-const PREDEFINED_SHAPE_SCALE : float = 1.25
+const PREDEFINED_SHAPE_SCALE : float = 1.1
 
 var player_scene = preload("res://scenes/body.tscn")
 var menu_player_scene = preload("res://scenes/menu_body.tscn")
 
 onready var map = get_node("/root/Main/Map")
+onready var feedback = get_node("/root/Main/Feedback")
 
 var num_players : int = 0
 var player_colors = []
@@ -84,6 +85,10 @@ func create_player(player_num : int):
 	
 	player.status.set_shape_name(rand_shape)
 	player.status.set_player_num(player_num)
+	
+	if is_menu:
+		feedback.create_for_node(player, "Welcome!")
+		GAudio.play_dynamic_sound(player, "player_logged_in")
 
 func get_spread_out_position(room):
 	var start_pos = room.rect.get_real_pos()
@@ -126,7 +131,7 @@ func remove_furthest_body_of(p_num : int):
 		furthest_body = b
 		dist_in_room = my_dist
 	
-	furthest_body.status.delete()
+	furthest_body.status.delete(false)
 
 func closest_dist_to_player(pos):
 	var other_players = get_tree().get_nodes_in_group("Players")

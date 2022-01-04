@@ -1,5 +1,9 @@
 extends Node
 
+const MAX_DIST_2D : float = 2000.0
+const MAX_DIST_3D : float = 100.0
+
+var is_3D : bool = false
 
 var bg_audio = null
 var bg_audio_player
@@ -8,7 +12,75 @@ var active_players = []
 
 var bg_audio_preload = {}
 var audio_preload = {
+	# movement
+	"hit": [
+		preload("res://assets/audio/hit1.ogg"),
+		preload("res://assets/audio/hit2.ogg"),
+		preload("res://assets/audio/hit3.ogg"),
+		preload("res://assets/audio/hit4.ogg"),
+		preload("res://assets/audio/hit5.ogg")
+	],
+	"jump": preload("res://assets/audio/jump.ogg"),
+	"float": [
+		preload("res://assets/audio/whoosh_1.ogg"),
+		preload("res://assets/audio/whoosh_2.ogg"),
+		preload("res://assets/audio/whoosh_3.ogg")
+	],
 	
+	# game loop
+	"teleport": preload("res://assets/audio/teleport.ogg"),
+	"finish": preload("res://assets/audio/finish.ogg"),
+	"lock_unlocked": preload("res://assets/audio/lock_unlocked.ogg"),
+	"player_logged_in": [
+		preload("res://assets/audio/login1.ogg"),
+		preload("res://assets/audio/login2.ogg"),
+		preload("res://assets/audio/login3.ogg"),
+		preload("res://assets/audio/login4.ogg"),
+		preload("res://assets/audio/login5.ogg"),
+		preload("res://assets/audio/login6.ogg"),
+		preload("res://assets/audio/login7.ogg")
+	],
+	"game_start": preload("res://assets/audio/game_start.ogg"),
+	
+	# status
+	"plop_single": preload("res://assets/audio/plop_single.ogg"),
+	"plop_multiple": preload("res://assets/audio/plop_multiple.ogg"),
+	"ghost": preload("res://assets/audio/ghost.ogg"),
+	"wolf": preload("res://assets/audio/wolf.ogg"),
+	"sheep": preload("res://assets/audio/sheep.ogg"),
+	"shield_start": preload("res://assets/audio/shield_start.ogg"),
+	"shield_end": preload("res://assets/audio/shield_end.ogg"),
+	"non_slice_destroy": preload("res://assets/audio/non_slice_destroy.ogg"),
+	
+	# UI
+	"ui_button_press": preload("res://assets/audio/ui_button_press.ogg"),
+	"ui_selection_change": preload("res://assets/audio/ui_selection_change.ogg"),
+	
+	# locks
+	"lock_progress": preload("res://assets/audio/lock_progress.ogg"),
+	"button": [
+		preload("res://assets/audio/button_1.ogg"),
+		preload("res://assets/audio/button_2.ogg")
+	],
+	"coin": preload("res://assets/audio/coin.ogg"),
+	"paint": [
+		preload("res://assets/audio/paint_1.ogg"),
+		preload("res://assets/audio/paint_2.ogg"),
+		preload("res://assets/audio/paint_3.ogg"),
+		preload("res://assets/audio/paint_4.ogg"),
+		preload("res://assets/audio/paint_5.ogg")
+	],
+	"gate_close": preload("res://assets/audio/gate_close.ogg"),
+	"gate_open": preload("res://assets/audio/gate_open.ogg"),
+	
+	# terrains
+	"speedup": preload("res://assets/audio/battery_up.ogg"),
+	"slowdown": preload("res://assets/audio/battery_down.ogg"),
+	
+	# special tiles
+	"ice": preload("res://assets/audio/ice.ogg"),
+	"spiderman": preload("res://assets/audio/spiderman.ogg"),
+	"glue": preload("res://assets/audio/glue.ogg")
 }
 
 func _ready():
@@ -44,8 +116,12 @@ func create_audio_player(volume_alteration, bus : String = "FX", spatial : bool 
 	var audio_player
 	
 	if spatial:
-		audio_player = AudioStreamPlayer3D.new()
-		audio_player.unit_db = volume_alteration
+		if is_3D:
+			audio_player = AudioStreamPlayer3D.new()
+			audio_player.unit_db = volume_alteration
+		else:
+			audio_player = AudioStreamPlayer2D.new()
+			audio_player.volume_db = volume_alteration
 	else:
 		audio_player = AudioStreamPlayer.new()
 		audio_player.volume_db = volume_alteration
@@ -84,15 +160,14 @@ func play_dynamic_sound(creator, key, volume_alteration = 0, bus : String = "FX"
 	var pos = null
 	var max_dist = -1
 	if audio_player is AudioStreamPlayer2D:
-		max_dist = 2000
-		pos = creator.get_global_position()
+		max_dist = MAX_DIST_2D
+		pos = creator.global_position
 		audio_player.set_position(pos)
 	else:
-		max_dist = 100
-		pos = creator.get_translation()
+		max_dist = MAX_DIST_3D
+		audio_player.unit_size = max_dist
+		pos = creator.transform.origin
 		audio_player.set_translation(pos)
-		
-		audio_player.unit_size = 100
 
 	audio_player.max_distance = max_dist
 	audio_player.pitch_scale = 1.0 + 0.02*(randf()-0.5)

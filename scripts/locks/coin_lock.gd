@@ -12,7 +12,7 @@ func _ready():
 func perform_update():
 	var val = str(spawner.coins_grabbed) + "/" + str(coins_to_grab)
 	label.perform_update(val)
-	
+
 	check_if_condition_fulfilled()
 
 func check_if_condition_fulfilled():

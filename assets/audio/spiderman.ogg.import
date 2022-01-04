@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/spiderman.ogg-b859dd2dd35c8febec6614dab876d852.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/spiderman.ogg"
+dest_files=[ "res://.import/spiderman.ogg-b859dd2dd35c8febec6614dab876d852.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

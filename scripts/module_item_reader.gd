@@ -101,6 +101,8 @@ func turn_on_item(block, tp : String):
 		'ice': body.map_reader.do_ice()
 		'spiderman': body.map_reader.do_spiderman()
 		'glue': body.map_reader.do_glue()
+		'speedup': GAudio.play_dynamic_sound(body, "speedup")
+		'slowdown': GAudio.play_dynamic_sound(body, "slowdown")
 
 func turn_off_item(_block, tp : String):
 	if not body.map.special_elements.type_is_toggle(tp): return
@@ -172,6 +174,7 @@ func handle_item(obj):
 		
 		"trampoline":
 			var normal = obj.item.transform.x
+			GAudio.play_dynamic_sound(body, "jump")
 			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
 		
 		"breakable":
@@ -199,11 +202,11 @@ func handle_item(obj):
 		
 		"fast_forward":
 			var p = body.map.player_progression.get_leading_player()
-			body.plan_teleport(p.global_position)
+			body.plan_teleport(p.global_position, "To the front!")
 		
 		"fast_backward":
 			var p = body.map.player_progression.get_trailing_player()
-			body.plan_teleport(p.global_position)
+			body.plan_teleport(p.global_position, "To the back!")
 	
 	if prevent_deletion: return
 	

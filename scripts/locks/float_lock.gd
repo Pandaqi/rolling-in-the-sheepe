@@ -1,8 +1,10 @@
 extends "res://scripts/locks/lock_general.gd"
 
 const TARGET_TIME_BOUNDS = { 'min': 7, 'max': 16 }
+const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.1
 
 var time_spent_in_air : float = 0.0
+var prev_rounded_air_time : float
 var target_time : int = 0
 
 onready var label = $Label
@@ -23,4 +25,9 @@ func check_if_condition_fulfilled():
 
 func update_label():
 	var rounded_air_time = round(time_spent_in_air*10.0)/10.0
+	
+	if (rounded_air_time - prev_rounded_air_time) > MIN_CHANGE_BEFORE_FEEDBACK:
+		on_progress()
+	
 	label.perform_update(str(rounded_air_time) + "/" + str(target_time) + " s")
+	prev_rounded_air_time = rounded_air_time

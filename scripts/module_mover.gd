@@ -82,11 +82,16 @@ func _on_Input_move_right_released():
 	air_break = false
 
 func _on_Input_double_button():
+	jump()
+
+func jump():
 	air_break = false
 	last_input_time = OS.get_ticks_msec()
 	
 	var used_input_for_airbreak = (OS.get_ticks_msec() - air_break_start) > air_break_time_limit
 	if used_input_for_airbreak: return
+	
+	GAudio.play_dynamic_sound(body, "jump")
 	
 	# NOTE: It enables itself again after a (very) short period
 	body.clinger.disable()
@@ -125,6 +130,8 @@ func check_for_air_break():
 		
 		var new_x_vel = body.linear_velocity.x * (1.15 + abs(body.linear_velocity.y) / float(MAX_VELOCITY))
 		body.linear_velocity.x = clamp(new_x_vel, -MAX_VELOCITY, MAX_VELOCITY)
+		
+		GAudio.play_dynamic_sound(body, "float")
 	
 	body.gravity_scale = 0.0
 	body.linear_velocity.y = 0.0
@@ -140,7 +147,7 @@ func check_for_standstill():
 	if time_since_last_input <= STANDSTILL_THRESHOLD: return
 	
 	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT)
-	body.plan_teleport(body.map_reader.get_forward_boost_pos())
+	body.plan_teleport(body.map_reader.get_forward_boost_pos(), "Stood still too long!")
 	
 	# NOTE: important, otherwise it keeps endlessly teleporting of course!
 	last_input_time = cur_time

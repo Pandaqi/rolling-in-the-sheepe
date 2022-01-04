@@ -5,6 +5,8 @@ const MIN_DIST_BETWEEN_PAINTS : float = 15.0
 var last_paint_pos : Vector2
 var disable_paint : bool = false
 
+var last_lock_paint_pos : Vector2 = Vector2.ZERO
+
 onready var body = get_parent()
 
 func _physics_process(_dt):

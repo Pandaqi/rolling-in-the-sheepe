@@ -22,7 +22,7 @@ func change_state():
 		
 		for gate in my_room.lock.gates:
 			print("CLOSING ALL GATES")
-			gate.close()
+			gate.close(true)
 	
 	elif cur_mode == "closed":
 		cur_mode = "open"
@@ -30,7 +30,7 @@ func change_state():
 		
 		for gate in my_room.lock.gates:
 			print("OPENING ALL GATES")
-			gate.open()
+			gate.open(true)
 
 	timer.wait_time = rand_range(timer_bounds.min, timer_bounds.max)
 	timer.start()
