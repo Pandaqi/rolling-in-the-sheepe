@@ -10,6 +10,7 @@ var map = []
 
 # global modules
 onready var particles = get_node("../Particles")
+onready var player_manager = get_node("../PlayerManager")
 
 # my own modules
 onready var tilemap = $TileMap
@@ -245,3 +246,10 @@ func is_empty(pos):
 	if out_of_bounds(pos): return false
 	if not get_room_at(pos): return false
 	return true
+
+func destroy_nodes_at_cell(pos : Vector2):
+	var bodies = get_tree().get_nodes_in_group("Players")
+	for b in bodies:
+		var grid_pos = (b.global_position / TILE_SIZE).floor()
+		if (grid_pos - pos).length() <= 0.03:
+			b.status.delete(false)

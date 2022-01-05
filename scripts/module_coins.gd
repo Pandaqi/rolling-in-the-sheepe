@@ -30,13 +30,17 @@ func as_ratio():
 
 func get_paid(c):
 	num_coins = int(clamp(num_coins + c, 0, MAX_COINS))
-	if c > 0: GAudio.play_dynamic_sound(body, "coin")
+	if c > 0: execute_polish_effects()
 	show()
 
 func pay(c):
 	num_coins = int(clamp(num_coins - c, 0, MAX_COINS))
-	if c > 0: GAudio.play_dynamic_sound(body, "coin")
+	if c > 0: execute_polish_effects()
 	show()
+
+func execute_polish_effects():
+	body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'coin' })
+	GAudio.play_dynamic_sound(body, "coin")
 
 func pay_half():
 	pay(round(0.5*num_coins))

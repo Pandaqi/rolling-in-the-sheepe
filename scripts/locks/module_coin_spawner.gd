@@ -1,6 +1,6 @@
 extends Node2D
 
-const MAX_COINS : int = 4
+const MAX_COINS : int = 3
 var coins = []
 
 var coins_grabbed : int = 0
@@ -32,6 +32,7 @@ func place_coin():
 
 func on_coin_grab(body, coin):
 	if not body.is_in_group("Players"): return
+	if not coin in coins: return
 	
 	coins.erase(coin)
 	coin.queue_free()

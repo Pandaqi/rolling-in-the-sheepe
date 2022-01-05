@@ -68,6 +68,17 @@ func remove_border_around_us():
 	for edge in outline:
 		parent.map.edges.remove_at(edge.pos, edge.dir_index)
 
+func turn_border_into_soft_border():
+	for edge in outline:
+		var soft_remove = true
+		var other_side = edge_links_to(edge)
+		if other_side:
+			var they_are_later = other_side.route.index > parent.route.index
+			if they_are_later:
+				soft_remove = false
+		
+		parent.map.edges.remove_at(edge.pos, edge.dir_index, soft_remove)
+
 func edge_links_to(edge):
 	var opposite_grid_pos = edge.pos + parent.map.get_vector_from_dir(edge.dir_index)
 	if parent.map.out_of_bounds(opposite_grid_pos): return null

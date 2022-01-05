@@ -184,9 +184,11 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 	
 	# the only reason we keep track of last position and check all this
 	# is to prevent spawning audio feedback every goddamn frame we're painting
-	if (entity.get_global_position() - entity.map_painter.last_lock_paint_pos).length() > MIN_DIST_BEFORE_AUDIO_FEEDBACK:
-		GAudio.play_dynamic_sound(entity, "paint")
-		entity.map_painter.last_lock_paint_pos = entity.get_global_position()
+	if entity:
+		var last_feedback_was_long_ago = (entity.get_global_position() - entity.map_painter.last_lock_paint_pos).length() > MIN_DIST_BEFORE_AUDIO_FEEDBACK
+		if last_feedback_was_long_ago:
+			GAudio.play_dynamic_sound(entity, "paint")
+			entity.map_painter.last_lock_paint_pos = entity.get_global_position()
 
 func out_of_mask_bounds(pos):
 	return pos.x < 0 or pos.x >= image_size.x or pos.y < 0 or pos.y >= image_size.y

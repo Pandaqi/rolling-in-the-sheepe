@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scenes/body_modules/status.tscn" type="PackedScene" id=2]
@@ -11,10 +11,9 @@
 [ext_resource path="res://scripts/module_glue.gd" type="Script" id=9]
 [ext_resource path="res://scenes/body_modules/shaper.tscn" type="PackedScene" id=10]
 [ext_resource path="res://scenes/body_modules/face.tscn" type="PackedScene" id=11]
-[ext_resource path="res://scripts/module_drawer.gd" type="Script" id=12]
+[ext_resource path="res://scenes/body_modules/drawer.tscn" type="PackedScene" id=12]
 [ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
-[ext_resource path="res://scripts/module_actual_drawer.gd" type="Script" id=14]
-[ext_resource path="res://scenes/particles/move_trail.tscn" type="PackedScene" id=15]
+[ext_resource path="res://scenes/body_modules/particles.tscn" type="PackedScene" id=14]
 [ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
 [ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
 [ext_resource path="res://scripts/module_coins.gd" type="Script" id=19]
@@ -46,13 +45,7 @@ script = ExtResource( 13 )
 
 [node name="Shaper" parent="." instance=ExtResource( 10 )]
 
-[node name="Drawer" type="Node2D" parent="."]
-script = ExtResource( 12 )
-
-[node name="ActualDrawer" type="Node2D" parent="Drawer"]
-script = ExtResource( 14 )
-
-[node name="Tween" type="Tween" parent="Drawer"]
+[node name="Drawer" parent="." instance=ExtResource( 12 )]
 
 [node name="Input" type="Node" parent="."]
 script = ExtResource( 1 )
@@ -114,10 +107,7 @@ script = ExtResource( 5 )
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Magnet/Area2D"]
 shape = SubResource( 2 )
 
-[node name="Particles" type="Node2D" parent="."]
-show_behind_parent = true
-
-[node name="Particles2D" parent="Particles" instance=ExtResource( 15 )]
+[node name="Particles" parent="." instance=ExtResource( 14 )]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]

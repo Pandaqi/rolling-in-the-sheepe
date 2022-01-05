@@ -4,6 +4,7 @@ const MIN_AREA_FOR_VALID_SHAPE : float = 150.0
 const MIN_SIZE_PER_SIDE : float = 3.0 # TO DO: need to fix this anyway
 
 onready var map = get_node("/root/Main/Map")
+onready var particles = get_node("/root/Main/Particles")
 onready var feedback = get_node("/root/Main/Feedback")
 onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var player_progression = get_node("/root/Main/Map/PlayerProgression")
@@ -78,6 +79,7 @@ func create_basic_body(b, type, shrinker : float = 1.0):
 func slice_body(b, p1, p2):
 	var original_player_num = b.status.player_num
 	var original_coins = b.coins.count()
+	var original_position = b.global_position
 	
 	var player_is_at_body_limit = (player_manager.count_bodies_of_player(original_player_num) >= GDict.cfg.max_bodies_per_player)
 	if player_is_at_body_limit: 
@@ -147,6 +149,8 @@ func slice_body(b, p1, p2):
 			slice_too_small = true
 			break
 	
+	# NOTE: if it's too small, the slice simply DOES NOT HAPPEN at all
+	# (Original body isn't deleted, new ones aren't added)
 	if slice_too_small:
 		print("Slicing returned a body too small")
 		return
@@ -155,6 +159,7 @@ func slice_body(b, p1, p2):
 	feedback.create_for_node(b, "Slice!")
 	GAudio.play_dynamic_sound(b, "plop_multiple")
 	GAudio.play_dynamic_sound(b, "slice")
+	particles.create_at_pos(original_position, "general_powerup", { 'subtype': 'knife' })
 	
 	b.status.delete()
 	

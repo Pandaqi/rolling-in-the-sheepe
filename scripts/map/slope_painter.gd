@@ -43,15 +43,17 @@ func recalculate_room(room):
 		if placement_allowed(temp_pos, room): continue
 		
 		map.change_cell(temp_pos, -1)
-	
-	print("UPDATING BITMASK FOR ROOM")
-	print(room.is_finish)
-	
+
 	map.update_bitmask_from_room(room)
 
 ####
 # Islands
 ####
+func clear_room(room):
+	var positions = room.rect.shrunk_positions
+	for pos in positions:
+		map.change_cell(pos, -1)
+
 func fill_room(room):
 	if not room: return
 	if room.route.index <= 0: return
@@ -63,7 +65,8 @@ func fill_room(room):
 	if shrunk.size.x < 3 or shrunk.size.y < 3: return
 	
 	var area = rect.get_area()
-	var num_islands = area
+	var ROOM_FILL_PERCENTAGE : float = 0.5
+	var num_islands = ROOM_FILL_PERCENTAGE * area
 	
 	for _i in range(num_islands):
 		var rand_pos = shrunk.pos+Vector2(1,1) + (Vector2(randf(), randf()) * (shrunk.size-Vector2(1,1)*2)).floor()
@@ -74,7 +77,6 @@ func fill_room(room):
 ####
 # Slopes
 ####
-
 func get_slopes(room):
 	var slopes_created = []
 	

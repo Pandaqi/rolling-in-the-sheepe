@@ -9,6 +9,7 @@ var player_scene = preload("res://scenes/body.tscn")
 var menu_player_scene = preload("res://scenes/menu_body.tscn")
 
 onready var map = get_node("/root/Main/Map")
+onready var particles = get_node("/root/Main/Particles")
 onready var feedback = get_node("/root/Main/Feedback")
 
 var num_players : int = 0
@@ -89,10 +90,11 @@ func create_player(player_num : int):
 	if is_menu:
 		feedback.create_for_node(player, "Welcome!")
 		GAudio.play_dynamic_sound(player, "player_logged_in")
+		particles.create_at_pos(start_pos, "general_powerup", { 'subtype': 'welcome' })
 
 func get_spread_out_position(room):
-	var start_pos = room.rect.get_real_pos()
-	var max_dist = room.rect.get_real_size()
+	var start_pos = room.rect.get_real_shrunk_pos()
+	var max_dist = room.rect.get_real_shrunk_size()
 	
 	var bad_choice = true
 	var pos

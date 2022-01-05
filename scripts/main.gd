@@ -3,6 +3,7 @@ extends Node2D
 onready var map = $Map
 onready var player_manager = $PlayerManager
 onready var gui = $GUI
+onready var solo_mode = $SoloMode
 
 var game_over_screen = preload("res://scenes/ui/game_over_screen.tscn")
 
@@ -19,6 +20,7 @@ var game_over_mode : bool = false
 func _ready():
 	map.generate()
 	player_manager.activate()
+	solo_mode.activate()
 	
 	game_start = OS.get_ticks_msec()
 	GAudio.play_static_sound("game_start")

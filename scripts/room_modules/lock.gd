@@ -26,8 +26,10 @@ func has_lock():
 
 # Returns whether it was a SUCCESS or a FAIL
 # (if a fail, we don't definitively set it, so the algorithm will keep trying on subsequent rooms)
-func add_lock() -> bool:
+func add_lock(forced_type : String = "") -> bool:
 	var rand_type = parent.map.dynamic_tutorial.get_random('lock', parent)
+	if forced_type != "": rand_type = forced_type
+	
 	var data = GDict.lock_types[rand_type]
 	
 	# some locks have many different (similar) variants, 
@@ -50,8 +52,10 @@ func add_lock() -> bool:
 		return false
 	
 	var related_edge = "regular"
-	if data.has("edge_type"): related_edge = data.edge_type
-	if GDict.edge_types[related_edge].has("gate"): scene.gate_type = related_edge
+	if data.has("edge_type"): 
+		related_edge = data.edge_type
+	if GDict.edge_types[related_edge].has("gate"): 
+		scene.gate_type = related_edge
 	parent.outline.create_border_around_us({ 'type': related_edge })
 	
 	var related_terrain = data.terrain
@@ -63,24 +67,25 @@ func add_lock() -> bool:
 	print("Should add lock now")
 	return true
 
-func remove_lock():
-	parent.outline.remove_border_around_us()
+func remove_lock(hard_remove : bool = false):
+	if hard_remove:
+		parent.outline.remove_border_around_us()
+	else:
+		parent.outline.turn_border_into_soft_border()
+	
 	lock_module = null
 	
 	print("Should remove lock now")
 
-# TO DO: Merge with the general "add_lock" function?
 func add_teleporter():
-	remove_lock()
-	
-	lock_module = load("res://scenes/locks/teleporter.tscn").instance()
-	lock_module.my_room = parent
-	parent.map.lock_module_layer.add_child(lock_module)
-	
-	parent.map.terrain.paint(parent, "teleporter")
+	# first remove any previous lock that might have been here
+	# (a HARD remove)
+	remove_lock(true)
 	
 	# this basically just blows away any edges that might obstruct passage towards this
 	parent.outline.create_border_around_us({ 'open_all_linked_edges': true })
+	
+	add_lock("teleporter")
 
 func recalculate_gates():
 	if not has_lock(): return

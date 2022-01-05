@@ -51,19 +51,15 @@ func do_effect_of_cell(cell):
 	if not terrain: return
 	
 	body.map.terrain.someone_entered(body, terrain)
+
+	var room = body.room_tracker.get_room_after_forced_update()
 	
-	# TO DO: not necessarily correct; might take a frame to update
-	# better to use => cell.room?
-	var room = body.room_tracker.get_cur_room()
-	
+	# NOTE: Do _not_ try to access locks here, as there are timing issues
+	# (the terrain is entered before it's update the room above (to the correct, new one)
 	match terrain:
 		"finish":
 			finish()
-	
-		"teleporter":
-			room = body.room_tracker.get_room_after_forced_update()
-			room.lock_module.register_player(body)
-		
+
 		"reverse_gravity":
 			body.mover.gravity_dir = -1
 		
@@ -95,7 +91,7 @@ func do_effect_of_cell(cell):
 			body.input.reverse = true
 		
 		"spikes":
-			body.glue.spikes_active = true
+			do_spikes()
 		
 		"ghost":
 			body.status.make_ghost()
@@ -118,6 +114,8 @@ func do_effect_of_cell(cell):
 		"invincibility":
 			if body.coins.count() >= MIN_COIN_LIMIT:
 				body.status.make_invincible(false) # start no timer, so invincibility is "permanent" while in terrain
+			else:
+				body.feedback.create_for_node(body, "More coins?")
 		
 		"rounder":
 			if body.coins.count() >= MIN_COIN_LIMIT:
@@ -153,9 +151,6 @@ func undo_effect_of_cell(cell):
 	var room = body.map.get_room_at(cell.pos)
 	
 	match terrain:
-		"teleporter":
-			room.lock_module.deregister_player(body)
-		
 		"reverse_gravity":
 			body.mover.gravity_dir = 1
 		
@@ -185,7 +180,7 @@ func undo_effect_of_cell(cell):
 			body.input.reverse = false
 		
 		"spikes":
-			body.glue.spikes_active = false
+			undo_spikes()
 		
 		"ghost":
 			body.status.undo_ghost()
@@ -230,10 +225,20 @@ func undo_spiderman():
 
 func do_glue():
 	body.glue.glue_active = true
+	body.particles.create_ring("glue")
 	GAudio.play_dynamic_sound(body, "glue")
 
 func undo_glue():
 	body.glue.glue_active = false
+	body.particles.remove_ring()
+
+func do_spikes():
+	body.glue.spikes_active = true
+	body.particles.create_ring("spikes")
+
+func undo_spikes():
+	body.glue.spikes_active = false
+	body.particles.remove_ring()
 
 #
 # Misc
@@ -243,6 +248,7 @@ func finish():
 	
 	body.feedback.create_for_node(body, "Finished!")
 	GAudio.play_dynamic_sound(body, "finish")
+	body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'finish' })
 	
 	body.status.has_finished = true
 	body.status.make_ghost()
@@ -307,8 +313,7 @@ func get_forward_boost_pos(pick_next_best_player = false):
 		target_room = next_player.room_tracker.get_cur_room()
 	else:
 		var cur_room_index = body.room_tracker.get_cur_room().route.index
-		var target_room_index = (cur_room_index + 1)
-		target_room = body.map.route_generator.cur_path[target_room_index]
+		target_room = body.map.route_generator.get_offset_from(cur_room_index, 1)
 	
 	return body.player_manager.get_spread_out_position(target_room)
 

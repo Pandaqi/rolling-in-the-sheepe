@@ -2,7 +2,7 @@ extends Node
 
 const DIST_BEFORE_PLACING_TELEPORTER : int = 4
 
-const MAX_BACKTRACK_ROOMS : int = 10
+const MAX_BACKTRACK_ROOMS : int = 7
 
 # [0,1] => 0 = only largest rooms possible, 1 = only smallest rooms posible
 const ROUTE_TIGHTNESS : float = 0.4
@@ -91,7 +91,7 @@ func set_wanted_room_parameters(params):
 	if params.prev_room and params.prev_room.lock.has_lock_or_planned():
 		params.place_lock = false
 	
-	# EXCEPTION: in tutorial, we delay locks until we've explained them
+	# EXCEPTION: in tutorial course, we delay locks until we've explained them
 	if tutorial_course and not tutorial_course.can_place_locks:
 		params.place_lock = false
 	
@@ -115,7 +115,11 @@ func set_wanted_room_parameters(params):
 	params.no_valid_placement = false
 
 func backtrack_and_find_good_room(params):
+	print("ABOUT TO BACKTRACK")
+	
 	if not params.prev_room: return # no previous room? no need to do all this
+	
+	print("ACTUALLY BACKTRACKED")
 	
 	var found_something = false
 	for i in range(MAX_BACKTRACK_ROOMS):
@@ -128,15 +132,18 @@ func backtrack_and_find_good_room(params):
 		params.new_room.rect.update_from(new_rect)
 		break
 	
-	if not found_something:
-		params.no_valid_placement = true
+	params.no_valid_placement = (not found_something)
 
 func place_teleporter_if_stuck(params):
 	if not params.no_valid_placement: return false
 	
-	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
+#	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
+#	if not should_place_teleporter: return false
 	
-	if not should_place_teleporter: return false
+	print("TELEPORTER PLACED (because stuck)")
+	
+	# destroy the bad room we ended up not using
+	params.new_room.queue_free()
 	
 	route_generator.pause_room_generation = true
 	route_generator.get_furthest_room().turn_into_teleporter()
@@ -192,6 +199,9 @@ func find_valid_configuration_better(params):
 		for d in map.dir_indices_to_bounds(last_pos, total_max_room_size):
 			preferred_dir_order.erase(d)
 	
+	# UPGRADE: sneak peeks (explained further below)
+	var allow_sneak_rooms = GDict.cfg.route_generation_sneak_improvement
+	
 	# EXCEPTION: tutorial wants to stay simple, so no upward
 	if use_simple_generation:
 		preferred_dir_order.erase(3)
@@ -217,7 +227,7 @@ func find_valid_configuration_better(params):
 			sneak_room.pos -= Vector2(0, max_room_size.y)
 		
 		sneak_room.pos += get_random_displacement(last_size, max_room_size, params.dir)
-		if not route_generator.room_rect_overlaps_path(sneak_room, params):
+		if allow_sneak_rooms and (not route_generator.room_rect_overlaps_path(sneak_room, params)):
 			return sneak_room
 		
 		# start with all possible 1x1 rooms
@@ -279,6 +289,9 @@ func find_valid_configuration_better(params):
 					rooms_to_check.append({ 'pos': room.pos - Vector2(1,0), 'size': room.size + Vector2(1,0) })
 		
 		if valid_rooms.size() <= 0: continue
+		
+		print("NUM VALID ROOMS")
+		print(valid_rooms.size())
 		
 		# pick randomly from the LAST part of the array, as those are the BIGGER rooms, and then we're done
 		var min_index = new_size_level_index

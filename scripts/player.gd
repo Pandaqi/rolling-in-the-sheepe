@@ -53,6 +53,10 @@ func has_module(name : String):
 	return get(name) and is_instance_valid(get(name))
 
 func _integrate_forces(state):
+	check_shoot_away(state)
+	var res = check_teleport(state)
+	if res: return
+	
 	var prev_contact_data = contact_data + []
 	
 	contact_data = []
@@ -80,9 +84,6 @@ func _integrate_forces(state):
 			GAudio.play_dynamic_sound(self, "hit")
 		
 		contact_data.append(obj)
-	
-	check_shoot_away(state)
-	check_teleport(state)
 
 func freeze():
 	is_frozen = true
@@ -99,7 +100,7 @@ func unfreeze():
 	modulate = Color(1,1,1)
 
 func check_teleport(state):
-	if not teleport_pos: return
+	if not teleport_pos: return false
 	
 	state.transform.origin = teleport_pos
 	
@@ -111,8 +112,11 @@ func check_teleport(state):
 	if special_teleport:
 		GAudio.play_dynamic_sound({ 'global_position': teleport_pos }, "teleport")
 	
+	main_particles.create_at_pos(teleport_pos, "general_powerup", { 'subtype': 'teleport' })
 	feedback.create_at_pos(teleport_pos, txt)
 	teleport_pos = Vector2.ZERO
+	
+	return true
 
 func check_shoot_away(_state):
 	if not shoot_away_vec: return

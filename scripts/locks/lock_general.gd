@@ -17,7 +17,7 @@ func link_to_room(params):
 		coin_related = params.coin_related
 
 func on_body_enter(body):
-	if coin_related: body.coins.show()
+	if coin_related: body.get_node("Coins").show()
 
 func on_body_exit(body):
 	pass

@@ -11,14 +11,11 @@ var wanted_trailing_player = null
 var time_since_leader_switch : float = -1
 var time_since_trail_switch : float = -1
 
-var solo_mode : bool = false
 var wolf_disabled : bool = false
 
+onready var solo_mode = get_node("/root/Main/SoloMode")
 onready var route_generator = get_node("../RouteGenerator")
 onready var room_picker = get_node("../RoomPicker")
-
-func _ready():
-	solo_mode = (GInput.get_player_count() == 1)
 
 func _physics_process(_dt):
 	determine_leading_and_trailing_player()
@@ -86,8 +83,8 @@ func determine_leading_and_trailing_player():
 #
 # Helpers/Queries
 #
-func get_distance_to_generation_end():
-	if not has_leading_player(): return
+func get_distance_to_generation_end() -> int:
+	if not has_leading_player(): return 0
 	
 	var index = leading_player.room_tracker.get_cur_room().route.index
 	return (route_generator.cur_path.size() - index)
@@ -96,7 +93,7 @@ func get_distance_to_generation_end():
 # Wolf handling
 #
 func check_wolf():
-	if solo_mode: return
+	if solo_mode.is_active(): return
 	
 	if not has_trailing_player(): return
 	if room_picker.has_tutorial() and not room_picker.tutorial_course.wolf_active: return

@@ -95,7 +95,7 @@ func turn_on_item(block, tp : String):
 	
 	match tp:
 		'ghost': body.status.make_ghost()
-		'shield': body.status.make_invincible()
+		'shield': body.status.make_invincible(false)
 		'rounder': body.rounder.enable_fast_mode('round')
 		'sharper': body.rounder.enable_fast_mode('sharp')
 		'ice': body.map_reader.do_ice()
@@ -109,7 +109,7 @@ func turn_off_item(_block, tp : String):
 	
 	match tp:
 		'ghost': body.status.undo_ghost()
-		'shield': body.status.make_vincible()
+		'shield': body.status.make_vincible(false)
 		'rounder': body.rounder.disable_fast_mode()
 		'sharper': body.rounder.disable_fast_mode()
 		'ice': body.map_reader.undo_ice()

@@ -7,7 +7,8 @@ const NUM_ROOMS_BACK_BUFFER : int = 4
 const NUM_ROOMS_FRONT_BUFFER : int = 25
 
 # with how many pre-created rooms we start each game
-const NUM_STARTING_ROOMS : int = 15
+# Real value should be 10-15
+const NUM_STARTING_ROOMS : int = 10
 
 # the actual path of rooms, in order
 var cur_path = []
@@ -21,7 +22,7 @@ var has_finished : bool = false
 # another tracker for when to place locks
 var rooms_in_current_section : int = 0
 var rooms_until_section_end : int = 0
-var section_size_bounds : Vector2 = Vector2(30, 60) #Vector2(10, 20) 
+var section_size_bounds : Vector2 = Vector2(40, 70) #Vector2(10, 20) 
 
 # room generation is only paused when a teleporter has been placed
 # (and we CAN'T continue, even if we wanted to
@@ -33,6 +34,7 @@ onready var player_progression = get_node("../PlayerProgression")
 onready var edges = get_node("../Edges")
 onready var mask_painter = get_node("../MaskPainter")
 onready var dynamic_tutorial = get_node("../DynamicTutorial")
+onready var solo_mode = get_node("/root/Main/SoloMode")
 
 var create_phase : bool = false
 
@@ -77,6 +79,7 @@ func check_for_new_room():
 
 func check_for_old_room_deletion():
 	if not player_progression.has_trailing_player(): return
+	if solo_mode.is_active(): return
 	
 	var trail = player_progression.get_trailing_player()
 	var index = trail.room_tracker.get_cur_room().route.index
@@ -87,12 +90,17 @@ func check_for_old_room_deletion():
 		delete_oldest_room()
 
 func delete_oldest_room():
+	print("DELETING OLDEST ROOM")
+	
 	cur_path.pop_front().delete()
+	
+	print(cur_path)
 	
 	# update the index of all surviving rooms
 	# (should be lowered by exactly one, for all)
 	for i in range(cur_path.size()):
 		cur_path[i].route.set_index(i)
+		
 
 #
 # Extra helpers for related situations (such as "clear map => delete all rooms")
@@ -159,11 +167,19 @@ func get_furthest_room():
 	if cur_path.size() == 0: return null
 	return cur_path[cur_path.size()-1]
 
+func get_oldest_room():
+	if cur_path.size() <= 0: return null
+	return cur_path[0]
+
 func get_path_from_front(offset : int = 0):
 	var index = cur_path.size() - 1 - offset
 	if index < 0: return null
 	
 	return cur_path[index]
+
+func get_offset_from(start, offset : int):
+	var target = clamp(start + offset, 0, cur_path.size())
+	return cur_path[target]
 
 func get_average_room_size_over_last(offset : int):
 	var start = max(cur_path.size() - offset, 0)

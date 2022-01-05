@@ -58,7 +58,7 @@ func eat_and_grow_object(obj):
 	
 	obj.body.status.delete()
 	
-	var grow_ratio = 2.0 * (our_area / their_area - 1.0)
+	var grow_ratio = (our_area + their_area) / their_area
 	body.rounder.grow(grow_ratio)
 
 func glue_object_to_me(obj):

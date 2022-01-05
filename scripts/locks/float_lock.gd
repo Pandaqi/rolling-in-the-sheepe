@@ -1,7 +1,7 @@
 extends "res://scripts/locks/lock_general.gd"
 
 const TARGET_TIME_BOUNDS = { 'min': 7, 'max': 16 }
-const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.1
+const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.375
 
 var time_spent_in_air : float = 0.0
 var prev_rounded_air_time : float
@@ -14,9 +14,11 @@ func _ready():
 	update_label()
 
 func _physics_process(dt):
-	for entity in my_room.entities.get_them():
+	var ents = my_room.entities.get_them()
+	for entity in ents:
 		if entity.mover.in_air: time_spent_in_air += dt
 	
+	if ents.size() > 0: update_label()
 	check_if_condition_fulfilled()
 
 func check_if_condition_fulfilled():

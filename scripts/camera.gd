@@ -5,6 +5,8 @@ const MAX_ZOOM : float = 4.0
 
 const ZOOM_MARGIN : Vector2 = Vector2(100.0, 100.0)
 
+var debug_zoom_out : bool = false
+
 var players
 onready var map = get_node("/root/Main/Map")
 onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
@@ -79,5 +81,8 @@ func zoom_to_show_all_players(dt):
 	
 	var zoom_val = max(x_zoom, y_zoom)
 	var final_zoom = Vector2(1,1)*clamp(zoom_val, MIN_ZOOM, MAX_ZOOM)
+	
+	if debug_zoom_out:
+		final_zoom = Vector2.ONE * 5
 	
 	zoom = lerp(zoom, final_zoom, 5*dt)

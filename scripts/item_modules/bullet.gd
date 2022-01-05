@@ -21,7 +21,7 @@ func _on_Area2D_body_entered(body):
 	if not body.is_in_group("Players"): return
 	if body.status.is_invincible: return
 	
-	GAudio.play_dynamic_sound(barrel_tip, "bullet_hit")
+	GAudio.play_dynamic_sound(body, "bullet_hit")
 	body.glue.call_deferreed("slice_along_halfway_line")
 	body.coins.pay_half()
 	

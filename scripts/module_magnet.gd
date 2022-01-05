@@ -10,10 +10,13 @@ onready var body = get_parent()
 
 func activate():
 	GAudio.play_dynamic_sound(body, "magnet")
+	body.particles.create_ring("magnet")
+	
 	active = true
 
 func deactivate():
 	GAudio.play_dynamic_sound(body, "magnet")
+	body.particles.remove_ring()
 	active = false
 
 func _physics_process(_dt):

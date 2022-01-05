@@ -170,6 +170,7 @@ func on_shape_updated():
 	body.get_node("Drawer").update_shape()
 	recalculate_bounding_box() 
 	recalculate_area()
+	body.get_node("Particles").update_radius(approximate_radius())
 	body.get_node("Face").update_size(bounding_box)
 
 #####

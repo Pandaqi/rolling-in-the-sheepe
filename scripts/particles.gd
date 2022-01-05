@@ -6,7 +6,8 @@ onready var map = get_node("../Map")
 
 var preloads = {
 	'small_puff': preload("res://scenes/particles/small_puff.tscn"),
-	'explosion': preload("res://scenes/particles/explosion.tscn")
+	'explosion': preload("res://scenes/particles/explosion.tscn"),
+	'general_powerup': preload("res://scenes/particles/general_powerup.tscn")
 }
 
 func create_at_pos(pos : Vector2, type : String, params : Dictionary = {}):
@@ -16,7 +17,13 @@ func create_at_pos(pos : Vector2, type : String, params : Dictionary = {}):
 	if params.has('match_orientation'):
 		p.set_rotation(params.match_orientation.angle())
 	
-	if randf() <= BEHIND_PLAYER_PROB:
+	var place_behind = (randf() <= BEHIND_PLAYER_PROB) or (params.has("place_behind") and not params.has("place_front"))
+	
+	if params.has('subtype'):
+		var texture_key = "res://assets/particles/particle_" + params.subtype + ".png"
+		p.get_node("Particles2D").texture = load(texture_key)
+	
+	if place_behind:
 		map.bg_layer.add_child(p)
 	else:
 		add_child(p)

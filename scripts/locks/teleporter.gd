@@ -1,13 +1,8 @@
-extends Node2D
+extends "res://scripts/locks/lock_general.gd"
 
+const BUFFER_AFTER_TELEPORT : int = 6
 const TIME_PENALTY_FOR_MISSING_TELEPORT : float = 10.0
 const MIN_DIST_TO_NEW_ROOM = 10 # in terms of grid tiles, Manhattan distance radius
-
-onready var player_manager = get_node("/root/Main/PlayerManager")
-onready var map = get_node("/root/Main/Map")
-onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
-
-var my_room
 
 var players_here = {}
 var num_players_here : int = 0
@@ -52,6 +47,16 @@ func count_players_here():
 			sum += 1
 	return sum
 
+func on_body_enter(p):
+	.on_body_enter(p)
+	register_player(p)
+	
+	print("BODY ENTERED THE TELEPORTER")
+
+func on_body_exit(p):
+	.on_body_exit(p)
+	deregister_player(p)
+
 func register_player(p):
 	var player_num = p.status.player_num
 	players_here[player_num].append(p)
@@ -62,9 +67,6 @@ func register_player(p):
 func deregister_player(p):
 	var player_num = p.status.player_num
 	players_here[player_num].erase(p)
-
-func delete():
-	self.queue_free()
 
 func perform_teleport():
 	var cant_teleport_if_no_players = (num_players_here <= 0)
@@ -79,11 +81,11 @@ func perform_teleport():
 	print("Everyone here; teleport!")
 	
 	# destroy all old rooms
-	map.delete_all_rooms()
+	map.route_generator.delete_all_rooms()
 	
 	# create the new one
-	map.pause_room_generation = false
-	map.create_new_room( map.get_random_grid_pos() )
+	map.route_generator.pause_room_generation = false
+	map.room_picker.create_new_room( map.get_random_grid_pos() )
 	
 	# teleport all players there
 	var unteleported_players = []
@@ -91,10 +93,12 @@ func perform_teleport():
 	for i in range(GInput.get_player_count()):
 		unteleported_players.append(i)
 	
-	var teleport_target_pos = route_generator.cur_path[0].rect.get_real_center()
+	var teleport_target_pos = map.route_generator.cur_path[0].rect.get_real_center()
+	var teleport_target_room = map.route_generator.cur_path[0]
+	
 	for key in players_here:
 		for body in players_here[key]:
-			var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
+			var final_pos = map.player_manager.get_spread_out_position(teleport_target_room)
 			body.plan_teleport(final_pos)
 			
 			unteleported_players.erase(body.status.player_num)
@@ -110,7 +114,7 @@ func perform_teleport():
 		if index < 0: 
 			continue
 		
-		var final_pos = player_manager.get_spread_out_position(teleport_target_pos)
+		var final_pos = map.player_manager.get_spread_out_position(teleport_target_room)
 		
 		body.status.modify_time_penalty(TIME_PENALTY_FOR_MISSING_TELEPORT)
 		
@@ -125,3 +129,7 @@ func perform_teleport():
 	
 	# do ONE sound effect for all of them
 	GAudio.play_dynamic_sound({ 'global_position': teleport_target_pos }, "teleport")
+	
+	# introduce another buffer
+	for _i in range(BUFFER_AFTER_TELEPORT):
+		map.room_picker.create_new_room()

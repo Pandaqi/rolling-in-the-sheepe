@@ -1,6 +1,7 @@
 extends "res://scripts/locks/lock_general.gd"
 
 onready var label = $Label
+onready var spawner = $Spawner
 
 func _ready():
 	gate_type = "sacrifice_coin"

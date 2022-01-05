@@ -2,14 +2,18 @@ extends "res://scripts/locks/lock_general.gd"
 
 onready var timer = $Timer
 
-const TIME_BOUNDS = { 'min': 4, 'max': 10 }
-var open_gate = null
+const CLOSE_PROB : float = 0.5
+const STOP_CLOSING_GATES_THRESHOLD : int = 13
+const TIME_BOUNDS = { 'min': 1.5, 'max': 4.5 }
 
 var num_timer_timeouts = 0
+var first_enter : bool = true
 
-const STOP_CLOSING_GATES_THRESHOLD : int = 13
-
-func _ready():
+# Wait until someone is actually here, before the whole timer thing starts
+func on_body_enter(p):
+	if not first_enter: return
+	
+	first_enter = false
 	_on_Timer_timeout()
 
 func _on_Timer_timeout():
@@ -24,13 +28,14 @@ func restart_timer():
 func change_open_gates():
 	var my_gates = my_room.lock.gates
 	if my_gates.size() <= 0: return
-
-	var gate_to_close = open_gate
-	if num_timer_timeouts > STOP_CLOSING_GATES_THRESHOLD: gate_to_close = null
 	
-	var gate_to_open = randi() % my_gates.size()
+	var only_open = (num_timer_timeouts > STOP_CLOSING_GATES_THRESHOLD)
 	
-	if gate_to_close: gate_to_close.close(true)
-	
-	open_gate = my_gates[gate_to_open]
-	open_gate.open(true)
+	for i in range(my_gates.size()):
+		var close = randf() <= CLOSE_PROB
+		if only_open: close = false
+		
+		if close:
+			my_gates[i].close(true)
+		else:
+			my_gates[i].open(true)

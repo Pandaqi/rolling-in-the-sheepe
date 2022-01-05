@@ -34,6 +34,8 @@ func record_button_push(item):
 	elif sub_type == "timed":
 		map.special_elements.erase(item)
 	
+	my_room.main_particles.create_at_pos(item.global_position, "general_powerup", { 'subtype': 'checkmark' })
+	
 	on_progress()
 	buttons_pushed += 1
 	update_label()
@@ -52,14 +54,9 @@ func spawn_buttons():
 		if GInput.get_player_count() >= 4: 
 			num_buttons = 2 + randi() % 2
 	
-	print("AVAILABLE_TILES")
-	print(my_room.items.tiles_inside)
-	
 	buttons = []
 	var final_buttons_placed = 0
 	for i in range(num_buttons):
-		print("PLACING BUTTON")
-		
 		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type , 'use_shrunk': true, 'ignore_size': true })
 		if not new_button: break
 		
@@ -68,9 +65,7 @@ func spawn_buttons():
 		
 		buttons.append(new_button)
 		final_buttons_placed += 1
-		
-		print("WAS SUCCESFUL")
-	
+
 	buttons_to_push = final_buttons_placed
 	update_label()
 

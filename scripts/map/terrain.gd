@@ -1,7 +1,7 @@
-extends Node
+extends Node2D
 
 const CONSECUTIVE_SAME_TERRAINS_PROB : float = 0.25
-const USE_REV_GRAVITY_ON_UP_DIR : float = 0.4
+const USE_REV_GRAVITY_ON_UP_DIR : float = 0.85
 
 onready var map = get_parent()
 onready var tilemap_terrain = $TileMapTerrain
@@ -23,8 +23,6 @@ func read_terrain_list_from_campaign():
 		var key = available_terrains[i]
 		if terrain_is_lock(key):
 			available_terrains.remove(i)
-	
-	print(available_terrains)
 
 func terrain_is_lock(t):
 	return t.right(t.length()-4) == "lock"
@@ -46,7 +44,7 @@ func get_terrain_at_index(index):
 
 func get_random_terrain_type(room):
 	# RESTRICTION: place reverse gravity on things going up
-	# TO DO: only if actually included in the list of terrains
+	# (even if not explained (yet), this is the way to go)
 	if room.route.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
 			return "reverse_gravity"
@@ -55,7 +53,10 @@ func get_random_terrain_type(room):
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
 	if last_terrain != "":
-		if not GDict.terrain_types[last_terrain].has('disable_consecutive') and not terrain_is_lock(last_terrain):
+		var consc_upgr_enabled = not GDict.terrain_types[last_terrain].has('disable_consecutive')
+		var pickable = not GDict.terrain_types[last_terrain].has("unpickable")
+		
+		if consc_upgr_enabled and pickable:
 			if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
 				return last_terrain
 	

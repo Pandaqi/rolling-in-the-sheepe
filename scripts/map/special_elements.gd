@@ -21,7 +21,9 @@ func add_special_items_to_room(room):
 	
 	# if we already have items, remove all of them
 	# because our configuration might have changed, so they might be invalid/floating in mid-air, so just clean it up
-	if room.items.has_special_items(): room.items.clear_special_items()
+	
+	# DEBUGGING => test what this actually does
+	#if room.items.has_special_items(): room.items.clear_special_items()
 	
 	room.items.add_special_item()
 

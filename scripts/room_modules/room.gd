@@ -4,6 +4,7 @@ extends Node2D
 onready var map = get_node("/root/Main/Map")
 onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 onready var slope_painter = get_node("/root/Main/Map/SlopePainter")
+onready var main_particles = get_node("/root/Main/Particles")
 
 # modules
 onready var rect = $Rect
@@ -45,6 +46,20 @@ func turn_into_finish():
 	finish_placement_in_hindsight()
 
 func turn_into_teleporter():
+	
+	# if too small for a reasonable teleporter, increase
+	# (if big enough, this isn't desirable, as it might open stuff to older rooms)
+	if rect.get_area() <= 9:
+		rect.save_cur_size_as_shrunk()
+		var grown_rect = {
+			'pos': rect.pos-Vector2.ONE, 
+			'size': rect.size + Vector2.ONE*2
+		}
+		rect.update_from(grown_rect)
+	
+	finish_placement()
+	finish_placement_in_hindsight()
+	
 	tilemap.update_map_to_new_rect()
 	lock.add_teleporter()
 	
@@ -62,9 +77,10 @@ func place(params):
 	rect.set_size(rect.size + Vector2(1,1)*2)
 	rect.update_positions_array()
 	
-#	print("RECT PLACED")
-#	print({ 'pos': rect.pos, 'size': rect.size })
-#	print(rect.shrunk)
+	# DEBUGGING
+	print("RECT PLACED")
+	print({ 'pos': rect.pos, 'size': rect.size })
+	#print(rect.shrunk)
 
 	route.set_index(params.index)
 	route.set_previous_room(params.prev_room)
@@ -91,3 +107,7 @@ func finish_placement_in_hindsight():
 	
 	map.special_elements.add_special_items_to_room(self)
 	map.edges.handle_gates(self)
+
+func on_tutorial_placement():
+	has_tutorial = true
+	map.slope_painter.clear_room(self)

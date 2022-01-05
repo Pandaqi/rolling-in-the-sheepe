@@ -26,6 +26,9 @@ var things_to_teach : Dictionary = {
 	'item': []
 }
 
+var last_placement_kinds = []
+var all_allowed_things = []
+
 var last_tutorial_index : int = -MIN_ROOMS_BETWEEN_TUTORIALS + MIN_ROOMS_BEFORE_TUTORIALS_START
 var final_tut_room : int = -1
 var thing_planned = null
@@ -106,6 +109,13 @@ func determine_included_types():
 		add_something_of_type("glue_related")
 		g_num += 1
 	
+	for key in things_to_teach:
+		for item in things_to_teach[key]:
+			all_allowed_things.append(item)
+	
+	print("ALL ALLOWED THINGS")
+	print(all_allowed_things)
+	
 	print("DYNAMIC TUTORIAL")
 	print(things_to_teach)
 
@@ -138,8 +148,6 @@ func is_thing_already_used(kind : String, type : String):
 	return type in things_taught[kind]
 
 func can_teach_something_new():
-	print("CAN TEACH SOMETHING NEW?")
-	
 	if G.in_tutorial_mode(): return false
 	
 	var too_soon = abs(map.route_generator.get_new_room_index() - last_tutorial_index) < MIN_ROOMS_BETWEEN_TUTORIALS
@@ -157,26 +165,24 @@ func get_kind_planned():
 	return thing_planned
 
 func on_usage_of(kind : String, type : String):
-	if not things_taught.has(kind): return
-	if not things_to_teach.has(kind): return
+	if not has_something_planned(): return
+	if not type in all_allowed_things: return
 	
-	var not_in_this_game = not (type in things_to_teach[kind])
-	var already_used = (type in things_taught[kind])
-	if already_used or not_in_this_game: return
+	if things_taught.has(kind) and not (type in things_taught[kind]):
+		things_taught[kind].append(type)
 	
-	things_taught[kind].append(type)
+	if things_to_teach.has(kind) and (type in things_to_teach[kind]):
+		things_to_teach[kind].erase(type)
 	
-	things_to_teach[kind].erase(type)
-	if things_to_teach[kind].size() <= 0:
-# warning-ignore:return_value_discarded
-		things_to_teach.erase(kind)
+		if things_to_teach[kind].size() <= 0:
+	# warning-ignore:return_value_discarded
+			things_to_teach.erase(kind)
 	
 	if thing_planned.kind == kind and thing_planned.type == type:
 		thing_planned = null
+		last_placement_kinds.append(kind)
 	
-	print("USAGE OF")
-	print(kind)
-	print(type)
+	print("USAGE OF: " + kind + " || " + type)
 
 func needs_tutorial():
 	return has_something_planned() and not thing_planned.tutorial_placed
@@ -203,6 +209,14 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_kind = kinds_left[randi() % kinds_left.size()]
 	if wanted_kind != 'any': rand_kind = wanted_kind
 	
+	# UPGRADE: forbid two of the same type after each other, but only for locks
+	if kinds_left.size() > 1 and last_placement_kinds.size() > 0:
+		var last_placed_kind = last_placement_kinds[last_placement_kinds.size()-1]
+		
+		if last_placed_kind == "lock":
+			while rand_kind == last_placed_kind:
+				rand_kind = kinds_left[randi() % kinds_left.size()]
+	
 	if first_thing: 
 		rand_kind = 'terrain'
 		first_thing = false
@@ -211,13 +225,10 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'item'
-	rand_type = 'change_shape'
+	rand_kind = 'lock'
+	rand_type = 'slot_gate'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
-	
-	# DEBUGGING
-	#thing_planned = { 'kind': 'terrain', 'type': 'body_cleanup', 'tutorial_placed': false }
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
@@ -234,9 +245,9 @@ func place_tutorial_custom(room, params):
 	tut.set_position(room.rect.get_real_center())
 	tut.get_node("Sprite").set_frame(params.frame)
 	
-	map.add_child(tut)
+	map.bg_layer.add_child(tut)
 	room.connect_related_item(tut)
-	room.has_tutorial = true
+	room.on_tutorial_placement()
 	
 	if is_everything_taught():
 		final_tut_room = map.route_generator.get_new_room_index()
@@ -255,8 +266,8 @@ func place_tutorial(room):
 	tut.get_node("Sprite").set_frame(frame)
 	
 	room.connect_related_item(tut)
-	room.has_tutorial = true
-	map.add_child(tut)
+	room.on_tutorial_placement()
+	map.bg_layer.add_child(tut)
 	
 	if self_placement: return
 	

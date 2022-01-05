@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=2]
+[gd_scene load_steps=26 format=2]
 
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=1]
 [ext_resource path="res://scripts/slicer.gd" type="Script" id=2]
@@ -17,8 +17,9 @@
 [ext_resource path="res://scripts/map/slope_painter.gd" type="Script" id=15]
 [ext_resource path="res://scripts/map/terrain.gd" type="Script" id=16]
 [ext_resource path="res://scripts/map/special_elements.gd" type="Script" id=17]
-[ext_resource path="res://scripts/particles.gd" type="Script" id=18]
+[ext_resource path="res://scenes/particles.tscn" type="PackedScene" id=18]
 [ext_resource path="res://scripts/map/dynamic_tutorial.gd" type="Script" id=19]
+[ext_resource path="res://scripts/solo_mode.gd" type="Script" id=20]
 
 [sub_resource type="Shader" id=1]
 resource_local_to_scene = true
@@ -146,7 +147,7 @@ script = ExtResource( 4 )
 [node name="Map" type="Node2D" parent="."]
 script = ExtResource( 5 )
 
-[node name="Terrain" type="Node" parent="Map"]
+[node name="Terrain" type="Node2D" parent="Map"]
 script = ExtResource( 16 )
 
 [node name="TileMapTerrain" type="TileMap" parent="Map/Terrain"]
@@ -215,11 +216,16 @@ script = ExtResource( 7 )
 
 [node name="Feedback" parent="." instance=ExtResource( 9 )]
 
-[node name="Particles" type="Node2D" parent="."]
-script = ExtResource( 18 )
+[node name="Particles" parent="." instance=ExtResource( 18 )]
 
 [node name="Slicer" type="Node2D" parent="."]
 script = ExtResource( 2 )
+
+[node name="SoloMode" type="Node2D" parent="."]
+script = ExtResource( 20 )
+
+[node name="Timer" type="Timer" parent="SoloMode"]
+one_shot = true
 
 [node name="FogOfWar" type="CanvasLayer" parent="."]
 script = ExtResource( 10 )
@@ -238,3 +244,4 @@ __meta__ = {
 [node name="GUI" type="CanvasLayer" parent="."]
 
 [connection signal="timeout" from="Map/RouteGenerator/Timer" to="Map/RouteGenerator" method="_on_Timer_timeout"]
+[connection signal="timeout" from="SoloMode/Timer" to="SoloMode" method="_on_Timer_timeout"]

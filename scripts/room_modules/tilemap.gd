@@ -13,6 +13,13 @@ func delete():
 	var mask_data = parent.rect.get_mask_data()
 	parent.map.mask_painter.clear_rectangle(mask_data.pos, mask_data.size)
 
+func get_empty_positions():
+	var arr = []
+	for pos in parent.rect.shrunk_positions:
+		if is_cell_filled(pos): continue
+		arr.append(pos)
+	return arr
+
 func is_cell_filled(pos: Vector2):
 	return parent.map.tilemap.get_cellv(pos) >= 0
 

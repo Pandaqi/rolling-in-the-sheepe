@@ -45,22 +45,27 @@ func set_player_num(num : int):
 	make_sheep()
 	make_invincible()
 
-func modify_time_penalty(val):
+func modify_time_penalty(val, fb : bool = true):
 	time_penalty += val
 	
-	if val < 0:
-		body.feedback.create_for_node(body, "Time bonus!")
-	elif val > 0:
-		body.feedback.create_for_node(body, "Time penalty!")
+	if fb:
+		if val < 0:
+			body.feedback.create_for_node(body, "Time bonus!")
+		elif val > 0:
+			body.feedback.create_for_node(body, "Time penalty!")
 	
 	if val != 0:
+		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'sandtimer' })
 		GAudio.play_dynamic_sound(body, "time")
 
 func make_ghost():
+	# this is all just visual polish
 	body.feedback.create_for_node(body, "Ghost!")
 	GAudio.play_dynamic_sound(body, "ghost")
 	body.drawer.play_pop_tween()
+	body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'ghost' })
 	
+	# this actually has a function
 	body.collision_layer = 0
 	body.collision_mask = 1
 	
@@ -68,10 +73,13 @@ func make_ghost():
 
 # Layers 1 (2^0; all) and 3 (2^2; players)
 func undo_ghost():
+	# this is all just visual polish
 	body.feedback.create_for_node(body, "Unghosted!")
 	GAudio.play_dynamic_sound(body, "ghost")
 	body.drawer.play_pop_tween()
+	body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'ghost' })
 	
+	# this actually has a function
 	body.collision_layer = 1 + 4
 	body.collision_mask = 1 + 4
 	
@@ -82,6 +90,7 @@ func make_wolf():
 		body.feedback.create_for_node(body, "Wolf!")
 		GAudio.play_dynamic_sound(body, "wolf")
 		body.drawer.play_pop_tween()
+		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'wolf' })
 	
 	is_wolf = true
 	body.face.make_wolf()
@@ -95,6 +104,7 @@ func make_sheep():
 		body.feedback.create_for_node(body, "Sheep!")
 		GAudio.play_dynamic_sound(body, "sheep")
 		body.drawer.play_pop_tween()
+		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'sheep' })
 	
 	is_wolf = false
 	body.face.make_sheep()
@@ -113,12 +123,14 @@ func make_invincible(start_timer = true):
 		body.feedback.create_for_node(body, "Invincible!")
 		GAudio.play_dynamic_sound(body, "shield_start")
 		body.drawer.play_pop_tween()
+		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'shield' })
 
 func make_vincible(from_timer = false):
 	if not from_timer: 
 		body.feedback.create_for_node(body, "Not invincible!")
 		GAudio.play_dynamic_sound(body, "shield_end")
 		body.drawer.play_pop_tween()
+		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'shield' })
 	
 	is_invincible = false
 

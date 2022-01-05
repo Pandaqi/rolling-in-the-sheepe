@@ -103,7 +103,7 @@ func jump():
 	body.apply_central_impulse(final_jump_vec)
 
 func _physics_process(_dt):
-	size_speed_multiplier = body.shaper.approximate_radius_as_ratio()
+	size_speed_multiplier = sqrt(body.shaper.approximate_radius_as_ratio()) # square root brings the values closer together, reducing the impact of this multiplier
 	if body.status.is_wolf: size_speed_multiplier *= WOLF_BONUS_SPEED
 	
 	reset_gravity_strength()
@@ -139,14 +139,14 @@ func check_for_air_break():
 func check_for_standstill():
 	if body.status.is_menu: return
 	if body.status.has_finished: return
-	if body.map_reader.last_cell_has_lock(): return
+	if body.room_tracker.get_cur_room().lock.has_lock(): return
 	
 	var cur_time = OS.get_ticks_msec()
 	
 	var time_since_last_input = (cur_time - last_input_time)/1000.0
-	if time_since_last_input <= STANDSTILL_THRESHOLD: return
+	if time_since_last_input <= (STANDSTILL_THRESHOLD + randf()*8.0): return
 	
-	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT)
+	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT, false)
 	body.plan_teleport(body.map_reader.get_forward_boost_pos(), "Stood still too long!")
 	
 	# NOTE: important, otherwise it keeps endlessly teleporting of course!
