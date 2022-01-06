@@ -225,14 +225,14 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'lock'
-	rand_type = 'slot_gate'
+	rand_kind = 'item'
+	rand_type = 'trampoline'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part
 	# TO DO: might also want to skip this whole system, so no need to gradually introduce things
-	if not GDict.cfg.dynamic_tutorials:
+	if not GDict.cfg.show_dynamic_tutorials:
 		thing_planned.tutorial_placed = true
 	
 	print("THING PLANNED")

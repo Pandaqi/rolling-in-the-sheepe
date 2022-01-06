@@ -1,12 +1,12 @@
 extends Node2D
 
 var active : bool = false
+var last_known_room = null
 
 const FILL_INTERVAL : float = 0.5
 
 onready var timer = $Timer
-onready var map = get_node("../Map")
-onready var player_manager = get_node("../PlayerManager")
+onready var main_node = get_parent()
 
 func activate():
 	active = GInput.get_player_count()
@@ -16,11 +16,15 @@ func activate():
 	
 	restart_timer()
 
+func deactivate():
+	active = false
+	timer.stop()
+
 func is_active():
 	return active
 
 func move_further_along():
-	var room = map.route_generator.get_oldest_room()
+	var room = main_node.map.route_generator.get_oldest_room()
 	if not room: return
 	
 	# TO DO: Can be optimized by just saving the empty positions whenever we enter a NEW room
@@ -52,27 +56,43 @@ func move_further_along():
 	# the first cell is the one with shortest distance into room, so the one "furthest back"
 	# so take that, and fill it, and inform surroundings
 	var final_cell = sort_arr[0].pos
-	map.change_cell(final_cell, 0)
-	map.update_bitmask(final_cell, Vector2.ONE)
+	main_node.map.change_cell(final_cell, 0)
+	main_node.map.update_bitmask(final_cell, Vector2.ONE)
 	
 	print("FILLING CELL")
 	print(final_cell)
 	
 	# destroy any players/bodies here
-	map.destroy_nodes_at_cell(final_cell)
+	main_node.map.destroy_nodes_at_cell(final_cell)
 	
+	# we're dead?
+	# or somehow this didn't work, and the player is stuck somewhere BEHIND the algorithm? destroy us as well
 	var num_players_left = get_tree().get_nodes_in_group("Players").size()
-	if num_players_left <= 0:
-		print("GAME OVER AND YOU LOST")
+	var stuck_behind = last_known_room and last_known_room.route.index < room.route.index
+
 	
+	if num_players_left <= 0 or stuck_behind:
+		deactivate()
+		main_node.state.game_over(false)
+		return
+
 	# filled everything? destroy the room
 	if sort_arr.size() <= 1:
-		map.route_generator.delete_oldest_room()
+		main_node.map.route_generator.delete_oldest_room()
+	
+	var leading_player = main_node.map.player_progression.get_leading_player()
+	if not leading_player: return
+	
+	var new_room = leading_player.room_tracker.get_cur_room()
+	if not new_room: return
+	
+	last_known_room = new_room
 
 func custom_sort(a,b):
 	return a.score < b.score
 
 func _on_Timer_timeout():
+	if not active: return
 	move_further_along()
 	restart_timer()
 
@@ -81,7 +101,7 @@ func restart_timer():
 	timer.start()
 
 func determine_timer_interval() -> float:
-	var leading_player = map.player_progression.get_leading_player()
+	var leading_player = main_node.map.player_progression.get_leading_player()
 	if not leading_player: return FILL_INTERVAL
 	
 	var frontmost_index = leading_player.room_tracker.get_cur_room().route.index

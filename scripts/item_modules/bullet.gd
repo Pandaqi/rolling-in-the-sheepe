@@ -22,8 +22,10 @@ func _on_Area2D_body_entered(body):
 	if body.status.is_invincible: return
 	
 	GAudio.play_dynamic_sound(body, "bullet_hit")
-	body.glue.call_deferreed("slice_along_halfway_line")
+	body.glue.call_deferred("slice_along_halfway_line")
 	body.coins.pay_half()
+	
+	body.main_particles.create_for_node(body, "explosion", { "place_front": true })
 	
 	self.queue_free()
 

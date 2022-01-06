@@ -130,7 +130,7 @@ func should_place_finish():
 		if not dynamic_tutorial.is_everything_taught(): 
 			return false
 		else:
-			if (get_new_room_index() - dynamic_tutorial.last_tut_room) < GDict.cfg.min_rooms_between_last_tut_and_finish:
+			if (get_new_room_index() - dynamic_tutorial.last_tutorial_index) < GDict.cfg.min_rooms_between_last_tut_and_finish:
 				return false
 			
 	return (total_rooms_created > rooms_until_finish)

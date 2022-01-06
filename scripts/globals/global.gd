@@ -26,18 +26,23 @@ func load_game(tp : String):
 	GDict.cfg.generation_speed = gen_speed
 	GDict.cfg.hide_heavy_particles = perf_mode
 	
+	GDict.cfg.show_dynamic_tutorials = GConfig.get_config_val("settings", "show_dynamic_tutorials")
+	GDict.cfg.contextual_feedback = GConfig.get_config_val("settings", "contextual_feedback")
+	
 	GAudio.play_static_sound("ui_button_press")
 
 # warning-ignore:return_value_discarded
 	get_tree().change_scene_to(scenes.main)
 
 func restart():
+	get_tree().paused = false
 	GAudio.play_static_sound("ui_button_press")
 	
 # warning-ignore:return_value_discarded
 	get_tree().reload_current_scene()
 
 func back_to_menu():
+	get_tree().paused = false
 	GAudio.play_static_sound("ui_button_press")
 	
 	in_game = false

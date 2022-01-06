@@ -8,6 +8,7 @@ const BULLET_FORCE : float = 150.0
 onready var timer = $Timer
 onready var barrel_tip = $BarrelTip
 onready var map = get_node("/root/Main/Map")
+onready var main_particles = get_node("/root/Main/Particles")
 
 func _ready():
 	timer.wait_time = BULLET_INTERVAL
@@ -27,3 +28,4 @@ func shoot_bullet():
 	b.set_position(barrel_tip.global_position)
 	
 	GAudio.play_dynamic_sound(barrel_tip, "bullet_shot")
+	main_particles.create_for_node(barrel_tip, "small_puff", { "match_orientation": normal })

@@ -3,10 +3,15 @@ extends Node2D
 var sprite_size : float = 256.0
 
 onready var animation_player = $AnimationPlayer
+onready var shield = $Shield
+onready var shield_anim_player = $Shield/AnimationPlayer
 
 var shaper
 var face_sprite
 var ear_sprite
+
+func _module_ready():
+	shield.set_visible(false)
 
 func link_sprites():
 	face_sprite = $FaceSprite
@@ -33,3 +38,11 @@ func make_sheep():
 	ear_sprite.set_frame(1)
 	
 	animation_player.stop(true)
+
+func make_invincible():
+	shield.set_visible(true)
+	shield_anim_player.play("ShieldFlicker")
+
+func make_vincible():
+	shield.set_visible(false)
+	shield_anim_player.stop()

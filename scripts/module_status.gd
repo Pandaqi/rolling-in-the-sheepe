@@ -27,6 +27,7 @@ func delete(part_of_slice : bool = true):
 	if not part_of_slice:
 		body.feedback.create_for_node(body, "Destroyed!")
 		GAudio.play_dynamic_sound(body, "non_slice_destroy")
+		body.main_particles.create_for_node(body, "explosion", { "place_front": true })
 	
 	body.queue_free()
 
@@ -116,6 +117,8 @@ func make_sheep():
 func make_invincible(start_timer = true):
 	is_invincible = true
 	
+	body.face.make_invincible()
+	
 	# if we start a timer, it means its an automatic invincibility (which I apply behind the scenes), so don't show feedback
 	if start_timer:
 		invincibility_timer.start()
@@ -132,6 +135,7 @@ func make_vincible(from_timer = false):
 		body.drawer.play_pop_tween()
 		body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'shield' })
 	
+	body.face.make_vincible()
 	is_invincible = false
 
 func _on_InvincibilityTimer_timeout():

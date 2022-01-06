@@ -53,10 +53,10 @@ func get_random_terrain_type(room):
 	
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
 	if last_terrain != "":
-		var consc_upgr_enabled = not GDict.terrain_types[last_terrain].has('disable_consecutive')
+		var consecutive_allowed = not GDict.terrain_types[last_terrain].has('disable_consecutive')
 		var pickable = not GDict.terrain_types[last_terrain].has("unpickable")
 		
-		if consc_upgr_enabled and pickable:
+		if consecutive_allowed and pickable:
 			if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
 				return last_terrain
 	
@@ -79,6 +79,7 @@ func get_random_terrain_type(room):
 			continue
 		
 		# UPGRADE: don't allow two consecutive terrains of the same general category
+		if last_terrain == key: continue
 		if last_terrain and num_tries < RESTRICTION_CUTOFF:
 			if GDict.terrain_types[last_terrain].category == GDict.terrain_types[key].category:
 				continue

@@ -3,7 +3,7 @@ extends "res://scripts/locks/lock_general.gd"
 const MIN_PERCENTAGE_FILL : float = 0.995
 const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.1
 const MIN_DIST_BEFORE_AUDIO_FEEDBACK : float = 6.0
-const HOLE_SIZE = { 'min': 6, 'max': 24 }
+const HOLE_SIZE = { 'min': 5, 'max': 10 }
 
 onready var canvas = $Canvas
 onready var label = $Label
@@ -52,7 +52,7 @@ func set_sub_type(tp : String):
 	
 	# Holes are the same as erase, but way more precise (don't fill the whole field, just specific parts)
 	if sub_type == "holes":
-		grid_resolution *= 0.25
+		grid_resolution *= 0.5
 
 func update_label():
 	var txt = str(round(fill_percentage*100)) + "/100%"
@@ -74,15 +74,24 @@ func create_lowres_grid():
 	var lowres_size = (image_size / grid_resolution).floor()
 	lowres_grid.resize(lowres_size.x)
 	
+	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
+	
 	for x in range(lowres_size.x):
 		lowres_grid[x] = []
 		lowres_grid[x].resize(lowres_size.y)
+		
 		for y in range(lowres_size.y):
 			var val = false
 			var global_pos = get_real_pos_from_lowres(Vector2(x,y))
 			var is_filled = my_room.tilemap.is_cell_filled(global_pos)
-			if is_filled: val = true
+
+			for nb in nbs:
+				var temp_global_pos = get_real_pos_from_lowres(Vector2(x,y) + nb)
+				if my_room.tilemap.is_cell_filled(temp_global_pos):
+					is_filled = true
+					break
 			
+			if is_filled: val = true
 			if sub_type == "erase": val = not val
 			if sub_type == "holes" and is_filled: val = false
 			
@@ -168,9 +177,6 @@ func paint(entity, pos : Vector2, p_num : int, force_paint : bool = false):
 			
 			var temp_pos = pos + Vector2(x,y)
 			if out_of_mask_bounds(temp_pos): continue
-			
-			var global_pos = (temp_pos + my_room.rect.shrunk.pos).floor()
-			if sub_type == "holes" and cannot_fill_cell(global_pos): continue
 			
 			surface_image.set_pixelv(temp_pos, col)
 			

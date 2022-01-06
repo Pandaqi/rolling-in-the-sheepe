@@ -4,6 +4,7 @@ onready var body = get_parent()
 
 onready var actual_drawer = $ActualDrawer
 onready var tween = $Tween
+onready var float_anim = $AnimationPlayer
 
 func update_shape():
 	get_node("ActualDrawer").update_shape(get_parent())
@@ -53,4 +54,10 @@ func play_pop_tween():
 		Tween.TRANS_LINEAR, Tween.EASE_OUT,
 		dur)
 	tween.start()
-	
+
+func start_float():
+	float_anim.play("FloatAnim")
+
+func end_float():
+	float_anim.stop(true)
+	modulate = Color(1,1,1)

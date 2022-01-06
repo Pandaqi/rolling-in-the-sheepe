@@ -38,11 +38,11 @@ var cfg = {
 	
 	'reset_players_to_start_shape_at_finish': true,
 	
-	# TO DO: make toggelable in (technical) settings
 	'generation_speed': 2.0, # higher is faster; inverted (1/X) on game start
-	"dynamic_tutorials": true,
+	"show_dynamic_tutorials": true,
 	"paint_on_tilemap": true,
-	"hide_heavy_particles": false,
+	"hide_heavy_particles": false, # TO DO: make actually functional
+	"contextual_feedback": false, # TO DO: make actually functional
 }
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
@@ -181,9 +181,9 @@ var terrain_types = {
 	
 	"invincibility": { "frame": 17, "category": "coin", "coin_related": true, 'tut': 30 },
 	"rounder": { "frame": 18, "category": "coin", "coin_related": true, 'tut': 31 },
-	"halver": { "frame": 19, "category": "coin", "coin_related": true, 'tut': 32 },
+	"halver": { "frame": 19, "category": "coin", "coin_related": true, 'tut': 32, "disable_consecutive": true },
 	"slower": { "frame": 20, "category": "coin", "coin_related": true, 'tut': 33, "prob": 0.6 },
-	"bomb": { "frame": 21, "category": "coin", "coin_related": true, 'tut': 34, "prob": 0.3 },
+	"bomb": { "frame": 21, "category": "coin", "coin_related": true, 'tut': 34, "prob": 0.3, "disable_consecutive": true },
 	
 	"coin_gate_lock": { "frame": 22, "category": "lock", "unpickable": true },
 	"mass_gate_lock": { "frame": 23, "category": "lock", "unpickable": true },

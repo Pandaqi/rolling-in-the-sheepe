@@ -256,7 +256,7 @@ func finish():
 	if GDict.cfg.reset_players_to_start_shape_at_finish:
 		body.shaper.reset_to_starting_shape()
 	
-	var finish_data = body.main_node.player_finished(body)
+	var finish_data = body.main_node.state.player_finished(body)
 	show_gui()
 	set_gui_rank(finish_data.rank)
 

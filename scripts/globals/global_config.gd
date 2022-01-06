@@ -48,7 +48,25 @@ var settings = [
 		"name": "performance_mode",
 		"comp": "Checkbox",
 		"def": false
-	}
+	},
+	
+	{
+		"sec": "settings",
+		"label": "Show Tutorials",
+		"name": "show_dynamic_tutorials",
+		"comp": "Checkbox",
+		"def": true,
+		"desc": "Disable this once you know what everything does."
+	},
+	
+	{
+		"sec": "settings",
+		"label": "Contextual Feedback",
+		"name": "contextual_feedback",
+		"comp": "Checkbox",
+		"def": false,
+		"desc": "Whenever near to something, tells you what it does."
+	},
 ]
 
 func _ready():

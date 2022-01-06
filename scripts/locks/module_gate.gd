@@ -7,6 +7,11 @@ onready var edge : StaticBody2D = get_parent()
 func passthrough_allowed(body):
 	if edge.type == "coin_gate" or edge.type == "sacrifice_coin":
 		return (body.coins.count() >= general_parameter)
+	
+	# these are still GATES (because they change based on conditions)
+	# but you can only pass through when they're open anyway, so normally it's always false
+	if edge.type == "slot_gate" or edge.type == "fast_gate":
+		return false
 
 	return true
 

@@ -7,8 +7,14 @@ onready var map = get_node("../Map")
 var preloads = {
 	'small_puff': preload("res://scenes/particles/small_puff.tscn"),
 	'explosion': preload("res://scenes/particles/explosion.tscn"),
-	'general_powerup': preload("res://scenes/particles/general_powerup.tscn")
+	'general_powerup': preload("res://scenes/particles/general_powerup.tscn"),
+	"speed_stripes": preload("res://scenes/particles/speed_stripes.tscn"),
+	"float": preload("res://scenes/particles/float.tscn")
 }
+
+func create_for_node(node, type : String, params : Dictionary = {}):
+	params.node = node
+	create_at_pos(node.global_position, type, params)
 
 func create_at_pos(pos : Vector2, type : String, params : Dictionary = {}):
 	var p = preloads[type].instance()
@@ -23,7 +29,12 @@ func create_at_pos(pos : Vector2, type : String, params : Dictionary = {}):
 		var texture_key = "res://assets/particles/particle_" + params.subtype + ".png"
 		p.get_node("Particles2D").texture = load(texture_key)
 	
+	if type == "speed_stripes" and params.has('node'):
+		p.attach_node(params.node)
+	
 	if place_behind:
 		map.bg_layer.add_child(p)
 	else:
 		add_child(p)
+	
+	

@@ -122,7 +122,10 @@ func backtrack_and_find_good_room(params):
 	print("ACTUALLY BACKTRACKED")
 	
 	var found_something = false
-	for i in range(MAX_BACKTRACK_ROOMS):
+	var max_backtracking = MAX_BACKTRACK_ROOMS
+	if G.in_tutorial_mode(): max_backtracking = 2
+	
+	for i in range(max_backtracking):
 		params.prev_room = route_generator.get_path_from_front(i)
 		
 		var new_rect = find_valid_configuration_better(params)

@@ -13,6 +13,11 @@ onready var part = $Particles2D
 onready var part_ring = $ParticleRing
 onready var body = get_parent()
 
+onready var float_particles = $FloatParticles
+
+func _module_ready():
+	end_float()
+
 func prepare_ring():
 	part_ring = $ParticleRing
 	
@@ -56,3 +61,9 @@ func create_ring(tp : String):
 
 func remove_ring():
 	part_ring.set_visible(false)
+
+func start_float():
+	float_particles.set_emitting(true)
+
+func end_float():
+	float_particles.set_emitting(false)

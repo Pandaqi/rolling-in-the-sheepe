@@ -56,10 +56,14 @@ func on_progress():
 func perform_update():
 	pass
 
-func delete():
-	feedback.create_at_pos(my_room.rect.get_real_center(), "Unlocked!")
-	GAudio.play_dynamic_sound(create_audio_obj(), "lock_unlocked")
-	
+func delete(hard_remove : bool = false):
 	emit_signal("delete")
 	self.queue_free()
 	my_room.lock.remove_lock()
+	
+	# If this wasn't a deletion because the room is being deleted,
+	# it must because the lock was unlocked
+	# (should've been a much cleaner structure, but it is what it is)
+	if not hard_remove:
+		feedback.create_at_pos(my_room.rect.get_real_center(), "Unlocked!")
+		GAudio.play_dynamic_sound(create_audio_obj(), "lock_unlocked")

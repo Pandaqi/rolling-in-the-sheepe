@@ -25,7 +25,10 @@ func add_special_items_to_room(room):
 	# DEBUGGING => test what this actually does
 	#if room.items.has_special_items(): room.items.clear_special_items()
 	
-	room.items.add_special_item()
+	var num_items = 1 + randi() % 3
+	
+	for i in range(num_items):
+		room.items.add_special_item()
 
 func get_random_type(room):
 	return map.dynamic_tutorial.get_random('item', room)

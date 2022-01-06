@@ -44,6 +44,9 @@ var keys_down = {
 	'right': false
 }
 
+onready var solo_mode = get_node("/root/Main/SoloMode")
+onready var normal_indicator = $NormalVec
+
 func _ready():
 	last_input_time = OS.get_ticks_msec()
 
@@ -62,7 +65,7 @@ func _on_Input_move_left():
 
 func _on_Input_move_left_released():
 	keys_down.left = false
-	air_break = false
+	stop_air_break()
 
 func _on_Input_move_right():
 	keys_down.right = true
@@ -79,19 +82,20 @@ func _on_Input_move_right():
 
 func _on_Input_move_right_released():
 	keys_down.right = false
-	air_break = false
+	stop_air_break()
 
 func _on_Input_double_button():
 	jump()
 
 func jump():
-	air_break = false
+	stop_air_break()
 	last_input_time = OS.get_ticks_msec()
 	
 	var used_input_for_airbreak = (OS.get_ticks_msec() - air_break_start) > air_break_time_limit
 	if used_input_for_airbreak: return
 	
 	GAudio.play_dynamic_sound(body, "jump")
+	body.main_particles.create_for_node(body, "speed_stripes", { "match_orientation": -jump_vec, "place_behind": true })
 	
 	# NOTE: It enables itself again after a (very) short period
 	body.clinger.disable()
@@ -102,7 +106,7 @@ func jump():
 	var final_jump_vec = jump_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
 	body.apply_central_impulse(final_jump_vec)
 
-func _physics_process(_dt):
+func _physics_process(dt):
 	size_speed_multiplier = sqrt(body.shaper.approximate_radius_as_ratio()) # square root brings the values closer together, reducing the impact of this multiplier
 	if body.status.is_wolf: size_speed_multiplier *= WOLF_BONUS_SPEED
 	
@@ -113,7 +117,7 @@ func _physics_process(_dt):
 	cap_speed()
 	check_for_standstill()
 
-	debug_draw()
+	draw_normal_indicator(dt)
 	
 	velocity_last_frame = body.get_linear_velocity()
 
@@ -125,21 +129,33 @@ func check_for_air_break():
 	if used_input_for_jump: return
 	
 	if not air_break:
-		air_break = true
-		air_break_start = OS.get_ticks_msec()
+		start_air_break()
 		
 		var new_x_vel = body.linear_velocity.x * (1.15 + abs(body.linear_velocity.y) / float(MAX_VELOCITY))
 		body.linear_velocity.x = clamp(new_x_vel, -MAX_VELOCITY, MAX_VELOCITY)
 		
+		#body.main_particles.create_for_node(body, "float")
 		GAudio.play_dynamic_sound(body, "float")
 	
 	body.gravity_scale = 0.0
 	body.linear_velocity.y = 0.0
 
+func start_air_break():
+	air_break = true
+	air_break_start = OS.get_ticks_msec()
+	body.particles.start_float()
+	body.drawer.start_float()
+
+func stop_air_break():
+	air_break = false
+	body.particles.end_float()
+	body.drawer.end_float()
+
 func check_for_standstill():
 	if body.status.is_menu: return
 	if body.status.has_finished: return
 	if body.room_tracker.get_cur_room().lock.has_lock(): return
+	if solo_mode.is_active(): return
 	
 	var cur_time = OS.get_ticks_msec()
 	
@@ -226,5 +242,11 @@ func determine_normal_vec():
 
 		return
 
-func debug_draw():
-	$NormalVec.rotation = -body.rotation + normal_vec.angle()
+func draw_normal_indicator(dt):
+	var wanted_rotation = -body.rotation + normal_vec.angle()
+	var wanted_vec = Vector2(cos(wanted_rotation), sin(wanted_rotation))
+	
+	var cur_rot = normal_indicator.rotation
+	var cur_vec = Vector2(cos(cur_rot), sin(cur_rot))
+	
+	normal_indicator.rotation = cur_vec.slerp(wanted_vec, 8*dt).angle()

@@ -10,9 +10,17 @@ func handle_gates(room):
 	room.lock.recalculate_gates()
 
 func set_at(pos, dir_index, type):
+	# if the edge already exists, just change its type
+	# (otherwise we get duplicates, and I'd need to remove shit beforehand, it's all bad)
 	var already_has_edge = map.get_cell(pos).edges[dir_index]
 	if already_has_edge:
 		already_has_edge.set_type(type)
+		
+		var other_side = map.get_vector_from_dir(dir_index)
+		if not map.out_of_bounds(pos+other_side):
+			var other_dir_index = (dir_index + 2) % 4
+			map.get_cell(pos+other_side).edges[other_dir_index].set_type(type)
+		
 		return already_has_edge
 	
 	var e = edge_scene.instance()

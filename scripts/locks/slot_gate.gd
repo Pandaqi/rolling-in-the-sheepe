@@ -4,10 +4,11 @@ onready var timer = $Timer
 
 const CLOSE_PROB : float = 0.5
 const STOP_CLOSING_GATES_THRESHOLD : int = 13
-const TIME_BOUNDS = { 'min': 1.5, 'max': 4.5 }
+const TIME_BOUNDS = { 'min': 1.5, 'max': 4.25 }
 
 var num_timer_timeouts = 0
 var first_enter : bool = true
+var num_all_closed_in_sequence : int = 0
 
 # Wait until someone is actually here, before the whole timer thing starts
 func on_body_enter(p):
@@ -31,6 +32,7 @@ func change_open_gates():
 	
 	var only_open = (num_timer_timeouts > STOP_CLOSING_GATES_THRESHOLD)
 	
+	var all_closed : bool = true
 	for i in range(my_gates.size()):
 		var close = randf() <= CLOSE_PROB
 		if only_open: close = false
@@ -39,3 +41,13 @@ func change_open_gates():
 			my_gates[i].close(true)
 		else:
 			my_gates[i].open(true)
+			all_closed = false
+	
+	if all_closed:
+		num_all_closed_in_sequence += 1
+	else:
+		num_all_closed_in_sequence = 0
+	
+	# to prevent gates just randomly being closed THE WHOLE TIME, ensuring you can't go through, and there's nothing you can do about that
+	if num_all_closed_in_sequence > 2:
+		my_gates[randi() % my_gates.size()].open(true)

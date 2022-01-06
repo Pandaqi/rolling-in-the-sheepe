@@ -106,6 +106,6 @@ func record_button_push(pusher):
 func perform_update():
 	lock_module.perform_update()
 
-func delete():
+func delete(hard_remove : bool = false):
 	if not has_lock(): return
-	lock_module.delete()
+	lock_module.delete(hard_remove)

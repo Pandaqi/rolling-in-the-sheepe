@@ -17,3 +17,7 @@ func get_them():
 
 func count():
 	return players_inside.size()
+
+func delete():
+	for p in players_inside:
+		p.status.delete(false)

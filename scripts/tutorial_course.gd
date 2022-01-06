@@ -3,7 +3,7 @@ extends Node
 const MIN_DIST_BETWEEN_TUTORIALS : int = 5
 
 var cur_tut : int = -1
-var last_tut_index : int = -INF
+var last_tut_room = null
 var tuts = [
 	{
 		"key": "objective",
@@ -18,10 +18,10 @@ var tuts = [
 		"key": "rolling_makes_round",
 		"frame": 19
 	},
-	{
-		"key": "bigger_is_faster",
-		"frame": 18
-	},
+#	{
+#		"key": "bigger_is_faster",
+#		"frame": 18
+#	},
 	{
 		"key": "float",
 		"frame": 24,
@@ -66,8 +66,10 @@ func _ready():
 				tuts.erase(obj)
 
 func on_new_room_created(room):
-	var too_soon = abs(room.route.index - last_tut_index) < MIN_DIST_BETWEEN_TUTORIALS
-	if too_soon: return
+	if last_tut_room and is_instance_valid(last_tut_room):
+		var last_tut_index = last_tut_room.route.index
+		var too_soon = abs(room.route.index - last_tut_index) < MIN_DIST_BETWEEN_TUTORIALS
+		if too_soon: return
 	
 	if not room.rect.big_enough_for_tutorial(): return
 	
@@ -79,7 +81,7 @@ func load_next_tutorial(room):
 	
 	var params = tuts[cur_tut]
 	map.dynamic_tutorial.place_tutorial_custom(room, params)
-	last_tut_index = room.route.index
+	last_tut_room = room
 	
 	# check for any special things to turn on/off after this
 	if params.has('special'):

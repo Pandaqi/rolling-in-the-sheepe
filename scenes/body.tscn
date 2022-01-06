@@ -45,12 +45,12 @@ script = ExtResource( 13 )
 
 [node name="Shaper" parent="." instance=ExtResource( 10 )]
 
+[node name="Mover" parent="." instance=ExtResource( 6 )]
+
 [node name="Drawer" parent="." instance=ExtResource( 12 )]
 
 [node name="Input" type="Node" parent="."]
 script = ExtResource( 1 )
-
-[node name="Mover" parent="." instance=ExtResource( 6 )]
 
 [node name="Clinger" parent="." instance=ExtResource( 3 )]
 

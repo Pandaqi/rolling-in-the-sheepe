@@ -90,7 +90,7 @@ func explode_cell(attacker, pos : Vector2):
 	attacker.map_painter.disable_paint = true
 	mask_painter.clear_rectangle(pos*TILE_SIZE, Vector2(1,1)*TILE_SIZE)
 	
-	particles.create_at_pos(pos, "explosion")
+	particles.create_at_pos(pos, "explosion", { "place_front": true })
 	GAudio.play_dynamic_sound({ 'global_position': pos }, "explode")
 	update_bitmask(pos-Vector2(2,2), Vector2(5,5))
 

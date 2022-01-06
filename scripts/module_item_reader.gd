@@ -101,8 +101,12 @@ func turn_on_item(block, tp : String):
 		'ice': body.map_reader.do_ice()
 		'spiderman': body.map_reader.do_spiderman()
 		'glue': body.map_reader.do_glue()
-		'speedup': GAudio.play_dynamic_sound(body, "speedup")
-		'slowdown': GAudio.play_dynamic_sound(body, "slowdown")
+		'speedup': 
+			body.main_particles.create_for_node(body, "speed_stripes", { "match_orientation": -get_move_dir_along_block(block), "place_behind": true })
+			GAudio.play_dynamic_sound(body, "speedup")
+		'slowdown': 
+			body.main_particles.create_for_node(body, "speed_stripes", { "match_orientation": -get_move_dir_along_block(block), "place_behind": true })
+			GAudio.play_dynamic_sound(body, "slowdown")
 
 func turn_off_item(_block, tp : String):
 	if not body.map.special_elements.type_is_toggle(tp): return
@@ -120,11 +124,9 @@ func turn_off_item(_block, tp : String):
 		if obj.type != tp: continue
 		toggled_items.erase(obj)
 
-func execute_toggled_item(obj):
-	var type = obj.type
-	
+func get_move_dir_along_block(block):
 	# get normal + which direction player is going (the most)
-	var rot = obj.block.rotation
+	var rot = block.rotation
 	var normal = Vector2(cos(rot), sin(rot))
 	var norm_vel = body.get_linear_velocity().normalized()
 	
@@ -133,6 +135,13 @@ func execute_toggled_item(obj):
 	
 	var move_dir = normal.rotated(0.5*PI)
 	if dotB > dotA: move_dir *= -1
+	
+	return move_dir
+
+func execute_toggled_item(obj):
+	var type = obj.type
+	
+	var move_dir = get_move_dir_along_block(obj.block)
 	
 	match type:
 		'speedup':
@@ -175,6 +184,7 @@ func handle_item(obj):
 		"trampoline":
 			var normal = obj.item.transform.x
 			GAudio.play_dynamic_sound(body, "jump")
+			body.main_particles.create_for_node(body, "speed_stripes", { "match_orientation": -normal, "place_behind": true })
 			body.apply_central_impulse(normal * TRAMPOLINE_FORCE)
 		
 		"breakable":

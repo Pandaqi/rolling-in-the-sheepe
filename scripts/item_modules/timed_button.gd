@@ -13,4 +13,4 @@ func _on_Area2D_body_exited(body):
 	timer.stop()
 
 func _on_Timer_timeout():
-	get_parent().get_lock_module().record_button_push(self)
+	get_parent().get_lock_module().record_button_push(get_parent())

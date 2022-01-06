@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=37 format=2]
 
 [ext_resource path="res://tileset_terrain.tres" type="TileSet" id=1]
 [ext_resource path="res://scripts/slicer.gd" type="Script" id=2]
@@ -20,6 +20,12 @@
 [ext_resource path="res://scenes/particles.tscn" type="PackedScene" id=18]
 [ext_resource path="res://scripts/map/dynamic_tutorial.gd" type="Script" id=19]
 [ext_resource path="res://scripts/solo_mode.gd" type="Script" id=20]
+[ext_resource path="res://assets/ui/pause_menu.png" type="Texture" id=21]
+[ext_resource path="res://scripts/pause_menu.gd" type="Script" id=22]
+[ext_resource path="res://scripts/state.gd" type="Script" id=23]
+[ext_resource path="res://scripts/game_over_loss_visuals.gd" type="Script" id=24]
+[ext_resource path="res://assets/fonts/skranji_bold.ttf" type="DynamicFontData" id=25]
+[ext_resource path="res://assets/ui/game_over_loss.png" type="Texture" id=26]
 
 [sub_resource type="Shader" id=1]
 resource_local_to_scene = true
@@ -135,8 +141,175 @@ shader_param/p19 = null
 shader_param/sight_radius = 300.0
 shader_param/vp_size = Vector2( 1920, 1080 )
 
+[sub_resource type="Animation" id=11]
+resource_name = "MenuReveal"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Container:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ), Vector2( 1.2, 1.2 ), Vector2( 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Control/ColorRect:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 0, 0, 0, 0 ), Color( 0, 0, 0, 0.47451 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Container:rotation_degrees")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.2, 0.3, 0.4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 0.0, 10.0, -10.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=12]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Container:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Control/ColorRect:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 0, 0, 0, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Container:rotation_degrees")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
+[sub_resource type="DynamicFont" id=15]
+size = 17
+outline_size = 2
+outline_color = Color( 0.996078, 0.929412, 1, 1 )
+font_data = ExtResource( 25 )
+
+[sub_resource type="Animation" id=13]
+resource_name = "MenuReveal"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Container:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ), Vector2( 1.2, 1.2 ), Vector2( 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Control/ColorRect:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 0, 0, 0, 0 ), Color( 0, 0, 0, 0.47451 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Container:rotation_degrees")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.2, 0.3, 0.4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 0.0, 10.0, -10.0, 0.0 ]
+}
+
+[sub_resource type="Animation" id=14]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Container:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Control/ColorRect:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 0, 0, 0, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Container:rotation_degrees")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
+
+[node name="State" type="Node2D" parent="."]
+script = ExtResource( 23 )
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2( 509.545, 302.492 )
@@ -243,5 +416,72 @@ __meta__ = {
 
 [node name="GUI" type="CanvasLayer" parent="."]
 
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+pause_mode = 2
+script = ExtResource( 22 )
+
+[node name="Control" type="Control" parent="PauseMenu"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="PauseMenu/Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0 )
+
+[node name="Container" type="Node2D" parent="PauseMenu"]
+scale = Vector2( 1e-05, 1e-05 )
+
+[node name="Sprite" type="Sprite" parent="PauseMenu/Container"]
+texture = ExtResource( 21 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="PauseMenu"]
+anims/MenuReveal = SubResource( 11 )
+anims/RESET = SubResource( 12 )
+
+[node name="GameOverLossVisuals" type="CanvasLayer" parent="."]
+pause_mode = 2
+script = ExtResource( 24 )
+
+[node name="Control" type="Control" parent="GameOverLossVisuals"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="GameOverLossVisuals/Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0 )
+
+[node name="Container" type="Node2D" parent="GameOverLossVisuals"]
+scale = Vector2( 1e-05, 1e-05 )
+
+[node name="Sprite" type="Sprite" parent="GameOverLossVisuals/Container"]
+texture = ExtResource( 26 )
+
+[node name="Label" type="Label" parent="GameOverLossVisuals/Container"]
+margin_left = -188.0
+margin_top = -77.0
+margin_right = 183.0
+margin_bottom = 26.0
+custom_colors/font_color = Color( 0.356863, 0.0705882, 0.239216, 1 )
+custom_fonts/font = SubResource( 15 )
+text = "Hmm?"
+valign = 1
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="GameOverLossVisuals"]
+anims/MenuReveal = SubResource( 13 )
+anims/RESET = SubResource( 14 )
+
 [connection signal="timeout" from="Map/RouteGenerator/Timer" to="Map/RouteGenerator" method="_on_Timer_timeout"]
 [connection signal="timeout" from="SoloMode/Timer" to="SoloMode" method="_on_Timer_timeout"]
+[connection signal="animation_finished" from="PauseMenu/AnimationPlayer" to="PauseMenu" method="_on_AnimationPlayer_animation_finished"]

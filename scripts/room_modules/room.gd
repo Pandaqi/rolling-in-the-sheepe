@@ -24,9 +24,12 @@ func initialize(pos, size):
 	rect.set_size(size)
 
 func delete():
-	lock.delete()
+	lock.delete(true) # @param hard_remove
 	tilemap.delete()
 	items.delete()
+	entities.delete()
+	
+	outline.remove_border_around_us()
 	
 	for node in related_items:
 		node.queue_free()
