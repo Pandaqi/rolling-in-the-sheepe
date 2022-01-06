@@ -1,11 +1,13 @@
 extends Node2D
 
 var active : bool = false
+var temp_disabled : bool = false
 var last_known_room = null
 
 const FILL_INTERVAL : float = 0.5
 
 onready var timer = $Timer
+onready var disable_timer = $DisableTimer
 onready var main_node = get_parent()
 
 func activate():
@@ -15,6 +17,7 @@ func activate():
 	print("STARTING SOLO MODO")
 	
 	restart_timer()
+	disable_temporarily()
 
 func deactivate():
 	active = false
@@ -24,6 +27,8 @@ func is_active():
 	return active
 
 func move_further_along():
+	if temp_disabled: return
+	
 	var room = main_node.map.route_generator.get_oldest_room()
 	if not room: return
 	
@@ -51,6 +56,10 @@ func move_further_along():
 			'score': score
 		})
 	
+	if sort_arr.size() <= 0:
+		game_over()
+		return
+	
 	sort_arr.sort_custom(self, "custom_sort")
 	
 	# the first cell is the one with shortest distance into room, so the one "furthest back"
@@ -70,10 +79,8 @@ func move_further_along():
 	var num_players_left = get_tree().get_nodes_in_group("Players").size()
 	var stuck_behind = last_known_room and last_known_room.route.index < room.route.index
 
-	
 	if num_players_left <= 0 or stuck_behind:
-		deactivate()
-		main_node.state.game_over(false)
+		game_over()
 		return
 
 	# filled everything? destroy the room
@@ -87,6 +94,10 @@ func move_further_along():
 	if not new_room: return
 	
 	last_known_room = new_room
+
+func game_over():
+	deactivate()
+	main_node.state.game_over(false)
 
 func custom_sort(a,b):
 	return a.score < b.score
@@ -110,3 +121,10 @@ func determine_timer_interval() -> float:
 	
 	var final_interval = scalar * FILL_INTERVAL
 	return final_interval
+
+func disable_temporarily():
+	temp_disabled = true
+	disable_timer.start()
+
+func _on_DisableTimer_timeout():
+	temp_disabled = false

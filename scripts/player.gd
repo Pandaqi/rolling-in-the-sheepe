@@ -115,6 +115,7 @@ func check_teleport(state):
 	main_particles.create_at_pos(teleport_pos, "general_powerup", { 'subtype': 'teleport' })
 	feedback.create_at_pos(teleport_pos, txt)
 	teleport_pos = Vector2.ZERO
+	contact_data = []
 	
 	return true
 
@@ -128,6 +129,7 @@ func plan_teleport(pos, reason : String = ""):
 	map.player_progression.on_player_teleported(self)
 	teleport_pos = pos
 	teleport_reason = reason
+	contact_data = []
 
 func plan_shoot_away(vec):
 	shoot_away_vec = vec

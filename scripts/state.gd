@@ -50,6 +50,7 @@ func game_over(we_won : bool = false):
 	game_over_mode = true
 	main_node.map.route_generator.get_furthest_room().outline.seal()
 	main_node.pause_menu.disable()
+	main_node.solo_mode.deactivate()
 	
 	# TO DO: Create a special "game_end" melody?
 	# In fact, differentiate between losing and winning?

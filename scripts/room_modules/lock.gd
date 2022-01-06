@@ -2,6 +2,7 @@ extends Node
 
 var lock_module
 var lock_planned : bool = false
+var lock_data = {}
 
 var gates = []
 
@@ -31,6 +32,7 @@ func add_lock(forced_type : String = "") -> bool:
 	if forced_type != "": rand_type = forced_type
 	
 	var data = GDict.lock_types[rand_type]
+	lock_data = data
 	
 	# some locks have many different (similar) variants, 
 	# so we instantiate the same scene for them

@@ -34,7 +34,8 @@ var tuts = [
 	},
 	{
 		"key": "unfinished_body_penalty",
-		"frame": 55
+		"frame": 55,
+		"special": "place_spikes"
 	},
 	{
 		"key": "coin_lock",
@@ -56,14 +57,23 @@ var simple_route_generation : bool = true
 
 var solo_mode : bool = false
 
+# tutorials that are useless in solo mode
+var non_solo_tutorials = ["last_player_is_wolf", "wolf_takes_coins", "unfinished_body_penalty"]
+
 func _ready():
 	solo_mode = GInput.get_player_count() == 1
 	
-	# in solo mode, the wolf doesn't exist, so also don't show that tutorial
+	# in solo mode, some concepts don't exist (or aren't that important)
+	# so remove those tutorials
+	# then add a few that are slightly _different_
 	if solo_mode:
-		for obj in tuts:
-			if obj.key == "last_player_is_wolf":
-				tuts.erase(obj)
+		for i in range(tuts.size()-1,-1,-1):
+			var obj = tuts[i]
+			if obj.key in non_solo_tutorials:
+				tuts.remove(i)
+		
+		# new objective (finish before you're caught)
+		tuts[0].frame = 79
 
 func on_new_room_created(room):
 	if last_tut_room and is_instance_valid(last_tut_room):
@@ -86,10 +96,18 @@ func load_next_tutorial(room):
 	# check for any special things to turn on/off after this
 	if params.has('special'):
 		var s = params.special
-		if s == "activate_wolf_rule": wolf_active = true
-		elif s == "allow_placing_locks": can_place_locks = true
-		elif s == "remove_simple_generation": simple_route_generation = false
-		elif s == "allow_tiles_inside": tiles_inside_allowed = true
+		if s == "activate_wolf_rule": 
+			wolf_active = true
+		elif s == "allow_placing_locks": 
+			can_place_locks = true
+			map.dynamic_tutorial.force_allow("lock", "coin_lock")
+		elif s == "remove_simple_generation": 
+			simple_route_generation = false
+		elif s == "allow_tiles_inside": 
+			tiles_inside_allowed = true
+		elif s == "place_spikes": 
+			map.dynamic_tutorial.force_allow("item", "spikes")
+			map.special_elements.add_special_items_to_room(map.route_generator.get_furthest_room(), true) #@param "forced" = true
 
 func is_finished() -> bool:
 	return cur_tut >= tuts.size()

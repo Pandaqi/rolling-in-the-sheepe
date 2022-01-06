@@ -159,8 +159,8 @@ func get_full_dimensions():
 # Helpers
 #
 ####
-func get_random_grid_pos():
-	return Vector2(randi() % int(WORLD_SIZE.x), randi() % int(WORLD_SIZE.y))
+func get_random_grid_pos(margin : int = 0):
+	return Vector2(randi() % int(WORLD_SIZE.x-2*margin) + margin, randi() % int(WORLD_SIZE.y-2*margin) + margin)
 
 func get_grid_pos(real_pos):
 	return (real_pos / TILE_SIZE).floor()

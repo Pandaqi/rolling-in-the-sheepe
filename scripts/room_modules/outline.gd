@@ -56,7 +56,7 @@ func create_border_around_us(params = {}):
 		var other_side = edge_links_to(edge)
 		
 		if params.has('open_all_linked_edges'):
-			if other_side and not (other_side == self): 
+			if other_side and not (other_side == self) and not (other_side.lock.has_lock()): 
 				parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
 		elif prev_room:
 			if other_side == prev_room and (not prev_room.lock.has_lock()):

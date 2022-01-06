@@ -23,10 +23,14 @@ var has_finished : bool = false
 var rooms_in_current_section : int = 0
 var rooms_until_section_end : int = 0
 var section_size_bounds : Vector2 = Vector2(40, 70) #Vector2(10, 20) 
+var num_locks_placed : int = 0
 
 # room generation is only paused when a teleporter has been placed
 # (and we CAN'T continue, even if we wanted to
 var pause_room_generation : bool = false
+
+# used to make sure players stay alive while we're deleting + reconstructing the whole world
+var is_teleporting : bool = false
 
 onready var map = get_parent()
 onready var room_picker = get_node("../RoomPicker")
@@ -50,7 +54,14 @@ func initialize_rooms():
 
 func set_global_parameters():
 	rooms_until_finish = int( floor(rand_range(level_size_bounds.x, level_size_bounds.y)))
+	
+	# to ensure the game ends immediately once the last tutorial has been shown
+	if G.in_tutorial_mode(): rooms_until_finish = 0
+	
 	rooms_until_section_end = int( floor(rand_range(section_size_bounds.x, section_size_bounds.y)))
+
+func generation_disallowed():
+	return pause_room_generation or has_finished
 
 #
 # Every frame update; core of algorithm (delete old rooms, add new)
@@ -74,8 +85,13 @@ func check_for_new_room():
 	var num_rooms_threshold = NUM_ROOMS_FRONT_BUFFER
 	var far_enough_forward = (index > cur_path.size() - num_rooms_threshold)
 	
+	var very_far_forward = abs(cur_path.size() - 1 - index) < 6
+	var num_rooms = 1
+	if very_far_forward: num_rooms = 3
+	
 	if far_enough_forward:
-		room_picker.create_new_room()
+		for _i in range(num_rooms):
+			room_picker.create_new_room()
 
 func check_for_old_room_deletion():
 	if not player_progression.has_trailing_player(): return
@@ -119,6 +135,8 @@ func placed_finish():
 	has_finished = true
 
 func placed_lock():
+	num_locks_placed += 1
+	
 	rooms_in_current_section = 0
 	rooms_until_section_end = int( floor(rand_range(section_size_bounds.x, section_size_bounds.y)))
 
@@ -129,10 +147,13 @@ func should_place_finish():
 	if GDict.cfg.delay_finish_until_all_taught:
 		if not dynamic_tutorial.is_everything_taught(): 
 			return false
-		else:
-			if (get_new_room_index() - dynamic_tutorial.last_tutorial_index) < GDict.cfg.min_rooms_between_last_tut_and_finish:
-				return false
-			
+		
+		if (get_new_room_index() - dynamic_tutorial.last_tutorial_index) < GDict.cfg.min_rooms_between_last_tut_and_finish:
+			return false
+		
+		if num_locks_placed < GDict.cfg.min_locks_before_finish:
+			return false
+		
 	return (total_rooms_created > rooms_until_finish)
 
 func should_place_lock():
@@ -235,3 +256,20 @@ func get_next_best_player(p):
 			return other_p
 	
 	return player_progression.get_leading_player()
+
+func get_ideal_teleporter_room():
+	var max_backtracks = min(6, cur_path.size()-1)
+	var biggest_room = null
+	var biggest_size : int = -INF
+	
+	for i in range(max_backtracks):
+		var room = get_path_from_front(i)
+		if room.rect.get_area() <= biggest_size: continue
+		if room.lock.has_lock(): continue
+		if room.entities.has_some(): continue
+		
+		biggest_size = room.rect.get_area()
+		biggest_room = room
+	
+	return biggest_room
+	

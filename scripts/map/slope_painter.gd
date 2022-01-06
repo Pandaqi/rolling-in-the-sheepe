@@ -73,6 +73,21 @@ func fill_room(room):
 		if not placement_allowed(rand_pos, room): continue
 		
 		map.change_cell(rand_pos, 0)
+	
+	var holes_not_allowed = room.lock.lock_data.has("no_holes")
+	
+	if holes_not_allowed:
+		for pos in room.rect.shrunk_positions:
+			if room.tilemap.is_cell_filled(pos): continue
+			
+			var num_filled_nbs = 0
+			for x in range(-1,2):
+				for y in range(-1,2):
+					if room.tilemap.is_cell_filled(pos + Vector2(x,y)):
+						num_filled_nbs += 1
+			
+			if num_filled_nbs >= 7:
+				map.change_cell(pos, 0)
 
 ####
 # Slopes
@@ -116,6 +131,10 @@ func tile_is_slope(pos):
 	var tile_index = tile_coord.x + 12*tile_coord.y
 	
 	return (tile_index in allowed_slope_indices)
+
+# TO DO: not sure if this is the right one, maybe I'm missing half open stuff, or including too many this way
+func tile_is_half_open(pos):
+	return tile_is_slope(pos)
 
 func get_slope_dir(pos):
 	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)

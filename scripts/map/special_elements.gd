@@ -15,9 +15,9 @@ func _ready():
 		if GDict.item_types[key].has("unpickable"):
 			available_item_types.remove(i)
 
-func add_special_items_to_room(room):
+func add_special_items_to_room(room, forced : bool = false):
 	if not room: return
-	if not room.items.can_have_special_items: return
+	if not room.items.can_have_special_items and (not forced): return
 	
 	# if we already have items, remove all of them
 	# because our configuration might have changed, so they might be invalid/floating in mid-air, so just clean it up

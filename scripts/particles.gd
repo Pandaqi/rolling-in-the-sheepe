@@ -9,7 +9,8 @@ var preloads = {
 	'explosion': preload("res://scenes/particles/explosion.tscn"),
 	'general_powerup': preload("res://scenes/particles/general_powerup.tscn"),
 	"speed_stripes": preload("res://scenes/particles/speed_stripes.tscn"),
-	"float": preload("res://scenes/particles/float.tscn")
+	"float": preload("res://scenes/particles/float.tscn"),
+	"lock": preload("res://scenes/particles/lock.tscn")
 }
 
 func create_for_node(node, type : String, params : Dictionary = {}):
@@ -31,6 +32,12 @@ func create_at_pos(pos : Vector2, type : String, params : Dictionary = {}):
 	
 	if type == "speed_stripes" and params.has('node'):
 		p.attach_node(params.node)
+	
+	if params.has('spread_across'):
+		var room = params.spread_across
+		var extents_2d = 0.5*room.rect.get_real_size()
+		var extents = Vector3(extents_2d.x, extents_2d.y, 0)
+		p.get_node("Particles2D").process_material.emission_box_extents = extents 
 	
 	if place_behind:
 		map.bg_layer.add_child(p)

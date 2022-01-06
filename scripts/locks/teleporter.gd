@@ -10,6 +10,8 @@ var time_left = 15
 
 var timer_is_running : bool = false
 
+onready var solo_mode = get_node("/root/Main/SoloMode")
+
 func _ready():
 	for i in GInput.get_player_count():
 		players_here[i] = []
@@ -75,17 +77,22 @@ func perform_teleport():
 		update_label()
 		return
 	
+	solo_mode.disable_temporarily()
+	
 	$Timer.queue_free()
 	$Label/Label.set_text("!")
 	
 	print("Everyone here; teleport!")
 	
 	# destroy all old rooms
+	map.route_generator.is_teleporting = true
 	map.route_generator.delete_all_rooms()
 	
 	# create the new one
 	map.route_generator.pause_room_generation = false
-	map.room_picker.create_new_room( map.get_random_grid_pos() )
+	
+	var new_pos_margin = 5
+	map.room_picker.create_new_room( map.get_random_grid_pos(new_pos_margin) )
 	
 	# teleport all players there
 	var unteleported_players = []
@@ -133,3 +140,5 @@ func perform_teleport():
 	# introduce another buffer
 	for _i in range(BUFFER_AFTER_TELEPORT):
 		map.room_picker.create_new_room()
+	
+	map.route_generator.is_teleporting = false

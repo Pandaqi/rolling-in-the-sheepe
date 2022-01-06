@@ -1,5 +1,9 @@
 extends Node
 
+# If number of options below <threshold>, we pretend there are no options with probability <prob>
+const PREEMPTIVE_TELEPORTER_THRESHOLD : int = 4
+const PREEMPTIVE_TELEPORTER_PROB : float = 0.5
+
 const DIST_BEFORE_PLACING_TELEPORTER : int = 4
 
 const MAX_BACKTRACK_ROOMS : int = 7
@@ -35,6 +39,8 @@ func _ready():
 # The only functionality it has: create newest room
 #
 func create_new_room(proposed_location : Vector2 = Vector2.ZERO):
+	if map.route_generator.generation_disallowed(): return
+	
 	var params = initialize_new_room_rect(proposed_location)
 	set_wanted_room_parameters(params)
 	
@@ -70,6 +76,9 @@ func initialize_new_room_rect(proposed_location):
 		'ignore_optional_requirements': false,
 		'no_valid_placement': false
 	}
+	
+	if randf() <= 0.5: params.dir = 2
+	if G.in_tutorial_mode(): params.dir = 0 # left to right is easier/more intuitive for most people
 	
 	var pos = default_starting_pos
 	if proposed_location: pos = proposed_location
@@ -124,6 +133,7 @@ func backtrack_and_find_good_room(params):
 	var found_something = false
 	var max_backtracking = MAX_BACKTRACK_ROOMS
 	if G.in_tutorial_mode(): max_backtracking = 2
+	max_backtracking = min(max_backtracking, route_generator.cur_path.size())
 	
 	for i in range(max_backtracking):
 		params.prev_room = route_generator.get_path_from_front(i)
@@ -149,7 +159,7 @@ func place_teleporter_if_stuck(params):
 	params.new_room.queue_free()
 	
 	route_generator.pause_room_generation = true
-	route_generator.get_furthest_room().turn_into_teleporter()
+	route_generator.get_ideal_teleporter_room().turn_into_teleporter()
 	return true
 
 func generate_all_1x1_rooms_in_dir(params):
@@ -173,6 +183,7 @@ func generate_all_1x1_rooms_in_dir(params):
 
 func find_valid_configuration_better(params):
 	var use_simple_generation = tutorial_course and tutorial_course.simple_route_generation
+	var path_too_short = (route_generator.cur_path.size() <= 6)
 	
 	# UPGRADE: controlled variation; determine our maximum size
 	# (the path tries to stay varied: never too many small or large rooms after each other)
@@ -210,6 +221,7 @@ func find_valid_configuration_better(params):
 		preferred_dir_order.erase(3)
 	
 	# find the valid rooms in each dir, until we have a direction with results
+	var total_num_valid_rooms : int = 0
 	while preferred_dir_order.size() > 0:
 		
 		params.dir = preferred_dir_order.pop_front()
@@ -291,7 +303,11 @@ func find_valid_configuration_better(params):
 				if (room.pos.x == last_pos.x):
 					rooms_to_check.append({ 'pos': room.pos - Vector2(1,0), 'size': room.size + Vector2(1,0) })
 		
+		total_num_valid_rooms += valid_rooms.size()
+		
 		if valid_rooms.size() <= 0: continue
+		if not path_too_short:
+			if valid_rooms.size() <= PREEMPTIVE_TELEPORTER_THRESHOLD and randf() <= PREEMPTIVE_TELEPORTER_PROB: break
 		
 		print("NUM VALID ROOMS")
 		print(valid_rooms.size())
@@ -314,6 +330,11 @@ func place_room_according_to_params(params):
 	
 	if params.prev_room:
 		params.prev_room.finish_placement_in_hindsight()
+	
+	# EXCEPTION: first room doesn't know yet which way it's going, so we need to set that afterwards (once we have the second room)
+	# TO DO: probably better to find a more elegant solution for that?
+	if route_generator.cur_path.size() == 2:
+		route_generator.cur_path[0].route.dir = route_generator.cur_path[1].route.dir
 	
 	params.new_room.finish_placement()
 

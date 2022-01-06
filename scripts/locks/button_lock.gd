@@ -57,6 +57,9 @@ func spawn_buttons():
 	buttons = []
 	var final_buttons_placed = 0
 	for i in range(num_buttons):
+		# NOTE: crucial remark, we use parameter "use_shrunk" 
+		# to force buttons to be _inside_ the lock completely, and thus reachable
+		# all other special tiles just use the full room
 		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type , 'use_shrunk': true, 'ignore_size': true })
 		if not new_button: break
 		

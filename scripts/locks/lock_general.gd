@@ -39,7 +39,14 @@ func convert_connection_to_gate():
 	var outline = my_room.outline.get_edges()
 	for edge in outline:
 		var other_side = my_room.outline.edge_links_to(edge)
-		if other_side and other_side.route.index > my_room.route.index:
+		if not other_side: continue
+		
+		var part_of_another_room = (other_side.route.index > my_room.route.index)
+		
+		var other_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
+		var same_room_but_open = (other_side.route.index == my_room.route.index) and map.slope_painter.tile_is_half_open(other_pos)
+		
+		if part_of_another_room or same_room_but_open:
 			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
 			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter, 'gate': true })
 			
@@ -66,4 +73,5 @@ func delete(hard_remove : bool = false):
 	# (should've been a much cleaner structure, but it is what it is)
 	if not hard_remove:
 		feedback.create_at_pos(my_room.rect.get_real_center(), "Unlocked!")
+		my_room.main_particles.create_at_pos(my_room.rect.get_real_center(), "lock", { "spread_across": my_room })
 		GAudio.play_dynamic_sound(create_audio_obj(), "lock_unlocked")

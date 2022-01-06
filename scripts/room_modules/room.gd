@@ -52,13 +52,14 @@ func turn_into_teleporter():
 	
 	# if too small for a reasonable teleporter, increase
 	# (if big enough, this isn't desirable, as it might open stuff to older rooms)
-	if rect.get_area() <= 9:
-		rect.save_cur_size_as_shrunk()
-		var grown_rect = {
-			'pos': rect.pos-Vector2.ONE, 
-			'size': rect.size + Vector2.ONE*2
-		}
-		rect.update_from(grown_rect)
+	if GDict.cfg.grow_teleporters_to_bigger_size:
+		if rect.get_area() <= 9:
+			rect.save_cur_size_as_shrunk()
+			var grown_rect = {
+				'pos': rect.pos-Vector2.ONE, 
+				'size': rect.size + Vector2.ONE*2
+			}
+			rect.update_from(grown_rect)
 	
 	finish_placement()
 	finish_placement_in_hindsight()

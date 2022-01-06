@@ -11,6 +11,7 @@ const MIN_COIN_THINGS = 3
 const MIN_GLUE_THINGS = 1
 
 onready var map = get_parent()
+onready var solo_mode = get_node("/root/Main/SoloMode")
 
 var tutorial_scene = preload("res://scenes/dynamic_tutorial.tscn")
 
@@ -40,7 +41,12 @@ func draw_list_weighted(ref, list : Array, num : int):
 	for key in list:
 		if not ref[key].has('prob'):
 			ref[key].prob = 1
-		total_prob += ref[key].prob
+		
+		var final_prob = ref[key].prob
+		if solo_mode.is_active() and ref[key].has("solo_prob"):
+			final_prob = ref[key].solo_prob
+		
+		total_prob += final_prob
 	
 	var arr = []
 	
@@ -50,7 +56,12 @@ func draw_list_weighted(ref, list : Array, num : int):
 		
 		var chosen_key
 		for key in list:
-			running_sum += ref[key].prob / float(total_prob) 
+			
+			var final_prob = ref[key].prob
+			if solo_mode.is_active() and ref[key].has("solo_prob"):
+				final_prob = ref[key].solo_prob
+			
+			running_sum += final_prob / float(total_prob) 
 			chosen_key = key
 			if running_sum >= target: break
 		
@@ -64,26 +75,19 @@ func determine_included_types():
 	rng.randomize()
 	
 	var all_terrains = GDict.terrain_types.keys()
+	remove_unpickables(all_terrains, GDict.terrain_types)
 	all_terrains.shuffle()
-	
-	for i in range(all_terrains.size()-1, -1, -1):
-		var key = all_terrains[i]
-		if GDict.terrain_types[key].has('unpickable'): 
-			all_terrains.remove(i)
-			continue
-			
-		if terrain_is_lock(key): 
-			all_terrains.remove(i)
-			continue
 	
 	var num_terrains = rng.randi_range(NUM_TERRAIN_BOUNDS.min, NUM_TERRAIN_BOUNDS.max)
 
 	var all_locks = GDict.lock_types.keys()
+	remove_unpickables(all_locks, GDict.lock_types)
 	all_locks.shuffle()
 	var num_locks = rng.randi_range(NUM_LOCK_BOUNDS.min, NUM_LOCK_BOUNDS.max)
 
 	var all_items = GDict.item_types.keys()
 	all_items.shuffle()
+	remove_unpickables(all_items, GDict.item_types)
 	var num_items = rng.randi_range(NUM_ITEM_BOUNDS.min, NUM_ITEM_BOUNDS.max)
 	
 	for i in range(all_items.size()-1,-1,-1):
@@ -118,6 +122,17 @@ func determine_included_types():
 	
 	print("DYNAMIC TUTORIAL")
 	print(things_to_teach)
+
+func remove_unpickables(arr, ref_arr):
+	for i in range(arr.size()-1, -1, -1):
+		var key = arr[i]
+		if ref_arr[key].has('unpickable'): 
+			arr.remove(i)
+			continue
+		
+		if solo_mode.is_active() and ref_arr.has('solo_unpickable'):
+			arr.remove(i)
+			continue
 
 func count_things_of_type(tp : String):
 	var sum = 0
@@ -163,6 +178,10 @@ func has_something_planned():
 
 func get_kind_planned():
 	return thing_planned
+
+func force_allow(kind : String, type : String):
+	if not things_taught.has(kind): things_taught[kind] = []
+	things_taught[kind].append(type)
 
 func on_usage_of(kind : String, type : String):
 	if not has_something_planned(): return
@@ -225,8 +244,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'item'
-	rand_type = 'trampoline'
+#	rand_kind = 'lock'
+#	rand_type = 'button_lock_timed'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
@@ -269,7 +288,12 @@ func place_tutorial(room):
 	room.on_tutorial_placement()
 	map.bg_layer.add_child(tut)
 	
-	if self_placement: return
+	# when a tutorial is placed in its own room, it's quite distracting and probably obscures something
+	# so scale it down, make a bit transparent
+	if self_placement: 
+		tut.set_scale(tut.get_scale()*0.5)
+		tut.modulate.a = 0.8
+		return
 	
 	thing_planned.tutorial_placed = true
 	last_tutorial_index = map.route_generator.get_new_room_index()

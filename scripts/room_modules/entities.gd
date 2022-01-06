@@ -18,6 +18,11 @@ func get_them():
 func count():
 	return players_inside.size()
 
+func has_some():
+	return count() > 0
+
 func delete():
+	if parent.map.route_generator.is_teleporting: return
+	
 	for p in players_inside:
 		p.status.delete(false)

@@ -400,6 +400,9 @@ script = ExtResource( 20 )
 [node name="Timer" type="Timer" parent="SoloMode"]
 one_shot = true
 
+[node name="DisableTimer" type="Timer" parent="SoloMode"]
+one_shot = true
+
 [node name="FogOfWar" type="CanvasLayer" parent="."]
 script = ExtResource( 10 )
 
@@ -484,4 +487,5 @@ anims/RESET = SubResource( 14 )
 
 [connection signal="timeout" from="Map/RouteGenerator/Timer" to="Map/RouteGenerator" method="_on_Timer_timeout"]
 [connection signal="timeout" from="SoloMode/Timer" to="SoloMode" method="_on_Timer_timeout"]
+[connection signal="timeout" from="SoloMode/DisableTimer" to="SoloMode" method="_on_DisableTimer_timeout"]
 [connection signal="animation_finished" from="PauseMenu/AnimationPlayer" to="PauseMenu" method="_on_AnimationPlayer_animation_finished"]

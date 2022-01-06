@@ -25,12 +25,8 @@ func activate():
 	load_colors()
 	load_predefined_shapes()
 	
-	if not is_menu:
-		if GInput.get_player_count() <= 0:
-			GInput.create_debugging_players()
-		
-		num_players = GInput.get_player_count()
-		create_players()
+	num_players = GInput.get_player_count()
+	create_players()
 
 func create_players():
 	player_shapes = []
