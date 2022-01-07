@@ -11,6 +11,9 @@ var cfg = {
 	"route_generation_sneak_improvement": true,
 	"min_locks_before_finish": 2,
 	
+	"transfer_coins_to_biggest_shape_on_self_hit": false,
+	"destroyed_body_penalty_in_solo_mode": true,
+	
 	# either slicing yields the exact same shape each time (first option)
 	# or it just goes back one step
 	"slicing_yields": "triangle",
@@ -102,7 +105,7 @@ var edge_types = {
 var lock_types = {
 	"teleporter": { "terrain": "teleporter", "edge_type": "teleporter", "unpickable": true },
 	
-	"coin_lock": { "terrain": "lock", "tut": 35, "prob": 3 },
+	"coin_lock": { "terrain": "lock", "tut": 35, "prob": 3, "demo": true },
 	"coin_lock_gate": { "coin_related": true, "terrain": "coin_gate_lock", "tut": 36 },
 	
 	"mass_gate": { "terrain": "mass_gate_lock", "edge_type": "mass", "tut": 37, "solo_unpickable": true },
@@ -110,7 +113,7 @@ var lock_types = {
 	"sacrifice_gate": { "terrain": "sacrifice_lock", "edge_type": "sacrifice", "tut": 39 },
 	"sacrifice_coin_gate": { "coin_related": true, "terrain": "sacrifice_coin_lock", "edge_type": "sacrifice_coin", "tut": 40 },
 	
-	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "regular", "tut": 41, "prob": 3, "no_holes": true },
+	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "regular", "tut": 41, "prob": 3, "no_holes": true, "demo": true },
 	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "timed", "tut": 42 , "prob": 2, "no_holes": true },
 	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "order", "tut": 43 , "prob": 2, "no_holes": true },
 	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "simultaneous", "tut": 44, "prob": 2, "no_holes": true, "solo_unpickable": true },
@@ -119,7 +122,7 @@ var lock_types = {
 	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
 	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49, "prob": 2 },
 	
-	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular", "tut": 50, "prob": 3, "no_holes": true },
+	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular", "tut": 50, "prob": 3, "no_holes": true, "demo": true },
 	"painter_holes_lock": { "terrain": "painter_holes_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "holes", "tut": 52, "no_holes": true },
 	"painter_erase_lock": { "terrain": "painter_erase_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "erase", "tut": 51, "prob": 3, "no_holes": true },
 	
@@ -128,13 +131,13 @@ var lock_types = {
 
 # NOTE: items can be immediate, toggle, or _none of both_ (don't work on player interaction)
 var item_types = {
-	"spikes": { "frame": 0, "immediate": true, "delete": true, "invincible": true, "tut": 45, "prob": 3, "solo_prob": 6 },
-	"button_regular": { "frame": 1, "immediate": true, "delete": true, "unpickable": true },
-	"button_timed": { "frame": 2, "immediate": true, "unpickable": true, "module": true },
-	"button_order": { "frame": 3, "immediate": true, "unpickable": true, "needs_label": true },
-	"button_simultaneous": { "frame": 4, "immediate": true, "unpickable": true },
+	"spikes": { "frame": 0, "immediate": true, "delete": true, "invincible": true, "tut": 45, "prob": 3, "solo_prob": 6, "demo": true },
+	"button_regular": { "frame": 1, "immediate": true, "delete": true, "unpickable": true, "item_group": "buttons" },
+	"button_timed": { "frame": 2, "immediate": true, "unpickable": true, "module": true, "item_group": "buttons" },
+	"button_order": { "frame": 3, "immediate": true, "unpickable": true, "needs_label": true, "item_group": "buttons" },
+	"button_simultaneous": { "frame": 4, "immediate": true, "unpickable": true, "item_group": "buttons" },
 	
-	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58 },
+	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58, "demo": true },
 	"speedup": { "frame": 6, "toggle": true, "prob": 2, "tut": 59 },
 	"slowdown": { "frame": 7, "toggle": true, "prob": 2, "tut": 60 },
 	"ghost": { "frame": 8, "toggle": true, "tut": 61 },
@@ -144,7 +147,7 @@ var item_types = {
 	
 	"breakable": { "frame": 12, "immediate": true, "delete": true, "tut": 65 },
 	"reset_shape": { "frame": 13, "immediate": true, "tut": 66 },
-	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67 },
+	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67, "demo": true },
 	
 	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68, "solo_prob": 6 },
 	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6 },
@@ -152,13 +155,32 @@ var item_types = {
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
 	"spiderman": { "frame": 18, "toggle": true, "tut": 71 },
 	"glue": { "frame": 19, "toggle": true, "prob": 2, "tut": 72, "glue_related": true },
-	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73, "coin_related": true },
+	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73, "coin_related": true, "demo": true },
 	
 	"freeze": { "frame": 21, "immediate": true, "delete": true, "tut": 74, "solo_prob": 0.25 },
-	"time_bonus": { "frame": 22, "immediate": true, "delete": true, "prob": 2, "tut": 75, "solo_unpickable": true },
+	"time_bonus": { "frame": 22, "immediate": true, "delete": true, "prob": 2, "tut": 75, "solo_unpickable": true, "demo": true },
 	"time_penalty": { "frame": 23, "immediate": true, "delete": true, "prob": 2, "tut": 76, "solo_unpickable": true },
 	"fast_forward": { "frame": 24, "immediate": true, "prob": 0.5, "tut": 77, "solo_unpickable": true },
-	"fast_backward": { "frame": 25, "immediate": true, "prob": 0.5, "tut": 78, "solo_unpickable": true }
+	"fast_backward": { "frame": 25, "immediate": true, "prob": 0.5, "tut": 78, "solo_unpickable": true },
+	
+	# NEW ADDITIONS START HERE
+	"body_buyer": { "frame": 26, "immediate": true, "delete": true, "coin_related": true },
+	"conditional_freeze": { "frame": 27, "toggle": true },
+	"all_changer": { "frame": 28, "immediate": true, "delete": true },
+	
+	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true },
+	"repel_coin": { "frame": 30, "immediate": true, "coin_related": true, "solo_unpickable": true },
+	"time_bonus_coin": { "frame": 31, "immediate": true, "coin_related": true, "solo_unpickable": true },
+	"shrink_radius_coin": { "frame": 32, "immediate": true, "coin_related": true, "solo_unpickable": true },
+	"slow_chaser": { "frame": 33, "immediate": true, "delete": true, "coin_related": true, "multi_unpickable": true },
+	
+	"grow": { "frame": 34, "immediate": true },
+	"shrink": { "frame": 35, "immediate": true, "solo_prob": 3.0 },
+	
+	"magnet_radius": { "frame": 36, "toggle": true },
+	"platform": { "frame": 37 },
+	"platform_moving": { "frame": 38 },
+	"slope": { "frame": 39, "prob": 5.0 }
 }
 
 var terrain_types = {
@@ -169,12 +191,12 @@ var terrain_types = {
 	"reverse_gravity": { "frame": 3, 'category': 'gravity', 'disable_consecutive': true, 'tut': 5, "prob": 2 },
 	"no_gravity": { "frame": 4, 'category': 'gravity', 'tut': 6 },
 	"ice": { "frame": 5, 'category': 'physics', 'tut': 7 },
-	"bouncy": { "frame": 6, 'category': 'physics', 'tut': 13, "prob": 2 },
+	"bouncy": { "frame": 6, 'category': 'physics', 'tut': 13, "prob": 2, "demo": true },
 	"spiderman": { "frame": 7, 'category': 'physics', 'tut': 14, "prob": 2 },
 	"speed_boost": { "frame": 8, 'category': 'speed', 'tut': 15 },
 	"speed_slowdown": { "frame": 9, 'category': 'speed', 'tut': 21, "disable_consecutive": true, "prob": 0.33 },
-	"glue": { "frame": 10, 'category': 'slicing', 'tut': 22, "glue_related": true, "prob": 3 },
-	"reverse_controls": { "frame": 11, 'category': 'misc', 'tut': 23, "prob": 2 },
+	"glue": { "frame": 10, 'category': 'slicing', 'tut': 22, "glue_related": true, "prob": 3, "demo": true },
+	"reverse_controls": { "frame": 11, 'category': 'misc', 'tut': 23, "prob": 2, "demo": true },
 	
 	"spikes": { "frame": 12, 'category': 'slicing', 'tut': 25, "prob": 2, "solo_unpickable": true },
 	"ghost": { "frame": 13, 'category': 'misc', 'tut': 26 },
@@ -183,7 +205,7 @@ var terrain_types = {
 	"body_limit": { "frame": 16, "category": "slicing", 'tut': 29, "solo_unpickable": true },
 	
 	"invincibility": { "frame": 17, "category": "coin", "coin_related": true, 'tut': 30 },
-	"rounder": { "frame": 18, "category": "coin", "coin_related": true, 'tut': 31 },
+	"rounder": { "frame": 18, "category": "coin", "coin_related": true, 'tut': 31, "demo": true },
 	"halver": { "frame": 19, "category": "coin", "coin_related": true, 'tut': 32, "disable_consecutive": true },
 	"slower": { "frame": 20, "category": "coin", "coin_related": true, 'tut': 33, "prob": 0.6 },
 	"bomb": { "frame": 21, "category": "coin", "coin_related": true, 'tut': 34, "prob": 0.3, "disable_consecutive": true },

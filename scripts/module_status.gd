@@ -32,6 +32,11 @@ func delete(part_of_slice : bool = true):
 		body.feedback.create_for_node(body, "Destroyed!")
 		GAudio.play_dynamic_sound(body, "non_slice_destroy")
 		body.main_particles.create_for_node(body, "explosion", { "place_front": true })
+		
+		if body.main_node.solo_mode.is_active() and GDict.cfg.destroyed_body_penalty_in_solo_mode:
+			var arr = body.player_manager.get_all_bodies_of(player_num)
+			for b in arr:
+				b.rounder.make_fully_malformed()
 	
 	body.queue_free()
 

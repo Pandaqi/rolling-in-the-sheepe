@@ -210,6 +210,9 @@ func set_all_cells_to_room(room):
 		if out_of_bounds(new_pos): continue
 
 		var already_has_room = get_room_at(new_pos)
+		
+		# TO DO: So this would be removed
+		# TO DO: We overwrite the old room always, BUT save it as "old_room" or "overwritten_room" on the cell
 		if already_has_room and room.rect.inside_growth_area_global(new_pos): continue
 		
 		get_cell(new_pos).room = room

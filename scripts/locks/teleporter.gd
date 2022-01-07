@@ -2,7 +2,6 @@ extends "res://scripts/locks/lock_general.gd"
 
 const BUFFER_AFTER_TELEPORT : int = 6
 const TIME_PENALTY_FOR_MISSING_TELEPORT : float = 10.0
-const MIN_DIST_TO_NEW_ROOM = 10 # in terms of grid tiles, Manhattan distance radius
 
 var players_here = {}
 var num_players_here : int = 0
@@ -118,8 +117,7 @@ func perform_teleport():
 		
 		var num = body.status.player_num
 		var index = unteleported_players.find(num)
-		if index < 0: 
-			continue
+		if index < 0: continue
 		
 		var final_pos = map.player_manager.get_spread_out_position(teleport_target_room)
 		
@@ -132,7 +130,7 @@ func perform_teleport():
 	# clean up all remaining pieces (that didn't make it at all)
 	for body in all_bodies:
 		if (body in teleported_bodies): continue
-		body.status.delete()
+		body.status.delete(false) # @param "part_of_slice"
 	
 	# do ONE sound effect for all of them
 	GAudio.play_dynamic_sound({ 'global_position': teleport_target_pos }, "teleport")

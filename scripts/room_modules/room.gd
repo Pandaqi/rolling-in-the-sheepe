@@ -99,7 +99,7 @@ func finish_placement():
 	# then fill the new room
 	slope_painter.place_slopes(self)
 	slope_painter.fill_room(self)
-
+	
 	outline.determine_outline()
 
 # called when the NEXT room is being placed, as only then we know what should happen with this one
@@ -110,6 +110,7 @@ func finish_placement_in_hindsight():
 	lock.check_planned_lock()
 	
 	map.special_elements.add_special_items_to_room(self)
+	outline.recalculate_outline()
 	map.edges.handle_gates(self)
 
 func on_tutorial_placement():

@@ -19,9 +19,8 @@ func update_label():
 func set_sub_type(tp):
 	sub_type = tp
 
+# NOTE: item == null on simultanous buttons only
 func record_button_push(item):
-	GAudio.play_dynamic_sound(item, "button")
-	
 	if sub_type == "order":
 		if item.general_parameter > buttons_pushed:
 			return false
@@ -34,7 +33,9 @@ func record_button_push(item):
 	elif sub_type == "timed":
 		map.special_elements.erase(item)
 	
-	my_room.main_particles.create_at_pos(item.global_position, "general_powerup", { 'subtype': 'checkmark' })
+	if item != null:
+		GAudio.play_dynamic_sound(item, "button")
+		my_room.main_particles.create_at_pos(item.global_position, "general_powerup", { 'subtype': 'checkmark' })
 	
 	on_progress()
 	buttons_pushed += 1

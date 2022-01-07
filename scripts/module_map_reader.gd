@@ -6,7 +6,7 @@ const BOUNCE_VAL : float = 0.8
 
 # used when repelling people from a "body_limit" terrain
 const REPEL_FORCE : float = 600.0
-const MIN_COIN_LIMIT : int = 4
+const MIN_COIN_LIMIT : int = 2
 
 const MAX_TILED_DIST_BETWEEN_PLAYERS : int = 50
 const MIN_EUCLIDIAN_DIST_BEFORE_TELEPORT : float = 460.0
@@ -88,7 +88,7 @@ func do_effect_of_cell(cell):
 		
 		"reverse_controls":
 			body.feedback.create_for_node(body, "Reversed Controls!")
-			body.input.reverse = true
+			body.mover.reverse = true
 		
 		"spikes":
 			do_spikes()
@@ -177,7 +177,7 @@ func undo_effect_of_cell(cell):
 		
 		"reverse_controls":
 			body.feedback.create_for_node(body, "Normal Controls!")
-			body.input.reverse = false
+			body.mover.reverse = false
 		
 		"spikes":
 			undo_spikes()

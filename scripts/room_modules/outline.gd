@@ -30,12 +30,15 @@ func determine_outline():
 	
 	open_connection_to_previous_room()
 
+func recalculate_outline():
+	open_connection_to_previous_room()
+
 func open_connection_to_previous_room():
 	if not parent.route.has_previous_room(): return
 	if parent.route.prev_room.lock.has_lock(): return
 
 	for edge in outline:
-		if not (edge_links_to_previous_room(edge) or edge_links_to_same_room_but_open(edge)): continue
+		if not edge_links_to_previous_room(edge): continue
 
 		parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
 
@@ -54,12 +57,18 @@ func create_border_around_us(params = {}):
 		if params.has('close_all'): continue
 		
 		var other_side = edge_links_to(edge)
+		var same_room_but_open = edge_links_to_same_room_but_open(edge)
+		
+		# if we don't do this, the actual gates/locks are ALSO opened on same-room-but-open sides
+		var is_back_edge = (edge.dir_index != parent.route.dir)
+		
+		if prev_room and prev_room.lock.has_lock(): continue
 		
 		if params.has('open_all_linked_edges'):
-			if other_side and not (other_side == self) and not (other_side.lock.has_lock()): 
+			if other_side and not (other_side == self):
 				parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
 		elif prev_room:
-			if other_side == prev_room and (not prev_room.lock.has_lock()):
+			if other_side == prev_room or (same_room_but_open and is_back_edge):
 				parent.map.edges.remove_at(edge.pos, edge.dir_index, true) 
 	
 	has_border = true

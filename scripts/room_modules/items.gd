@@ -47,9 +47,17 @@ func add_special_item(params = {}):
 	
 	return elem
 
-func erase_special_item(item):
+func erase_special_item(item, hard_erase : bool = false):
 	special_elements.erase(item)
 	parent.map.special_elements.erase(item)
+	
+	# hard-erasing buttons has some consequences
+	# as their precise count is important for the lock and stuff
+	# TO DO: perhaps it was better to just FORBID hard erasing them ... eh
+	if hard_erase:
+		var data = GDict.item_types[item.type]
+		if data.has('item_group') and data.item_group == "button":
+			item.my_room.lock.lock_module.record_button_push(item)
 
 func clear_special_items():
 	for item in special_elements:

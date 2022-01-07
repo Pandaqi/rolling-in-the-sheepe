@@ -192,3 +192,6 @@ func register_body(p):
 func deregister_body(p):
 	p.remove_from_group("Players")
 	bodies_per_player[p.status.player_num].erase(p)
+
+func get_all_bodies_of(player_num : int):
+	return bodies_per_player[player_num] + []

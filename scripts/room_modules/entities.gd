@@ -13,6 +13,12 @@ func remove_player(p):
 	parent.lock.on_body_exit(p)
 
 func get_them():
+	# TO DO: this is a safeguard against crashes; but I should really find the original cause for the bug that _sometimes_ it has a wrong value
+	for i in range(players_inside.size()-1,-1,-1):
+		var p = players_inside[i]
+		if not p or not is_instance_valid(p):
+			players_inside.remove(i)
+	
 	return players_inside
 
 func count():

@@ -5,7 +5,7 @@ onready var spawner = $Spawner
 
 func _ready():
 	gate_type = "sacrifice_coin"
-	general_parameter = randi() % 5 + 4
+	general_parameter = randi() % 2 + 4
 	update_label()
 
 func update_label():

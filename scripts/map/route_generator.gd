@@ -4,7 +4,7 @@ extends Node
 const NUM_ROOMS_BACK_BUFFER : int = 4
 
 # how many rooms should be CREATED (AT MOST) in front of the leading player
-const NUM_ROOMS_FRONT_BUFFER : int = 25
+const NUM_ROOMS_FRONT_BUFFER : int = 15
 
 # with how many pre-created rooms we start each game
 # Real value should be 10-15
@@ -157,7 +157,7 @@ func should_place_finish():
 	return (total_rooms_created > rooms_until_finish)
 
 func should_place_lock():
-	 return (rooms_in_current_section > rooms_until_section_end)
+	 return (rooms_in_current_section > rooms_until_section_end) and cur_path.size() > 4
 
 func get_new_room_index():
 	return cur_path.size()

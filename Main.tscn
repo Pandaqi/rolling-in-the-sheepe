@@ -374,7 +374,7 @@ material = SubResource( 2 )
 position = Vector2( 0, 1 )
 centered = false
 
-[node name="SpecialElements" type="Node" parent="Map"]
+[node name="SpecialElements" type="Node2D" parent="Map"]
 script = ExtResource( 17 )
 
 [node name="DynamicTutorial" type="Node" parent="Map"]

@@ -5,7 +5,7 @@ extends Node2D
 const BASIC_BODY_RADIUS_GROWTH : float = 1.25
 
 const MIN_RADIUS : float = 14.0
-const MAX_RADIUS : float = 26.0 # JUST fits between gaps
+const MAX_RADIUS : float = 25.0 # JUST fits between gaps
 const SIZE : float = 20.0
 
 var area : float
@@ -272,6 +272,12 @@ func at_max_size():
 
 func at_min_size():
 	return approximate_radius() <= MIN_RADIUS
+
+func clamp_growth_factor(fac):
+	var radius = approximate_radius()
+	var max_factor = MAX_RADIUS / radius
+	var min_factor = MIN_RADIUS / radius
+	return clamp(fac, min_factor, max_factor)
 
 func get_bounding_box_along_vec(vec):
 	# convert bounding box to vectors (from centroid)

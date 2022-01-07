@@ -61,7 +61,7 @@ var solo_mode : bool = false
 var non_solo_tutorials = ["last_player_is_wolf", "wolf_takes_coins", "unfinished_body_penalty"]
 
 func _ready():
-	solo_mode = GInput.get_player_count() == 1
+	solo_mode = (GInput.get_player_count() == 1)
 	
 	# in solo mode, some concepts don't exist (or aren't that important)
 	# so remove those tutorials
@@ -74,6 +74,12 @@ func _ready():
 		
 		# new objective (finish before you're caught)
 		tuts[0].frame = 79
+		
+		# and add the "shape destroyed penalty" rule
+		tuts.append({
+			"key": "shape_destroy_penalty",
+			"frame": 80
+		})
 
 func on_new_room_created(room):
 	if last_tut_room and is_instance_valid(last_tut_room):

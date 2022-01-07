@@ -1,5 +1,7 @@
 extends Node
 
+const REMOVE_THREE_WAY_PROB : float = 0.2
+
 # list of tiles (in autotile) that represent a SLOPE and not a FILLED BLOCK
 var allowed_slopes = [Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), Vector2(1,2), Vector2(3,2), Vector2(8,3), Vector2(11,3)]
 var allowed_slope_dirs = [Vector2(-1,-1), Vector2(1,-1), Vector2(-1,-1), Vector2(1,-1), Vector2(-1,1),Vector2(1,1), Vector2(-1,1), Vector2(1,1)]
@@ -12,6 +14,9 @@ var allowed_items = [
 	Vector2(1,3), Vector2(2,3), Vector2(3,3), Vector2(5,3), Vector2(6,3), Vector2(8,3), Vector2(9,3), Vector2(11,3)
 ]
 var allowed_item_indices = []
+
+# (0,0) (0,2) (1,3) (3,3)
+var three_way_flat_indices = [0, 24, 37, 39]
 
 onready var map = get_node("/root/Main/Map")
 onready var tilemap = get_node("/root/Main/Map/TileMap")
@@ -42,18 +47,31 @@ func placement_allowed(pos, own_room, consider_empty_room = true):
 func in_growth_area(pos, room):
 	return (pos.x == 0 or pos.x == (room.rect.size.x-1)) or (pos.y == 0 or pos.y == (room.rect.size.y-1))
 
+# TO DO: This function can be HEAVILY optimized 
+# And I need to figure out what the hell I'm even doing
 func recalculate_room(room):
 	if not room: return
 	
+	# remove any slopes that block stuff??
 	for pos in get_slopes(room):
 		if not placement_allowed(pos, room, false): 
 			map.change_cell(pos, -1)
 	
+	# in fact, remove _any_ tiles that block stuff???
 	for temp_pos in room.rect.shrunk_positions:
 		if tilemap.get_cellv(temp_pos) == -1: continue
 		if placement_allowed(temp_pos, room): continue
 		
 		map.change_cell(temp_pos, -1)
+	
+	# UPGRADE: we don't like those cells that are open on 3 sides, but flat
+	# so if we encounter those, just remove them
+	var remove_3_prob = REMOVE_THREE_WAY_PROB
+	if G.in_tutorial_mode(): remove_3_prob = 1.0
+	for pos in room.rect.positions:
+		if not tile_is_three_way_flat(pos): continue
+		if randf() > REMOVE_THREE_WAY_PROB: continue
+		map.change_cell(pos, -1)
 
 	map.update_bitmask_from_room(room)
 
@@ -91,13 +109,13 @@ func fill_room(room):
 		for pos in room.rect.shrunk_positions:
 			if room.tilemap.is_cell_filled(pos): continue
 			
+			var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 			var num_filled_nbs = 0
-			for x in range(-1,2):
-				for y in range(-1,2):
-					if room.tilemap.is_cell_filled(pos + Vector2(x,y)):
-						num_filled_nbs += 1
+			for nb in nbs:
+				if room.tilemap.is_cell_filled(pos + nb): 
+					num_filled_nbs += 1
 			
-			if num_filled_nbs >= 7:
+			if num_filled_nbs >= 4:
 				map.change_cell(pos, 0)
 
 ####
@@ -151,6 +169,11 @@ func tile_can_hold_item(pos):
 # TO DO: not sure if this is the right one, maybe I'm missing half open stuff, or including too many this way
 func tile_is_half_open(pos):
 	return tile_is_slope(pos)
+
+func tile_is_three_way_flat(pos):
+	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
+	var tile_index = tile_coord.x + 12*tile_coord.y
+	return (tile_index in three_way_flat_indices)
 
 func get_slope_dir(pos):
 	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)

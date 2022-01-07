@@ -34,6 +34,9 @@ func show_finish_game_over_screen():
 	# (give camera unique focus type where "players = one side, gui = other")
 	screen.set_position(Vector2.ZERO)
 	screen.populate(player_ranks, player_times)
+	
+	# NOTE: _must_ come after populate, as that also remembers who actually won and stuff
+	screen.show_final_message()
 
 func show_loss_game_over_screen():
 	main_node.game_over_loss_visuals.activate()

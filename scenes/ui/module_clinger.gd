@@ -43,23 +43,28 @@ func execute_ceiling_cling():
 	if body.has_module("map_reader"):
 		if body.map_reader.last_cell_has_terrain("reverse_gravity"): return
 
-	var result = shoot_raycast_in_dir(Vector2.UP)
-	if not result: 
-		ceiling_clung_last_frame = false
-		return
-	
-	var also_touching_ground = shoot_raycast_in_dir(Vector2.DOWN)
-	if also_touching_ground and not ceiling_clung_last_frame: return
+	var touching_ceiling = shoot_raycast_in_dir(Vector2.UP)
+	var touching_ground = shoot_raycast_in_dir(Vector2.DOWN)
+
+	if not touching_ground and not touching_ceiling: return
 
 	var movement_help_factor : float = 0.33
 	cling_vec = Vector2.UP
-	if body.mover.keys_down.left:
+	if body.mover.is_moving_left():
 		cling_vec += movement_help_factor*Vector2.RIGHT
-	elif body.mover.keys_down.right:
+	elif body.mover.is_moving_right():
 		cling_vec += movement_help_factor*Vector2.LEFT
+
+	var push_into_ground = false
+	if touching_ground and not ceiling_clung_last_frame: 
+		push_into_ground = true
+	else:
+		ceiling_clung_last_frame = false
+		if touching_ceiling:
+			ceiling_clung_last_frame = true
 	
-	ceiling_clung_last_frame = true
-	
+	if push_into_ground: return
+
 	# TESTING: smaller vector, smaller force
 	cling_vec = 0.5*cling_vec.normalized()
 	

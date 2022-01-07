@@ -4,8 +4,8 @@ const MIN_ROOMS_BETWEEN_TUTORIALS = 3
 const MIN_ROOMS_BEFORE_TUTORIALS_START : int = 2
 
 const NUM_TERRAIN_BOUNDS = { 'min': 2, 'max': 5 }
-const NUM_LOCK_BOUNDS = { 'min': 2, 'max': 5 }
-const NUM_ITEM_BOUNDS = { 'min': 1, 'max': 3 }
+const NUM_LOCK_BOUNDS = { 'min': 2, 'max': 4 }
+const NUM_ITEM_BOUNDS = { 'min': 1, 'max': 7 }
 
 const MIN_COIN_THINGS = 3
 const MIN_GLUE_THINGS = 1
@@ -113,6 +113,14 @@ func determine_included_types():
 		add_something_of_type("glue_related")
 		g_num += 1
 	
+	# DEMO MODE: just include everything allowed in demo
+	if G.is_demo():
+		things_to_teach = {
+			"terrain": get_all_demo_items(GDict.terrain_types),
+			"lock": get_all_demo_items(GDict.lock_types),
+			"item": get_all_demo_items(GDict.item_types)
+		}
+	
 	for key in things_to_teach:
 		for item in things_to_teach[key]:
 			all_allowed_things.append(item)
@@ -123,6 +131,14 @@ func determine_included_types():
 	print("DYNAMIC TUTORIAL")
 	print(things_to_teach)
 
+func get_all_demo_items(arr):
+	var keys = arr.keys()
+	var new_arr = []
+	for key in keys:
+		if not arr[key].has('demo'): continue
+		new_arr.append(key)
+	return new_arr
+
 func remove_unpickables(arr, ref_arr):
 	for i in range(arr.size()-1, -1, -1):
 		var key = arr[i]
@@ -131,6 +147,10 @@ func remove_unpickables(arr, ref_arr):
 			continue
 		
 		if solo_mode.is_active() and ref_arr.has('solo_unpickable'):
+			arr.remove(i)
+			continue
+		
+		if not solo_mode.is_active() and ref_arr.has('multi_unpickable'):
 			arr.remove(i)
 			continue
 
@@ -312,6 +332,9 @@ func get_planned_frame():
 	return list[thing_planned.type].tut
 
 func is_everything_taught() -> bool:
+	print("CHECKING IF ALL IS TAUGHT")
+	print(things_to_teach)
+	
 	if G.in_tutorial_mode():
 		return map.room_picker.tutorial_course.is_finished()
 	else:

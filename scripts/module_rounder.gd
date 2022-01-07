@@ -162,12 +162,16 @@ func end_grow_mode():
 func grow(val):
 	if body.shaper.at_max_size(): return
 	if feedback_enabled(): body.feedback.create_for_node(body, "Grow!")
-	change_size(1.0 + val)
+	
+	var factor = body.shaper.clamp_growth_factor(1.0 + val)
+	change_size(factor)
 
 func shrink(val):
 	if body.shaper.at_min_size(): return
 	if feedback_enabled(): body.feedback.create_for_node(body, "Shrink!")
-	change_size(1.0 - val)
+	
+	var factor = body.shaper.clamp_growth_factor(1.0 + val)
+	change_size(factor)
 
 func change_size(factor):
 	var num_shapes = body.shape_owner_get_shape_count(0)

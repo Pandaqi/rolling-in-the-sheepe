@@ -1,8 +1,24 @@
 extends Node2D
 
 onready var player_manager = get_node("/root/Main/PlayerManager")
+onready var anim_player = $AnimationPlayer
 
 var item_scene = preload("res://scenes/ui/game_over_screen_item.tscn")
+
+onready var who_won_sprite = $WhoWon/Sprite
+onready var who_won = $WhoWon
+onready var message = $Message
+
+var winner = null
+
+func _ready():
+	get_tree().get_root().connect("size_changed", self, "on_resize")
+	on_resize()
+
+func on_resize():
+	var vp = get_viewport().size
+	who_won.set_position(0.5*vp)
+	message.set_position(0.5*vp)
 
 func populate(ranks, times):
 	var padding = 15
@@ -13,6 +29,7 @@ func populate(ranks, times):
 	
 	for i in range(ranks.size()):
 		var player_num = ranks[i]
+		if i == 0: winner = player_num
 		
 		var col = player_manager.player_colors[player_num]
 		var shape_frame = player_manager.get_player_shape_frame(player_num)
@@ -46,3 +63,15 @@ func convert_to_nice_time(time):
 		seconds = "0" + str(seconds)
 	
 	return str(minutes) + ":" + str(seconds)
+
+func show_final_message():
+	
+	# show correct SHAPE + COLOR of whoever won
+	var shape_frame = player_manager.get_player_shape_frame(winner)
+	who_won_sprite.set_frame(shape_frame)
+	
+	var col = player_manager.player_colors[winner]
+	who_won_sprite.modulate = col
+	
+	# play basic revealing animation
+	anim_player.play("FinalMessage")

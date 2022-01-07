@@ -136,6 +136,9 @@ func backtrack_and_find_good_room(params):
 	max_backtracking = min(max_backtracking, route_generator.cur_path.size())
 	
 	for i in range(max_backtracking):
+		# if the room of the previous iteration was a lock, we're not allowed to go past that (as it would defeat the purpose of locks)
+		if params.prev_room and params.prev_room.lock.has_lock(): continue
+		
 		params.prev_room = route_generator.get_path_from_front(i)
 		
 		var new_rect = find_valid_configuration_better(params)

@@ -1,7 +1,8 @@
 extends Node
 
 const FADE_DURATION : float = 4.0
-const MAX_COINS : int = 10
+const MAX_COINS : int = 5
+const NUM_COLS_IN_INTERFACE : int = 5
 
 var num_coins : int = 0
 var coin_sprite_scene = preload("res://scenes/ui/coin_sprite.tscn")
@@ -50,6 +51,8 @@ func _physics_process(_dt):
 	position_gui_above_player()
 
 func check_for_collision_with_self():
+	if not GDict.cfg.transfer_coins_to_biggest_shape_on_self_hit: return
+	
 	var player_num = body.status.player_num
 	for obj in body.contact_data:
 		var other_body = obj.body
@@ -78,7 +81,7 @@ func transfer_coins_to_biggest_shape(obj):
 func update_gui():
 	var counter = 0
 	var coin_sprite_size = 16
-	var cols = min(5, num_coins)
+	var cols = min(NUM_COLS_IN_INTERFACE, num_coins)
 	
 	var total_offset = Vector2(0.5 * (cols-1)*coin_sprite_size, -0.5*coin_sprite_size)
 	

@@ -8,7 +8,7 @@ const MAX_VELOCITY_AIR : float = 150.0
 const VELOCITY_DAMPING : float = 0.995
 var speed_multiplier : float = 1.0
 
-const WOLF_BONUS_SPEED : float = 2.0
+const WOLF_BONUS_SPEED : float = 1.4
 var size_speed_multiplier : float = 1.0
 
 const MAX_ANG_VELOCITY : float = 35.0
@@ -29,6 +29,7 @@ const TIME_PENALTY_STANDSTILL_TELEPORT : float = 6.0
 var normal_vec : Vector2
 var jump_vec : Vector2
 var in_air : bool = false
+var reverse : bool = false
 
 var velocity_last_frame : Vector2
 
@@ -50,17 +51,28 @@ onready var normal_indicator = $NormalVec
 func _ready():
 	last_input_time = OS.get_ticks_msec()
 
+func is_moving_left():
+	if reverse:
+		return keys_down.right
+	return keys_down.left
+
+func is_moving_right():
+	if reverse:
+		return keys_down.left
+	return keys_down.right
+
 func _on_Input_move_left():
 	keys_down.left = true
 	last_input_time = OS.get_ticks_msec()
 	
 	if air_break: return
 	
-	var torque = -ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
+	var inverter = -1 if reverse else 1
+	var torque = -ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir*inverter
 	body.apply_torque_impulse(torque)
 	
 	if in_air:
-		var air_force = Vector2.LEFT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
+		var air_force = Vector2.LEFT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier*inverter
 		body.apply_central_impulse(air_force)
 
 func _on_Input_move_left_released():
@@ -73,11 +85,12 @@ func _on_Input_move_right():
 	
 	if air_break: return
 	
-	var torque = ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir
+	var inverter = -1 if reverse else 1
+	var torque = ANGULAR_IMPULSE_STRENGTH*speed_multiplier*size_speed_multiplier*gravity_dir*inverter
 	body.apply_torque_impulse(torque)
 	
 	if in_air:
-		var air_force = Vector2.RIGHT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier
+		var air_force = Vector2.RIGHT*AIR_RESISTANCE_FORCE*speed_multiplier*size_speed_multiplier*inverter
 		body.apply_central_impulse(air_force)
 
 func _on_Input_move_right_released():

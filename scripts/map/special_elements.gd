@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 
 const SLOPE_OFFSET : float = 1.0 - 1.0/sqrt(2.0)
 
@@ -83,7 +83,7 @@ func erase(obj):
 func position_item_based_on_cell(item, grid_pos):
 	# if the cell underneath the item vanished completely, make the item vanish as well
 	if map.tilemap.get_cellv(grid_pos) < 0: 
-		erase(item)
+		item.my_room.items.erase_special_item(item, true) # @param "hard erase"
 		return 
 	
 	# determine rotation (based on OPEN neighbors OR slope dir) => if none possible, abort

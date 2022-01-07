@@ -10,8 +10,6 @@ signal move_left_released()
 
 signal double_button()
 
-var reverse : bool = false
-
 var keys_down = {
 	'left': false,
 	'right': false
@@ -26,16 +24,10 @@ func set_player_num(num : int):
 
 func _physics_process(_dt):
 	if Input.is_action_pressed(get_key("right")):
-		if reverse:
-			emit_signal("move_left")
-		else:
-			emit_signal("move_right")
+		emit_signal("move_right")
 	
 	if Input.is_action_pressed(get_key("left")):
-		if reverse:
-			emit_signal("move_right")
-		else:
-			emit_signal("move_left")
+		emit_signal("move_left")
 	
 func _input(ev):
 	if ev.is_action_pressed(get_key("right")):
