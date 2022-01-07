@@ -36,6 +36,7 @@ var coins
 var edge_reader
 var magnet
 var particles
+var area_reader
 
 func _ready():
 	physics_material_override = PhysicsMaterial.new()

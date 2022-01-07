@@ -244,8 +244,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-#	rand_kind = 'lock'
-#	rand_type = 'button_lock_timed'
+#	rand_kind = 'item'
+#	rand_type = 'glue'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	

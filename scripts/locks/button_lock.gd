@@ -48,11 +48,20 @@ func check_if_condition_fulfilled():
 	delete()
 
 func spawn_buttons():
+	var num_players = GInput.get_player_count()
+	
 	var num_buttons = 2 + randi() % 4
 	if sub_type == "simultaneous":
 		num_buttons = 2
-		if GInput.get_player_count() >= 4: 
+		if num_players  >= 4: 
 			num_buttons = 2 + randi() % 2
+	
+	if sub_type == "timed":
+		num_buttons = 1
+		if num_players >= 2:
+			num_buttons = 1 + randi()
+		if num_players >= 3:
+			num_buttons = 1 + randi() % 2
 	
 	buttons = []
 	var final_buttons_placed = 0

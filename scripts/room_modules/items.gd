@@ -31,6 +31,7 @@ func get_free_tile_inside(params = {}):
 	for tile in tiles_inside:
 		if params.has('use_shrunk') and parent.rect.inside_growth_area_global(tile): continue
 		if parent.map.get_cell(tile).special: continue
+		if not parent.map.slope_painter.tile_can_hold_item(tile): continue
 		
 		return tile
 

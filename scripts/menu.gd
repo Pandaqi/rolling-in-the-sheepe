@@ -20,6 +20,9 @@ func _ready():
 	settings.activate()
 
 func on_player_logged_in():
+	$TutorialArea.stop_preparing()
+	$PlayArea.stop_preparing()
+	
 	if helpers_shown: return
 	
 	var dur = 1.0

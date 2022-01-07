@@ -20,6 +20,7 @@ var bodies_per_player = []
 
 var predefined_shapes = {}
 var available_shapes = []
+var available_starting_shapes = []
 
 func activate():
 	load_colors()
@@ -39,6 +40,9 @@ func create_players():
 	
 	for i in range(num_players):
 		create_player(i)
+
+func get_player_starting_shape(player_num : int):
+	return player_shapes[player_num]
 
 func get_player_shape_frame(player_num : int):
 	var shape_name = player_shapes[player_num]
@@ -62,12 +66,11 @@ func create_player(player_num : int):
 	else:
 		player = player_scene.instance()
 	
-	var rand_shape = available_shapes.pop_front()
+	var rand_shape = available_starting_shapes.pop_front()
 	if G.make_all_players_round():
 		rand_shape = 'circle'
 	
 	player_shapes[player_num] = rand_shape
-	player.get_node("Shaper").set_starting_shape(rand_shape)
 	player.get_node("Shaper").create_from_shape(GDict.shape_list[rand_shape].points, { 'type': rand_shape })
 	
 	var start_pos
@@ -82,6 +85,10 @@ func create_player(player_num : int):
 	
 	player.status.set_shape_name(rand_shape)
 	player.status.set_player_num(player_num)
+	
+	var starting_coins = GDict.cfg.num_starting_coins
+	if not (is_menu or G.in_tutorial_mode()): 
+		player.coins.get_paid(starting_coins)
 	
 	if is_menu:
 		feedback.create_for_node(player, "Welcome!")
@@ -161,8 +168,12 @@ func load_predefined_shapes():
 
 		GDict.shape_list[key].points = val
 		available_shapes.append(key)
+		
+		if key in GDict.possible_starting_shapes:
+			available_starting_shapes.append(key)
 	
 	available_shapes.shuffle()
+	available_starting_shapes.shuffle()
 
 # NOTE: Points are already around centroid, and shaper node will do that again anyway, so just scale only
 func scale_shape(points):

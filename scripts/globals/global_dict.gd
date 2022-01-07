@@ -3,7 +3,8 @@ extends Node
 var cfg = {
 	"performance_mode": false,
 	"unrealistic_slicing": true,
-	"max_bodies_per_player": 4,
+	"max_bodies_per_player": 3,
+	"num_starting_coins": 1,
 	
 	"draw_outlines": true,
 	
@@ -44,7 +45,6 @@ var cfg = {
 	"show_dynamic_tutorials": true,
 	"paint_on_tilemap": true,
 	"hide_heavy_particles": false, # TO DO: make actually functional
-	"contextual_feedback": false, # TO DO: make actually functional
 }
 
 # Links shape to spritesheet, but can ALSO contain unique info about the shape in the future (such as shapes that need to be lighter/heavier or cling more strongly)
@@ -70,6 +70,7 @@ var shape_list = {
 	'quatrefoil': { 'frame': 18, 'basic': 'pentagon' }
 }
 
+var possible_starting_shapes = ['pentagon', 'starpenta', 'cross', 'heart', 'diamond', 'trefoil']
 var shape_order = ['triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'circle']
 var points_per_shape = {
 	'triangle': 3,
@@ -112,7 +113,7 @@ var lock_types = {
 	"button_lock_regular": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "regular", "tut": 41, "prob": 3, "no_holes": true },
 	"button_lock_timed": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "timed", "tut": 42 , "prob": 2, "no_holes": true },
 	"button_lock_order": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "order", "tut": 43 , "prob": 2, "no_holes": true },
-	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "simultaneous", "tut": 44, "prob": 2, "no_holes": true },
+	"button_lock_simultaneous": { "terrain": "button_lock", "edge_type": "button", "lock_group": "button_lock", "sub_type": "simultaneous", "tut": 44, "prob": 2, "no_holes": true, "solo_unpickable": true },
 	
 	"slot_gate": { "terrain": "slot_gate_lock", "edge_type": "slot_gate", "tut": 47 },
 	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
@@ -150,7 +151,7 @@ var item_types = {
 	
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
 	"spiderman": { "frame": 18, "toggle": true, "tut": 71 },
-	"glue": { "frame": 19, "immediate": true, "prob": 2, "tut": 72, "glue_related": true },
+	"glue": { "frame": 19, "toggle": true, "prob": 2, "tut": 72, "glue_related": true },
 	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73, "coin_related": true },
 	
 	"freeze": { "frame": 21, "immediate": true, "delete": true, "tut": 74, "solo_prob": 0.25 },

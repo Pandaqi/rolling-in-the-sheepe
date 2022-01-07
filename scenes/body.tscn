@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scenes/body_modules/status.tscn" type="PackedScene" id=2]
@@ -14,6 +14,7 @@
 [ext_resource path="res://scenes/body_modules/drawer.tscn" type="PackedScene" id=12]
 [ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
 [ext_resource path="res://scenes/body_modules/particles.tscn" type="PackedScene" id=14]
+[ext_resource path="res://scripts/module_area_reader.gd" type="Script" id=15]
 [ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
 [ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
 [ext_resource path="res://scripts/module_coins.gd" type="Script" id=19]
@@ -24,6 +25,9 @@ bounce = 0.1
 
 [sub_resource type="CircleShape2D" id=2]
 radius = 180.003
+
+[sub_resource type="CircleShape2D" id=3]
+radius = 264.547
 
 [node name="Body" type="RigidBody2D" groups=["Players"]]
 position = Vector2( 435, 200 )
@@ -109,6 +113,16 @@ shape = SubResource( 2 )
 
 [node name="Particles" parent="." instance=ExtResource( 14 )]
 
+[node name="Area_Reader" type="Node2D" parent="."]
+script = ExtResource( 15 )
+
+[node name="Area2D" type="Area2D" parent="Area_Reader"]
+collision_layer = 15
+collision_mask = 15
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area_Reader/Area2D"]
+shape = SubResource( 3 )
+
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
 [connection signal="move_left_released" from="Input" to="Mover" method="_on_Input_move_left_released"]
@@ -120,3 +134,7 @@ shape = SubResource( 2 )
 [connection signal="timeout" from="Rounder/Timer" to="Rounder" method="_on_Timer_timeout"]
 [connection signal="timeout" from="Rounder/GrowTimer" to="Rounder" method="_on_GrowTimer_timeout"]
 [connection signal="tween_all_completed" from="Coins/Tween" to="Coins" method="_on_Tween_tween_all_completed"]
+[connection signal="area_entered" from="Area_Reader/Area2D" to="Area_Reader" method="_on_Area2D_area_entered"]
+[connection signal="area_exited" from="Area_Reader/Area2D" to="Area_Reader" method="_on_Area2D_area_exited"]
+[connection signal="body_entered" from="Area_Reader/Area2D" to="Area_Reader" method="_on_Area2D_body_entered"]
+[connection signal="body_exited" from="Area_Reader/Area2D" to="Area_Reader" method="_on_Area2D_body_exited"]

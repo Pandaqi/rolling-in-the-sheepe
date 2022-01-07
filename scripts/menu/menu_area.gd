@@ -19,8 +19,11 @@ func _on_Area2D_body_entered(body):
 
 func _on_Area2D_body_exited(body):
 	if not body.is_in_group("Players"): return
-	
 	players_here -= 1
+	
+	stop_preparing()
+
+func stop_preparing():
 	preparing_load = false
 	load_timer = 0.0
 	helper_sprite.modulate = Color(1,1,1,1)

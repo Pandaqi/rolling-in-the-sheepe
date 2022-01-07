@@ -4,6 +4,7 @@ extends Node
 #       "_disabled" simply means it's temporarily not available (because it was recently used)
 var glue_active : bool = false
 var glue_disabled : bool = false
+var use_glue_area : bool = false
 
 var spikes_active : bool = false
 var spikes_disabled : bool = false
@@ -34,44 +35,46 @@ func check_glue():
 	if not glue_active: return
 	if glue_disabled: return
 	
-	var unrealistic_glueing = GDict.cfg.unrealistic_glueing
-	
 	for obj in body.contact_data:
 		var other_body = obj.body
-		
-		if not other_body.is_in_group("Players"): continue
-		if other_body.status.player_num != player_num: continue
-		
-		if unrealistic_glueing:
-			eat_and_grow_object(obj)
-		else:
-			glue_object_to_me(obj)
-		break
+		var res = glue_if_valid(other_body)
+		if res: break
 
-func eat_and_grow_object(obj):
-	var their_area : float = obj.body.shaper.get_area()
+func glue_if_valid(b):
+	if not b.is_in_group("Players"): return false
+	if b.status.player_num != player_num: return false
+	if b == body: return false #its ourselves => would really like a better way to prevent this beforehand
+	if body.status.is_dead or b.status.is_dead: return false
+	
+	var unrealistic_glueing = GDict.cfg.unrealistic_glueing
+	
+	if unrealistic_glueing:
+		eat_and_grow_object(b)
+	else:
+		glue_object_to_me(b)
+	
+	return true
+
+func eat_and_grow_object(b):
+	var their_area : float = b.shaper.get_area()
 	var our_area : float = body.shaper.get_area()
 	
-	# if they are bigger than us, they should eat us
-	# and they will, because a collision goes both ways
-	if their_area > our_area: return
+	b.status.delete()
 	
-	obj.body.status.delete()
-	
-	var grow_ratio = (our_area + their_area) / their_area
+	var grow_ratio = ((our_area + their_area) / their_area) - 1.0
 	body.rounder.grow(grow_ratio)
 
-func glue_object_to_me(obj):
-	var num_shapes = obj.body.shape_owner_get_shape_count(0)
+func glue_object_to_me(b):
+	var num_shapes = b.shape_owner_get_shape_count(0)
 	for i in range(num_shapes):
-		var shape = obj.body.shape_owner_get_shape(0, i)
-		var points = obj.body.shaper.make_global(Array(shape.points))
+		var shape = b.shape_owner_get_shape(0, i)
+		var points = b.shaper.make_global(Array(shape.points))
 		var local_points = body.shaper.make_local_external(points)
 		body.shaper.append_shape(local_points)
 	
-	obj.body.status.delete()
+	b.status.delete()
 	
-	var extra_coins = obj.body.coins.count()
+	var extra_coins = b.coins.count()
 	body.coins.get_paid(extra_coins)
 
 	disable_glue()
@@ -95,11 +98,13 @@ func check_spikes():
 		
 		if not other_body.is_in_group("Players"): continue
 		if other_body.status.player_num == player_num: continue
+		if other_body.status.is_invincible: continue
 		
 		if GDict.cfg.wolf_takes_coin:
 			if is_wolf and other_body.coins.has_some():
 				other_body.coins.pay(1)
 				body.coins.get_paid(1)
+				other_body.status.make_invincible()
 				break
 		
 		spike_object(obj)
@@ -136,6 +141,8 @@ func slice_along_halfway_line():
 	body.slicer.slice_bodies_hitting_line(slice_line.start, slice_line.end, [body])
 
 func spike_object(obj):
+	if obj.body.status.is_invincible: return
+	
 	var slice_line = get_realistic_slice_line(obj)
 	if is_wolf: 
 		slice_line = get_halfway_slice_line(obj.body)

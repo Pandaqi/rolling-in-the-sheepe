@@ -57,26 +57,8 @@ func place(room, params):
 	var grid_pos = room.items.get_free_tile_inside(params)
 	if not grid_pos: return null
 	
-	# determine rotation (based on neighbors OR slope dir) => if none possible, abort
-	var nbs = map.get_neighbor_tiles(grid_pos, { 'empty': true, 'return_with_dir': true })
-	if nbs.size() <= 0: return null
-	
-	nbs.shuffle()
-	
-	var real_rot = 0
-	var real_pos = map.get_real_pos(grid_pos+Vector2(0.5, 0.5))
-	var slope_dir = map.slope_painter.get_slope_dir(grid_pos)
-	
-	if not slope_dir:
-		real_rot = nbs[0].dir * 0.5 * PI # just rotate to orthogonal direction
-	else:
-		real_rot = slope_dir.angle() # rotate according to given angle
-		real_pos -= slope_dir*SLOPE_OFFSET*map.TILE_SIZE # offset to match slope position
-
-	# create the actual item
 	var item = item_scene.instance()
-	item.set_position(real_pos)
-	item.set_rotation(real_rot)
+	position_item_based_on_cell(item, grid_pos)
 	
 	# keep reference to room that created us
 	item.my_room = room
@@ -97,3 +79,28 @@ func erase(obj):
 	
 	obj.queue_free()
 	map.get_cell(grid_pos).special = null
+
+func position_item_based_on_cell(item, grid_pos):
+	# if the cell underneath the item vanished completely, make the item vanish as well
+	if map.tilemap.get_cellv(grid_pos) < 0: 
+		erase(item)
+		return 
+	
+	# determine rotation (based on OPEN neighbors OR slope dir) => if none possible, abort
+	var nbs = map.get_neighbor_tiles(grid_pos, { 'empty': true, 'return_with_dir': true })
+	if nbs.size() <= 0: return
+	
+	nbs.shuffle()
+	
+	var real_rot = 0
+	var real_pos = map.get_real_pos(grid_pos+Vector2(0.5, 0.5))
+	var slope_dir = map.slope_painter.get_slope_dir(grid_pos)
+	
+	if not slope_dir:
+		real_rot = nbs[0].dir * 0.5 * PI # just rotate to orthogonal direction
+	else:
+		real_rot = slope_dir.angle() # rotate according to given angle
+		real_pos -= slope_dir*SLOPE_OFFSET*map.TILE_SIZE # offset to match slope position
+
+	item.set_position(real_pos)
+	item.set_rotation(real_rot)

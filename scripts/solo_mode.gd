@@ -11,7 +11,7 @@ onready var disable_timer = $DisableTimer
 onready var main_node = get_parent()
 
 func activate():
-	active = GInput.get_player_count()
+	active = GInput.get_player_count() == 1
 	if not active: return
 	
 	print("STARTING SOLO MODO")

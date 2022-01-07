@@ -1,8 +1,8 @@
 extends Node
 
 # If number of options below <threshold>, we pretend there are no options with probability <prob>
-const PREEMPTIVE_TELEPORTER_THRESHOLD : int = 4
-const PREEMPTIVE_TELEPORTER_PROB : float = 0.5
+const PREEMPTIVE_TELEPORTER_THRESHOLD : int = 3
+const PREEMPTIVE_TELEPORTER_PROB : float = 0.5 # unused atm
 
 const DIST_BEFORE_PLACING_TELEPORTER : int = 4
 
@@ -183,7 +183,7 @@ func generate_all_1x1_rooms_in_dir(params):
 
 func find_valid_configuration_better(params):
 	var use_simple_generation = tutorial_course and tutorial_course.simple_route_generation
-	var path_too_short = (route_generator.cur_path.size() <= 6)
+	var allow_preemptive_teleporter = (route_generator.cur_path.size() > 6) and not use_simple_generation and not G.in_tutorial_mode()
 	
 	# UPGRADE: controlled variation; determine our maximum size
 	# (the path tries to stay varied: never too many small or large rooms after each other)
@@ -222,6 +222,7 @@ func find_valid_configuration_better(params):
 	
 	# find the valid rooms in each dir, until we have a direction with results
 	var total_num_valid_rooms : int = 0
+	var best_room_we_have
 	while preferred_dir_order.size() > 0:
 		
 		params.dir = preferred_dir_order.pop_front()
@@ -306,20 +307,29 @@ func find_valid_configuration_better(params):
 		total_num_valid_rooms += valid_rooms.size()
 		
 		if valid_rooms.size() <= 0: continue
-		if not path_too_short:
-			if valid_rooms.size() <= PREEMPTIVE_TELEPORTER_THRESHOLD and randf() <= PREEMPTIVE_TELEPORTER_PROB: break
 		
 		print("NUM VALID ROOMS")
 		print(valid_rooms.size())
 		
 		# pick randomly from the LAST part of the array, as those are the BIGGER rooms, and then we're done
-		var min_index = new_size_level_index
-		var max_index = valid_rooms.size()
-		var rand_index = randi() % (max_index - min_index) + min_index
+		if not best_room_we_have:
+			var min_index = new_size_level_index
+			var max_index = valid_rooms.size()
+			var rand_index = randi() % (max_index - min_index) + min_index
+			
+			best_room_we_have = valid_rooms[rand_index]
 		
-		return valid_rooms[rand_index]
+		# if we're low on options, continue to see if we can find more
+		# otherwise: we found a room, break it
+		if allow_preemptive_teleporter and valid_rooms.size() <= PREEMPTIVE_TELEPORTER_THRESHOLD: 
+			continue
+		else:
+			break
 	
-	return null
+	if total_num_valid_rooms < 3*PREEMPTIVE_TELEPORTER_THRESHOLD and allow_preemptive_teleporter:
+		return null
+	
+	return best_room_we_have
 
 func place_room_according_to_params(params):
 	params.index = route_generator.get_new_room_index()

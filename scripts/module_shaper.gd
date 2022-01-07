@@ -14,12 +14,8 @@ var avg_angle : float
 var bounding_box
 
 var shape_type : String = ""
-var starting_shape : String = ""
 
 onready var body = get_parent()
-
-func set_starting_shape(shape_key : String):
-	starting_shape = shape_key
 
 func is_fully_round():
 	return (shape_type == "circle")
@@ -99,7 +95,7 @@ func create_random_shape():
 
 func reset_to_starting_shape():
 	GAudio.play_dynamic_sound(body, "plop_multiple")
-	create_new_from_shape_key(starting_shape)
+	create_new_from_shape_key(body.player_manager.get_player_starting_shape(body.status.player_num))
 
 #####
 #

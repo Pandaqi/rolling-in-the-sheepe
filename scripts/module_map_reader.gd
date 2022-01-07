@@ -223,10 +223,16 @@ func do_spiderman():
 func undo_spiderman():
 	body.clinger.active = false
 
-func do_glue():
+func do_glue(use_area : bool = false):
 	body.glue.glue_active = true
 	body.particles.create_ring("glue")
 	GAudio.play_dynamic_sound(body, "glue")
+	
+	body.glue.use_glue_area = use_area
+	
+	if use_area:
+
+		body.area_reader.recheck_existing_bodies()
 
 func undo_glue():
 	body.glue.glue_active = false
@@ -250,7 +256,7 @@ func finish():
 	GAudio.play_dynamic_sound(body, "finish")
 	body.main_particles.create_at_pos(body.global_position, "general_powerup", { 'subtype': 'finish' })
 	
-	body.status.has_finished = true
+	body.status.finish()
 	body.status.make_ghost()
 	
 	if GDict.cfg.reset_players_to_start_shape_at_finish:

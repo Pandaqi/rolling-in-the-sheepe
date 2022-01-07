@@ -100,7 +100,7 @@ func turn_on_item(block, tp : String):
 		'sharper': body.rounder.enable_fast_mode('sharp')
 		'ice': body.map_reader.do_ice()
 		'spiderman': body.map_reader.do_spiderman()
-		'glue': body.map_reader.do_glue()
+		'glue': body.map_reader.do_glue(true) # @param "use area"
 		'speedup': 
 			body.main_particles.create_for_node(body, "speed_stripes", { "match_orientation": -get_move_dir_along_block(block), "place_behind": true })
 			GAudio.play_dynamic_sound(body, "speedup")

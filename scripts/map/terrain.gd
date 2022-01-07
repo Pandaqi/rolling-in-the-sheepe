@@ -4,25 +4,14 @@ const CONSECUTIVE_SAME_TERRAINS_PROB : float = 0.25
 const USE_REV_GRAVITY_ON_UP_DIR : float = 0.85
 
 onready var map = get_parent()
+onready var solo_mode = get_node("/root/Main/SoloMode")
 onready var tilemap_terrain = $TileMapTerrain
-onready var route_generator = get_node("../RouteGenerator")
 
-var available_terrains = []
-
-func _ready():
-	read_terrain_list_from_campaign()
-
-func read_terrain_list_from_campaign():
-	# TO DO: do what the function says
-	available_terrains = GDict.terrain_types.keys()
-	
-	available_terrains.erase("finish")
-	available_terrains.erase("teleporter")
-	
-	for i in range(available_terrains.size()-1, -1, -1):
-		var key = available_terrains[i]
-		if terrain_is_lock(key):
-			available_terrains.remove(i)
+# NOTE: this only updates when terrain is actually painted
+# this way, we skip tiny (empty) rooms when doing a "consecutive terrain" check
+# but we DO reset it if we haven't had a terrain in too long
+var last_terrain : String = ""
+var num_terrainless_rooms_in_sequence : int = 0
 
 func terrain_is_lock(t):
 	return t.right(t.length()-4) == "lock"
@@ -32,15 +21,19 @@ func on_new_room_created(room):
 	if not handout_terrains: return
 	
 	var rect_too_small = room.rect.get_area() < 4
-	if rect_too_small: return
+	if rect_too_small: 
+		num_terrainless_rooms_in_sequence += 1
+		if num_terrainless_rooms_in_sequence > 3: last_terrain = ""
+		return
 	
 	if map.dynamic_tutorial.has_random('terrain', room):
 		var rand_type = get_random_terrain_type(room)
 		paint(room, rand_type)
+		num_terrainless_rooms_in_sequence = 0
 
 func get_terrain_at_index(index):
 	if index < 0: return ""
-	return route_generator.cur_path[index].tilemap.terrain
+	return map.route_generator.cur_path[index].tilemap.terrain
 
 func get_random_terrain_type(room):
 	# RESTRICTION: place reverse gravity on things going up
@@ -48,13 +41,11 @@ func get_random_terrain_type(room):
 	if room.route.dir == 3:
 		if randf() <= USE_REV_GRAVITY_ON_UP_DIR:
 			return "reverse_gravity"
-	
-	var last_terrain = get_terrain_at_index(room.route.index - 1)
-	
+
 	# UPGRADE: encourage using an IDENTICAL terrain multiple times in a row
 	if last_terrain != "":
 		var consecutive_allowed = not GDict.terrain_types[last_terrain].has('disable_consecutive')
-		var pickable = not GDict.terrain_types[last_terrain].has("unpickable")
+		var pickable = not is_unpickable(last_terrain)
 		
 		if consecutive_allowed and pickable:
 			if randf() <= CONSECUTIVE_SAME_TERRAINS_PROB:
@@ -75,7 +66,7 @@ func get_random_terrain_type(room):
 			key = ""
 			break
 		
-		if GDict.terrain_types[key].has('unpickable'):
+		if is_unpickable(key):
 			continue
 		
 		# UPGRADE: don't allow two consecutive terrains of the same general category
@@ -94,6 +85,8 @@ func get_random_terrain_type(room):
 
 func paint(room, type):
 	if not type or type == "": return
+	
+	last_terrain = type
 	
 	var tile_id = -1
 	if GDict.terrain_types.has(type):
@@ -136,3 +129,6 @@ func someone_entered(node, terrain):
 
 func someone_exited(_node, _terrain):
 	pass
+
+func is_unpickable(type : String):
+	return GDict.terrain_types[type].has("unpickable") or (solo_mode.is_active() and GDict.terrain_types[type].has("solo_upickable"))

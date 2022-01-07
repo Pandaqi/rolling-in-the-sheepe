@@ -5,12 +5,23 @@ var allowed_slopes = [Vector2(1,0), Vector2(3,0), Vector2(8,0), Vector2(11,0), V
 var allowed_slope_dirs = [Vector2(-1,-1), Vector2(1,-1), Vector2(-1,-1), Vector2(1,-1), Vector2(-1,1),Vector2(1,1), Vector2(-1,1), Vector2(1,1)]
 var allowed_slope_indices = []
 
+var allowed_items = [
+	Vector2(0,0), Vector2(1,0), Vector2(2,0), Vector2(3,0), Vector2(5,0), Vector2(6,0), Vector2(8,0), Vector2(10,0), Vector2(11,0),
+	Vector2(0,1), Vector2(1,1), Vector2(3,1), Vector2(4,1), Vector2(7,1), Vector2(8,1),
+	Vector2(0,2), Vector2(1,2), Vector2(2,2), Vector2(3,2), Vector2(4,2), Vector2(7,2), Vector2(11,2),
+	Vector2(1,3), Vector2(2,3), Vector2(3,3), Vector2(5,3), Vector2(6,3), Vector2(8,3), Vector2(9,3), Vector2(11,3)
+]
+var allowed_item_indices = []
+
 onready var map = get_node("/root/Main/Map")
 onready var tilemap = get_node("/root/Main/Map/TileMap")
 
 func _ready():
 	for slope in allowed_slopes:
 		allowed_slope_indices.append(slope.x + 12*slope.y)
+	
+	for item in allowed_items:
+		allowed_item_indices.append(item.x + 12*item.y)
 
 func placement_allowed(pos, own_room, consider_empty_room = true):
 	var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
@@ -131,6 +142,11 @@ func tile_is_slope(pos):
 	var tile_index = tile_coord.x + 12*tile_coord.y
 	
 	return (tile_index in allowed_slope_indices)
+
+func tile_can_hold_item(pos):
+	var tile_coord = tilemap.get_cell_autotile_coord(pos.x, pos.y)
+	var tile_index = tile_coord.x + 12*tile_coord.y
+	return (tile_index in allowed_item_indices)
 
 # TO DO: not sure if this is the right one, maybe I'm missing half open stuff, or including too many this way
 func tile_is_half_open(pos):

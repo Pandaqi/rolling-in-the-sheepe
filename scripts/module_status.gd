@@ -10,6 +10,7 @@ var time_penalty : float = 0.0
 var has_finished : bool = false
 
 var is_wolf : bool = false
+var is_dead : bool = false
 
 onready var invincibility_timer = $InvincibilityTimer
 var is_invincible : bool = false
@@ -17,6 +18,9 @@ var is_invincible : bool = false
 # Deletes the whole body, but not before (re)setting all sorts of other properties
 # that _should_ be properly reset
 func delete(part_of_slice : bool = true):
+	is_dead = true
+	body.contact_data = []
+	
 	body.map.player_progression.on_body_removed(body)
 	body.player_manager.deregister_body(body)
 	
@@ -140,3 +144,6 @@ func make_vincible(from_timer = false):
 
 func _on_InvincibilityTimer_timeout():
 	make_vincible(true)
+
+func finish():
+	has_finished = true

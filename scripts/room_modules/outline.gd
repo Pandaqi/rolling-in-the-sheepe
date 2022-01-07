@@ -35,7 +35,7 @@ func open_connection_to_previous_room():
 	if parent.route.prev_room.lock.has_lock(): return
 
 	for edge in outline:
-		if not edge_links_to_previous_room(edge): continue
+		if not (edge_links_to_previous_room(edge) or edge_links_to_same_room_but_open(edge)): continue
 
 		parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
 
@@ -72,10 +72,11 @@ func turn_border_into_soft_border():
 	for edge in outline:
 		var soft_remove = true
 		var other_side = edge_links_to(edge)
-		if other_side:
-			var they_are_later = other_side.route.index > parent.route.index
-			if they_are_later:
-				soft_remove = false
+		var they_are_later = other_side and (other_side.route.index > parent.route.index)
+		var same_room_but_open = edge_links_to_same_room_but_open(edge)
+		
+		if (other_side and they_are_later) or same_room_but_open:
+			soft_remove = false
 		
 		parent.map.edges.remove_at(edge.pos, edge.dir_index, soft_remove)
 
@@ -84,6 +85,16 @@ func edge_links_to(edge):
 	if parent.map.out_of_bounds(opposite_grid_pos): return null
 	
 	return parent.map.get_cell(opposite_grid_pos).room
+
+func edge_links_to_same_room_but_open(edge):
+	var other_side = edge_links_to(edge)
+	if not other_side: return
+	
+	var other_pos = edge.pos + parent.map.get_vector_from_dir(edge.dir_index)
+	var same_room = (other_side.route.index == parent.route.index)
+	var is_open = parent.map.slope_painter.tile_is_half_open(other_pos)
+	
+	return same_room and is_open
 
 func edge_links_to_previous_room(edge):
 	if not parent.route.has_previous_room(): return false

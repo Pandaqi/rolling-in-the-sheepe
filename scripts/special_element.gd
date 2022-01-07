@@ -4,6 +4,7 @@ var type : String = ""
 var general_parameter
 var my_room = null
 var my_module = null
+var data
 
 onready var label = $Label
 onready var area = $Area2D
@@ -12,12 +13,15 @@ func set_general_parameter(val):
 	general_parameter = val
 	label.get_node("Label").set_text(str(general_parameter+1))
 
+func get_data():
+	return data
+
 func set_type(tp):
 	if my_module: my_module.queue_free()
 	
 	type = tp
 	
-	var data = GDict.item_types[tp]
+	data = GDict.item_types[tp]
 	
 	$Sprite.set_frame(data.frame)
 	

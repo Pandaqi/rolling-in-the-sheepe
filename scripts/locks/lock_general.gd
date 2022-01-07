@@ -42,9 +42,7 @@ func convert_connection_to_gate():
 		if not other_side: continue
 		
 		var part_of_another_room = (other_side.route.index > my_room.route.index)
-		
-		var other_pos = edge.pos + map.get_vector_from_dir(edge.dir_index)
-		var same_room_but_open = (other_side.route.index == my_room.route.index) and map.slope_painter.tile_is_half_open(other_pos)
+		var same_room_but_open = my_room.outline.edge_links_to_same_room_but_open(edge)
 		
 		if part_of_another_room or same_room_but_open:
 			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
