@@ -52,10 +52,11 @@ func in_growth_area(pos, room):
 func recalculate_room(room):
 	if not room: return
 	
-	# remove any slopes that block stuff??
+	map.update_bitmask_from_room(room)
+	
+	# remove any slopes that turn out to not be slopes
 	for pos in get_slopes(room):
-		if not placement_allowed(pos, room, false): 
-			map.change_cell(pos, -1)
+		if tile_is_slope(pos): map.change_cell(pos, -1)
 	
 	# in fact, remove _any_ tiles that block stuff???
 	for temp_pos in room.rect.shrunk_positions:
@@ -64,14 +65,26 @@ func recalculate_room(room):
 		
 		map.change_cell(temp_pos, -1)
 	
+	# UPGRADE (pretty essential): it CAN happen that we have two 3-way tiles diagonally, which leaves only a tiny gap to move through
+	# fix that
+	for pos in room.rect.shrunk_positions:
+		if not tile_is_three_way_flat(pos): continue
+		var diagonals = [Vector2(1,1), Vector2(-1,1), Vector2(-1,-1), Vector2(1,-1)]
+		
+		for d in diagonals:
+			if tile_is_three_way_flat(pos + d):
+				map.change_cell(pos, -1)
+				break
+	
 	# UPGRADE: we don't like those cells that are open on 3 sides, but flat
 	# so if we encounter those, just remove them
-	var remove_3_prob = REMOVE_THREE_WAY_PROB
-	if G.in_tutorial_mode(): remove_3_prob = 1.0
-	for pos in room.rect.positions:
-		if not tile_is_three_way_flat(pos): continue
-		if randf() > REMOVE_THREE_WAY_PROB: continue
-		map.change_cell(pos, -1)
+	if GDict.cfg.remove_three_way_tiles:
+		var remove_3_prob = REMOVE_THREE_WAY_PROB
+		if G.in_tutorial_mode(): remove_3_prob = 1.0
+		for pos in room.rect.positions:
+			if not tile_is_three_way_flat(pos): continue
+			if randf() > REMOVE_THREE_WAY_PROB: continue
+			map.change_cell(pos, -1)
 
 	map.update_bitmask_from_room(room)
 

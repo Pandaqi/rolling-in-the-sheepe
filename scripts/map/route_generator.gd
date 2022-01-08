@@ -42,6 +42,9 @@ onready var solo_mode = get_node("/root/Main/SoloMode")
 
 var create_phase : bool = false
 
+onready var disable_timer : Timer = $DisableTimer
+var temporary_disable : bool = false
+
 #
 # Initialization
 #
@@ -79,6 +82,7 @@ func check_for_new_room():
 	if not player_progression.has_leading_player(): return
 	if pause_room_generation: return
 	if has_finished: return
+	if temporary_disable: return
 	
 	var lead = player_progression.get_leading_player()
 	var index = lead.room_tracker.get_cur_room().route.index
@@ -96,6 +100,7 @@ func check_for_new_room():
 func check_for_old_room_deletion():
 	if not player_progression.has_trailing_player(): return
 	if solo_mode.is_active(): return
+	if temporary_disable: return
 	
 	var trail = player_progression.get_trailing_player()
 	var index = trail.room_tracker.get_cur_room().route.index
@@ -116,7 +121,6 @@ func delete_oldest_room():
 	# (should be lowered by exactly one, for all)
 	for i in range(cur_path.size()):
 		cur_path[i].route.set_index(i)
-		
 
 #
 # Extra helpers for related situations (such as "clear map => delete all rooms")
@@ -144,6 +148,9 @@ func placed_lock():
 # Queries into the route
 #
 func should_place_finish():
+	if GDict.cfg.debug_quick_finish:
+		if total_rooms_created > 10: return true
+	
 	if GDict.cfg.delay_finish_until_all_taught:
 		if not dynamic_tutorial.is_everything_taught(): 
 			return false
@@ -153,7 +160,10 @@ func should_place_finish():
 		
 		if num_locks_placed < GDict.cfg.min_locks_before_finish:
 			return false
-		
+	
+	if GDict.cfg.debug_quick_dynamic_tutorial:
+		return true
+	
 	return (total_rooms_created > rooms_until_finish)
 
 func should_place_lock():
@@ -162,9 +172,6 @@ func should_place_lock():
 func get_new_room_index():
 	return cur_path.size()
 
-# TO DO: 
-# On big rooms, it might be faster to check against ROOMS, not individual cells???? Not sure if that is the case. (So check overlap with the other room rect, AABB, for all rooms on path.)
-# NOTE: This gets a _rectangle_ not a _room_, so we can't go through rect.positions
 func room_rect_overlaps_path(rect, params):
 	for x in range(rect.size.x):
 		for y in range(rect.size.y):
@@ -174,7 +181,11 @@ func room_rect_overlaps_path(rect, params):
 			var cur_room = map.get_room_at(my_pos)
 			
 			if not cur_room: continue
-			if cur_room.route.index == params.prev_room.route.index: continue
+			
+			# What do we do here?
+			# We're allowed to overlap our previous room, as that's what we connect with, so that's a guarantee
+			# HOWEVER, if they have an "old_room", it means we're overlapping _multiple rooms at once_, which surely isn't allowed.
+			if cur_room.route.index == params.prev_room.route.index and not map.get_cell(my_pos).old_room: continue
 			
 			return true
 	return false
@@ -199,7 +210,7 @@ func get_path_from_front(offset : int = 0):
 	return cur_path[index]
 
 func get_offset_from(start, offset : int):
-	var target = clamp(start + offset, 0, cur_path.size())
+	var target = clamp(start + offset, 0, cur_path.size()-1)
 	return cur_path[target]
 
 func get_average_room_size_over_last(offset : int):
@@ -220,6 +231,9 @@ func get_pos_just_ahead():
 	if not player_progression.has_leading_player(): return null
 	
 	var lead = player_progression.get_leading_player()
+	var leading_room = lead.room_tracker.get_cur_room()
+	if not leading_room: return null
+	
 	var index = lead.room_tracker.get_cur_room().route.index
 	if index == (cur_path.size()-1): return null
 	
@@ -272,4 +286,10 @@ func get_ideal_teleporter_room():
 		biggest_room = room
 	
 	return biggest_room
-	
+
+func disable_temporarily():
+	temporary_disable = true
+	disable_timer.start()
+
+func _on_DisableTimer_timeout():
+	temporary_disable = false

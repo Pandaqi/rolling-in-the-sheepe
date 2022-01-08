@@ -124,22 +124,23 @@ func set_wanted_room_parameters(params):
 	params.no_valid_placement = false
 
 func backtrack_and_find_good_room(params):
-	print("ABOUT TO BACKTRACK")
-	
 	if not params.prev_room: return # no previous room? no need to do all this
-	
-	print("ACTUALLY BACKTRACKED")
 	
 	var found_something = false
 	var max_backtracking = MAX_BACKTRACK_ROOMS
 	if G.in_tutorial_mode(): max_backtracking = 2
 	max_backtracking = min(max_backtracking, route_generator.cur_path.size())
 	
+	# NOTE: The first check (with the locks) is extremely important!
+	# At first, it was wrong (also checked our own room), causing teleporters to be placed _every time a lock tried to be placed_, which is BAD
+	
 	for i in range(max_backtracking):
 		# if the room of the previous iteration was a lock, we're not allowed to go past that (as it would defeat the purpose of locks)
-		if params.prev_room and params.prev_room.lock.has_lock(): continue
+		if i > 0 and params.prev_room.lock.has_lock_or_planned(): break
 		
 		params.prev_room = route_generator.get_path_from_front(i)
+		
+		print("NUM BACKTRACKS: " + str(i))
 		
 		var new_rect = find_valid_configuration_better(params)
 		if not new_rect: continue
@@ -186,7 +187,7 @@ func generate_all_1x1_rooms_in_dir(params):
 
 func find_valid_configuration_better(params):
 	var use_simple_generation = tutorial_course and tutorial_course.simple_route_generation
-	var allow_preemptive_teleporter = (route_generator.cur_path.size() > 6) and not use_simple_generation and not G.in_tutorial_mode()
+	var allow_preemptive_teleporter = (route_generator.cur_path.size() > 6) and not use_simple_generation and not G.in_tutorial_mode() and GDict.cfg.allow_preemptive_teleporter_placement
 	
 	# UPGRADE: controlled variation; determine our maximum size
 	# (the path tries to stay varied: never too many small or large rooms after each other)
@@ -323,11 +324,11 @@ func find_valid_configuration_better(params):
 			best_room_we_have = valid_rooms[rand_index]
 		
 		# if we're low on options, continue to see if we can find more
-		# otherwise: we found a room, break it
 		if allow_preemptive_teleporter and valid_rooms.size() <= PREEMPTIVE_TELEPORTER_THRESHOLD: 
 			continue
-		else:
-			break
+		
+		# otherwise: we found a room, break it
+		break
 	
 	if total_num_valid_rooms < 3*PREEMPTIVE_TELEPORTER_THRESHOLD and allow_preemptive_teleporter:
 		return null

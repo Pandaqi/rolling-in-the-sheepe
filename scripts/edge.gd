@@ -25,7 +25,9 @@ func link_to_room(params):
 		var param = params.has('param')
 		if not param: param = 0
 		
-		my_gate.general_parameter = params.param
+		var general_param = my_room.lock.lock_module.general_parameter
+		
+		my_gate.general_parameter = general_param
 		my_room.lock.gates.append(self)
 
 func make_gate():

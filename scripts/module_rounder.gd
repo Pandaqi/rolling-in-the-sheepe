@@ -170,7 +170,7 @@ func shrink(val):
 	if body.shaper.at_min_size(): return
 	if feedback_enabled(): body.feedback.create_for_node(body, "Shrink!")
 	
-	var factor = body.shaper.clamp_growth_factor(1.0 + val)
+	var factor = body.shaper.clamp_growth_factor(1.0 - val)
 	change_size(factor)
 
 func change_size(factor):

@@ -4,11 +4,6 @@ var edge_scene = preload("res://scenes/edge.tscn")
 
 onready var map = get_parent()
 
-func handle_gates(room):
-	if not room: return
-	
-	room.lock.recalculate_gates()
-
 func set_at(pos, dir_index, type):
 	# if the edge already exists, just change its type
 	# (otherwise we get duplicates, and I'd need to remove shit beforehand, it's all bad)

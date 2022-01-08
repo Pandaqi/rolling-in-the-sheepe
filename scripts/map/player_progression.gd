@@ -142,16 +142,16 @@ func set_trailing_player(p):
 	trailing_player = p
 	
 func has_leading_player():
-	return leading_player and is_instance_valid(leading_player)
+	return wanted_leading_player and is_instance_valid(leading_player)
 
 func has_trailing_player():
-	return trailing_player and is_instance_valid(trailing_player)
+	return wanted_trailing_player and is_instance_valid(trailing_player)
 
 func get_leading_player():
-	return leading_player
+	return wanted_leading_player
 
 func get_trailing_player():
-	return trailing_player
+	return wanted_trailing_player
 
 func on_body_removed(b):
 	if b == leading_player:

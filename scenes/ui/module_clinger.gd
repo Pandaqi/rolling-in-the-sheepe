@@ -1,7 +1,7 @@
 extends Node2D
 
-const CLING_GRAVITY_REDUCTION : float = 0.2
-const CLING_FORCE : float = 60.0
+const CLING_GRAVITY_REDUCTION : float = 0.175
+const CLING_FORCE : float = 75.0
 var active : bool = false
 
 const EXTRA_RAYCAST_MARGIN : float = 8.0
@@ -65,8 +65,8 @@ func execute_ceiling_cling():
 	
 	if push_into_ground: return
 
-	# TESTING: smaller vector, smaller force
-	cling_vec = 0.5*cling_vec.normalized()
+	var ceiling_vec_scalar = 0.66
+	cling_vec = ceiling_vec_scalar*cling_vec.normalized()
 	
 	apply_cling_vec(cling_vec)
 

@@ -8,6 +8,7 @@ const PREDEFINED_SHAPE_SCALE : float = 1.1
 var player_scene = preload("res://scenes/body.tscn")
 var menu_player_scene = preload("res://scenes/menu_body.tscn")
 
+onready var main_node = get_parent()
 onready var map = get_node("/root/Main/Map")
 onready var particles = get_node("/root/Main/Particles")
 onready var feedback = get_node("/root/Main/Feedback")
@@ -39,7 +40,10 @@ func create_players():
 		bodies_per_player[i] = []
 	
 	for i in range(num_players):
-		create_player(i)
+		if is_menu:
+			create_menu_player(i)
+		else:
+			create_player(i)
 
 func get_player_starting_shape(player_num : int):
 	return player_shapes[player_num]
@@ -50,6 +54,7 @@ func get_player_shape_frame(player_num : int):
 
 func create_menu_player(player_num : int):
 	create_player(player_num)
+	main_node.on_player_logged_in()
 
 func create_player(player_num : int):
 	if player_shapes.size() <= player_num:

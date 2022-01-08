@@ -14,6 +14,15 @@ var cfg = {
 	"transfer_coins_to_biggest_shape_on_self_hit": false,
 	"destroyed_body_penalty_in_solo_mode": true,
 	
+	"allow_preemptive_teleporter_placement": false,
+	
+	# debugging stuff
+	"debug_quick_finish": false,
+	"debug_quick_dynamic_tutorial": true,
+	
+	# makes it all a bit smoother ... but opens up new avenues and ruins the generation
+	"remove_three_way_tiles": false,
+	
 	# either slicing yields the exact same shape each time (first option)
 	# or it just goes back one step
 	"slicing_yields": "triangle",
@@ -103,6 +112,7 @@ var edge_types = {
 # NOTE: All their terrains must end in "_lock", 
 # (otherwise they are not filtered out (during terrain picking) nor registered as being a "locking" room)
 var lock_types = {
+	"finish": { "terrain": "finish", "edge_type": "finish", "unpickable": true },
 	"teleporter": { "terrain": "teleporter", "edge_type": "teleporter", "unpickable": true },
 	
 	"coin_lock": { "terrain": "lock", "tut": 35, "prob": 3, "demo": true },

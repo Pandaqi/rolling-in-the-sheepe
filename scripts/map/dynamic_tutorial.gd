@@ -27,6 +27,12 @@ var things_to_teach : Dictionary = {
 	'item': []
 }
 
+var probs : Dictionary = {
+	'terrain': 1.0,
+	'lock': 1.0,
+	'item': 1.0
+}
+
 var last_placement_kinds = []
 var all_allowed_things = []
 
@@ -36,32 +42,55 @@ var thing_planned = null
 
 var first_thing : bool = true
 
-func draw_list_weighted(ref, list : Array, num : int):
-	var total_prob : int = 0
-	for key in list:
+func _ready():
+	# cache the probability of each item, saves loads of calculations down the line
+	prepare_probabilities('terrain')
+	prepare_probabilities('lock')
+	prepare_probabilities('item')
+
+func get_list_from_kind(kind : String):
+	var ref = GDict.terrain_types
+	if kind == 'lock': ref = GDict.lock_types
+	elif kind == 'item': ref = GDict.item_types
+	return ref
+
+func prepare_probabilities(kind : String):
+	var ref = get_list_from_kind(kind)
+	for key in ref:
+		var final_prob = 1
 		if not ref[key].has('prob'):
-			ref[key].prob = 1
+			final_prob = 1
+		else:
+			final_prob = ref[key].prob
 		
-		var final_prob = ref[key].prob
 		if solo_mode.is_active() and ref[key].has("solo_prob"):
 			final_prob = ref[key].solo_prob
 		
-		total_prob += final_prob
+		ref[key].final_prob = final_prob
+
+func update_probabilities(kind : String):
+	if not things_taught.has(kind): return
 	
+	var total_prob : float = 0
+	var ref = get_list_from_kind(kind)
+	for key in things_taught[kind]:
+		total_prob += ref[key].final_prob
+	
+	probs[kind] = total_prob
+
+func draw_list_weighted(kind : String, list : Array, num : int):
+	list = list + []
+	
+	var ref = get_list_from_kind(kind)
+	var total_prob = probs[kind]
 	var arr = []
-	
 	while arr.size() < num:
 		var running_sum : float = 0.0
 		var target : float = randf()
 		
 		var chosen_key
 		for key in list:
-			
-			var final_prob = ref[key].prob
-			if solo_mode.is_active() and ref[key].has("solo_prob"):
-				final_prob = ref[key].solo_prob
-			
-			running_sum += final_prob / float(total_prob) 
+			running_sum += ref[key].final_prob / float(total_prob) 
 			chosen_key = key
 			if running_sum >= target: break
 		
@@ -96,9 +125,9 @@ func determine_included_types():
 			all_items.remove(i)
 	
 	things_to_teach = {
-		'terrain': draw_list_weighted(GDict.terrain_types, all_terrains, num_terrains),
-		'lock': draw_list_weighted(GDict.lock_types, all_locks, num_locks),
-		'item': draw_list_weighted(GDict.item_types, all_items, num_items)
+		'terrain': draw_list_weighted("terrain", all_terrains, num_terrains),
+		'lock': draw_list_weighted("lock", all_locks, num_locks),
+		'item': draw_list_weighted("item", all_items, num_items)
 	}
 	
 	# UPGRADE: ensure at least several coin related things, so coins are not useless
@@ -119,6 +148,11 @@ func determine_included_types():
 			"terrain": get_all_demo_items(GDict.terrain_types),
 			"lock": get_all_demo_items(GDict.lock_types),
 			"item": get_all_demo_items(GDict.item_types)
+		}
+	
+	if GDict.cfg.debug_quick_dynamic_tutorial:
+		things_to_teach = {
+			'lock': ['painter_lock']
 		}
 	
 	for key in things_to_teach:
@@ -202,6 +236,7 @@ func get_kind_planned():
 func force_allow(kind : String, type : String):
 	if not things_taught.has(kind): things_taught[kind] = []
 	things_taught[kind].append(type)
+	update_probabilities(kind)
 
 func on_usage_of(kind : String, type : String):
 	if not has_something_planned(): return
@@ -209,6 +244,7 @@ func on_usage_of(kind : String, type : String):
 	
 	if things_taught.has(kind) and not (type in things_taught[kind]):
 		things_taught[kind].append(type)
+		update_probabilities(kind)
 	
 	if things_to_teach.has(kind) and (type in things_to_teach[kind]):
 		things_to_teach[kind].erase(type)
@@ -234,8 +270,9 @@ func get_random(kind : String, room = null):
 	
 	var types_list = things_taught[kind]
 	if types_list.size() <= 0: return null
+
 	
-	var rand_type = types_list[randi() % types_list.size()]
+	var rand_type = draw_list_weighted(kind, types_list, 1)[0]
 	return rand_type
 
 func has_random(kind : String, room = null):
@@ -256,7 +293,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 			while rand_kind == last_placed_kind:
 				rand_kind = kinds_left[randi() % kinds_left.size()]
 	
-	if first_thing: 
+	if first_thing and things_to_teach.has('terrain'): 
 		rand_kind = 'terrain'
 		first_thing = false
 	
@@ -264,8 +301,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-#	rand_kind = 'item'
-#	rand_type = 'glue'
+#	rand_kind = 'lock'
+#	rand_type = 'sacrifice_coin_gate'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	

@@ -9,11 +9,6 @@ func _ready():
 	general_parameter = randi() % 2 + 1
 	gate_type = "coin_gate"
 
-func convert_connection_to_gate():
-	.convert_connection_to_gate()
-	
-	update_label()
-
 func perform_update():
 	general_parameter = max(general_parameter - 1, 1)
 	update_label()

@@ -19,11 +19,8 @@ func add_special_items_to_room(room, forced : bool = false):
 	if not room: return
 	if not room.items.can_have_special_items and (not forced): return
 	
-	# if we already have items, remove all of them
-	# because our configuration might have changed, so they might be invalid/floating in mid-air, so just clean it up
-	
-	# DEBUGGING => test what this actually does
-	#if room.items.has_special_items(): room.items.clear_special_items()
+	# backtracking might cause a room to be evaluated a number of times; this ensures elements are only placed the first time
+	if room.items.has_special_items(): return
 	
 	var num_items = 1 + randi() % 3
 	
@@ -58,7 +55,10 @@ func place(room, params):
 	if not grid_pos: return null
 	
 	var item = item_scene.instance()
-	position_item_based_on_cell(item, grid_pos)
+	var res = position_item_based_on_cell(item, grid_pos)
+	if not res:
+		item.queue_free()
+		return null
 	
 	# keep reference to room that created us
 	item.my_room = room
@@ -82,7 +82,7 @@ func erase(obj):
 
 func position_item_based_on_cell(item, grid_pos):
 	# if the cell underneath the item vanished completely, make the item vanish as well
-	if map.tilemap.get_cellv(grid_pos) < 0: 
+	if map.tilemap.get_cellv(grid_pos) < 0:
 		item.my_room.items.erase_special_item(item, true) # @param "hard erase"
 		return 
 	

@@ -28,28 +28,6 @@ func set_sub_type(tp : String):
 func is_invalid() -> bool:
 	return false
 
-func convert_connection_to_gate():
-	print("Trying to convert connection to gate")
-
-	if gate_type == "": return
-	
-	print("What gate?")
-	print(gate_type)
-	
-	var outline = my_room.outline.get_edges()
-	for edge in outline:
-		var other_side = my_room.outline.edge_links_to(edge)
-		if not other_side: continue
-		
-		var part_of_another_room = (other_side.route.index > my_room.route.index)
-		var same_room_but_open = my_room.outline.edge_links_to_same_room_but_open(edge)
-		
-		if part_of_another_room or same_room_but_open:
-			var edge_body = map.edges.set_at(edge.pos, edge.dir_index, gate_type)
-			edge_body.link_to_room({ 'room': my_room, 'param': general_parameter, 'gate': true })
-			
-			print("An edge was succesfully linked")
-
 # NOTE: Audio system works from nodes, but we want to give it a _position_ for the sound,
 # so make a fake object for that
 func create_audio_obj():

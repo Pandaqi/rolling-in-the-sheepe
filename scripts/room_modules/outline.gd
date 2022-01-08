@@ -1,6 +1,7 @@
 extends Node
 
 var outline = []
+var type : String = ""
 var has_border : bool = false
 
 onready var parent = get_parent()
@@ -15,63 +16,74 @@ func determine_outline():
 	var shrunk = parent.rect.shrunk
 	var p = shrunk.pos
 	for x in range(shrunk.size.x):
-		arr.append({ 'pos': p + Vector2(x,0), 'dir_index': 3 })
-		arr.append({ 'pos': p + Vector2(x,shrunk.size.y-1), 'dir_index': 1 })
+		arr.append({ 'pos': p + Vector2(x,0), 'dir_index': 3, 'gate': false })
+		arr.append({ 'pos': p + Vector2(x,shrunk.size.y-1), 'dir_index': 1, 'gate': false })
 	
 	# left and right cells
 	for y in range(shrunk.size.y):
-		arr.append({ 'pos': p + Vector2(shrunk.size.x-1,y), 'dir_index': 0 })
-		arr.append({ 'pos': p + Vector2(0,y), 'dir_index': 2 })
+		arr.append({ 'pos': p + Vector2(shrunk.size.x-1,y), 'dir_index': 0, 'gate': false })
+		arr.append({ 'pos': p + Vector2(0,y), 'dir_index': 2, 'gate': false })
 	
 	outline = arr
+
+func determine_connections():
+	var doesnt_need_border = not parent.lock.has_lock()
+	if doesnt_need_border: return
 	
-	# DEBUGGING
-	#delete_edges_inside()
+	var type = parent.lock.edge_type
+	has_border = true
 	
-	open_connection_to_previous_room()
-
-func recalculate_outline():
-	open_connection_to_previous_room()
-
-func open_connection_to_previous_room():
-	if not parent.route.has_previous_room(): return
-	if parent.route.prev_room.lock.has_lock(): return
-
+	# close everything
 	for edge in outline:
-		if not edge_links_to_previous_room(edge): continue
-
-		parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
-
-func seal():
-	create_border_around_us({ 'close_all': true })
-
-func create_border_around_us(params = {}):
-	var type = "regular"
-	if params.has('type'): type = params.type
-	
-	for edge in outline:
+		edge.gate = false
 		parent.map.edges.set_at(edge.pos, edge.dir_index, type)
 	
-	var prev_room = parent.route.get_previous_room()
+	# then open what we want
 	for edge in outline:
-		if params.has('close_all'): continue
+		# previous room? soft-remove the edge
+		if edge_links_to_previous_room(edge):
+			parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
 		
-		var other_side = edge_links_to(edge)
-		var same_room_but_open = edge_links_to_same_room_but_open(edge)
+		# next room? turn them into gates
+		elif edge_links_to_next_room(edge):
+			edge.gate = true
 		
-		# if we don't do this, the actual gates/locks are ALSO opened on same-room-but-open sides
-		var is_back_edge = (edge.dir_index != parent.route.dir)
-		
-		if prev_room and prev_room.lock.has_lock(): continue
-		
-		if params.has('open_all_linked_edges'):
-			if other_side and not (other_side == self):
-				parent.map.edges.remove_at(edge.pos, edge.dir_index, true)
-		elif prev_room:
-			if other_side == prev_room or (same_room_but_open and is_back_edge):
-				parent.map.edges.remove_at(edge.pos, edge.dir_index, true) 
+		# anything else? just keep it, don't open
 	
-	has_border = true
+	# check if connections to next room need to be turned into _gates_
+	if GDict.edge_types[type].has("gate"): 
+		for edge in outline:
+			if not edge.gate: continue
+			
+			var edge_body = parent.map.edges.set_at(edge.pos, edge.dir_index, type)
+			edge_body.link_to_room({ 'room': parent, 'gate': true })
+
+func edge_links_to_previous_room(edge):
+	var cell = edge_links_to_cell(edge)
+	if not cell: return false
+	
+	var our_index = parent.route.index
+	
+	var is_open = other_side_is_open(edge)
+	var is_earlier_room : bool = false
+	if cell.room and cell.room.route.index < our_index: 
+		is_earlier_room = true
+	
+	if cell.old_room and cell.old_room.route.index < our_index:
+		is_earlier_room = true
+	
+	return is_earlier_room and is_open
+
+func edge_links_to_next_room(edge):
+	var cell = edge_links_to_cell(edge)
+	if not cell: return false
+	
+	return (cell.room.route.index > parent.route.index) and other_side_is_open(edge)
+
+func other_side_is_open(edge):
+	var other_pos = edge.pos + parent.map.get_vector_from_dir(edge.dir_index)
+	var is_open = parent.map.slope_painter.tile_is_half_open(other_pos)
+	return is_open or not parent.tilemap.is_cell_filled(other_pos)
 
 func remove_border_around_us():
 	for edge in outline:
@@ -80,41 +92,12 @@ func remove_border_around_us():
 func turn_border_into_soft_border():
 	for edge in outline:
 		var soft_remove = true
-		var other_side = edge_links_to(edge)
-		var they_are_later = other_side and (other_side.route.index > parent.route.index)
-		var same_room_but_open = edge_links_to_same_room_but_open(edge)
-		
-		if (other_side and they_are_later) or same_room_but_open:
-			soft_remove = false
-		
+		if edge.gate: soft_remove = false
+
 		parent.map.edges.remove_at(edge.pos, edge.dir_index, soft_remove)
 
-func edge_links_to(edge):
+func edge_links_to_cell(edge):
 	var opposite_grid_pos = edge.pos + parent.map.get_vector_from_dir(edge.dir_index)
 	if parent.map.out_of_bounds(opposite_grid_pos): return null
 	
-	return parent.map.get_cell(opposite_grid_pos).room
-
-func edge_links_to_same_room_but_open(edge):
-	var other_side = edge_links_to(edge)
-	if not other_side: return
-	
-	var other_pos = edge.pos + parent.map.get_vector_from_dir(edge.dir_index)
-	var same_room = (other_side.route.index == parent.route.index)
-	var is_open = parent.map.slope_painter.tile_is_half_open(other_pos)
-	
-	return same_room and is_open
-
-func edge_links_to_previous_room(edge):
-	if not parent.route.has_previous_room(): return false
-	
-	return (edge_links_to(edge) == parent.route.get_previous_room())
-
-func delete_edges_inside():
-	for temp_pos in parent.rect.shrunk_positions:
-		for i in range(4):
-			var edge = { 'pos': temp_pos, 'dir_index': i }
-			var link = edge_links_to(edge)
-			if not link or link != self: continue
-			
-			parent.map.edges.remove_at(edge.pos, edge.dir_index)
+	return parent.map.get_cell(opposite_grid_pos)

@@ -1,6 +1,5 @@
 extends Node
 
-onready var main_node = get_parent()
 onready var players = get_node("../PlayerManager")
 
 func _unhandled_input(ev):
@@ -10,6 +9,5 @@ func check_device_status(ev):
 	var res = GInput.check_new_player(ev)
 	if not res.failed:
 		players.create_menu_player(GInput.get_player_count() - 1)
-		main_node.on_player_logged_in()
 	
 	# TO DO: also add option for REMOVING player/LOGGING out

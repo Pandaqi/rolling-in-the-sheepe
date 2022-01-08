@@ -134,3 +134,9 @@ func get_mask_data():
 		'pos': (pos - Vector2(0.5,0.5))*TILE_SIZE, 
 		'size': (size + Vector2(1,1))*TILE_SIZE
 	}
+
+func real_pos_is_inside_shrunk(pos : Vector2):
+	var shrunk_s = get_real_shrunk_size()
+	var shrunk_p = get_real_shrunk_pos()
+	
+	return pos.x > shrunk_p.x and pos.x < (shrunk_p.x + shrunk_s.x) and pos.y > shrunk_p.y and pos.y < (shrunk_p.y + shrunk_s.y)

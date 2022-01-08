@@ -51,7 +51,7 @@ func check_if_condition_fulfilled():
 func spawn_buttons():
 	var num_players = GInput.get_player_count()
 	
-	var num_buttons = 2 + randi() % 4
+	var num_buttons = 2 + randi() % 3
 	if sub_type == "simultaneous":
 		num_buttons = 2
 		if num_players  >= 4: 

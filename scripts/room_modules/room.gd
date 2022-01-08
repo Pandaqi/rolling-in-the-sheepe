@@ -14,6 +14,7 @@ onready var outline = $Outline
 onready var route = $Route
 onready var tilemap = $Tilemap
 onready var items = $Items
+onready var debugger = $Debugger
 
 var has_tutorial : bool = false
 var is_finish : bool = false
@@ -33,6 +34,8 @@ func delete():
 	
 	for node in related_items:
 		node.queue_free()
+	
+	self.queue_free()
 
 func connect_related_item(node):
 	related_items.append(node)
@@ -41,8 +44,8 @@ func connect_related_item(node):
 func turn_into_finish():
 	is_finish = true
 	map.terrain.paint(self, "finish")
-	outline.create_border_around_us({ 'type': 'finish' })
-	
+	lock.add_finish()
+
 	map.route_generator.placed_finish()
 	
 	# nothing comes after the finish anymore, so do this ourselves
@@ -62,11 +65,13 @@ func turn_into_teleporter():
 			rect.update_from(grown_rect)
 	
 	finish_placement()
-	finish_placement_in_hindsight()
 	
 	tilemap.update_map_to_new_rect()
 	lock.add_teleporter()
 	
+	finish_placement_in_hindsight()
+	outline.remove_border_around_us()
+
 	if map.num_teleporters_placed <= 0:
 		map.dynamic_tutorial.place_tutorial(self)
 	
@@ -101,6 +106,7 @@ func finish_placement():
 	slope_painter.fill_room(self)
 	
 	outline.determine_outline()
+	debugger.show()
 
 # called when the NEXT room is being placed, as only then we know what should happen with this one
 func finish_placement_in_hindsight():
@@ -110,8 +116,9 @@ func finish_placement_in_hindsight():
 	lock.check_planned_lock()
 	
 	map.special_elements.add_special_items_to_room(self)
-	outline.recalculate_outline()
-	map.edges.handle_gates(self)
+	outline.determine_connections()
+	
+	debugger.show()
 
 func on_tutorial_placement():
 	has_tutorial = true

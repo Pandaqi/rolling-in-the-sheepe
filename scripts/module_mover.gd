@@ -11,13 +11,13 @@ var speed_multiplier : float = 1.0
 const WOLF_BONUS_SPEED : float = 1.4
 var size_speed_multiplier : float = 1.0
 
-const MAX_ANG_VELOCITY : float = 35.0
+const MAX_ANG_VELOCITY : float = 37.0
 const ANG_VELOCITY_DAMPING : float = 0.995
 
-const BASE_GRAVITY_SCALE : float = 5.0
-const ANGULAR_IMPULSE_STRENGTH : float = 200.0
+const BASE_GRAVITY_SCALE : float = 8.0
+const ANGULAR_IMPULSE_STRENGTH : float = 250.0
 
-const JUMP_FORCE : float = 90.0
+const JUMP_FORCE : float = 60.0
 const EXTRA_RAYCAST_MARGIN : float = 8.0
 
 # NOTE: This force is applied _constantly_, each frame, so it should be quite low

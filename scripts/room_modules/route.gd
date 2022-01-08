@@ -6,8 +6,11 @@ var index : int
 
 var num_tiles_before_us : int
 
+onready var parent = get_parent()
+
 func set_index(i):
 	index = i
+	parent.debugger.show()
 
 func is_first_room():
 	return index <= 0

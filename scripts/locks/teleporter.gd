@@ -77,6 +77,7 @@ func perform_teleport():
 		return
 	
 	solo_mode.disable_temporarily()
+	map.route_generator.disable_temporarily()
 	
 	$Timer.queue_free()
 	$Label/Label.set_text("!")

@@ -66,6 +66,7 @@ func initialize_grid():
 				'terrain': null,
 				'edges': [null, null, null, null],
 				'room': null,
+				'old_room': null,
 				'special': null
 			}
 
@@ -203,17 +204,17 @@ func get_cell_from_node(node):
 
 func get_room_at(pos):
 	if out_of_bounds(pos): return null
-	return get_cell(pos).room
+	
+	var room = get_cell(pos).room
+	return room
 
 func set_all_cells_to_room(room):
 	for new_pos in room.rect.positions:
 		if out_of_bounds(new_pos): continue
 
 		var already_has_room = get_room_at(new_pos)
-		
-		# TO DO: So this would be removed
-		# TO DO: We overwrite the old room always, BUT save it as "old_room" or "overwritten_room" on the cell
-		if already_has_room and room.rect.inside_growth_area_global(new_pos): continue
+		if already_has_room:
+			get_cell(new_pos).old_room = already_has_room
 		
 		get_cell(new_pos).room = room
 
@@ -221,10 +222,12 @@ func remove_cells_from_room(room):
 	for temp_pos in room.rect.positions:
 		if out_of_bounds(temp_pos): continue
 		
-		var cur_room = get_room_at(temp_pos)
-		if cur_room != room: continue
-		
-		get_cell(temp_pos).room = null
+		var room_at_cell = get_cell(temp_pos).room
+		var old_room_at_cell = get_cell(temp_pos).old_room
+		if room == room_at_cell: 
+			get_cell(temp_pos).room = null
+		if room == old_room_at_cell:
+			get_cell(temp_pos).old_room = null
 
 # If negative or 0, we're inside the world area (and not out of bounds)
 # If positive, gives us the number of tiles we're out of bounds

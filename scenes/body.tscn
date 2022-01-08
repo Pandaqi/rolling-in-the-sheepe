@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://scripts/module_input.gd" type="Script" id=1]
 [ext_resource path="res://scenes/body_modules/status.tscn" type="PackedScene" id=2]
@@ -15,10 +15,12 @@
 [ext_resource path="res://scripts/module_roomtracker.gd" type="Script" id=13]
 [ext_resource path="res://scenes/body_modules/particles.tscn" type="PackedScene" id=14]
 [ext_resource path="res://scripts/module_area_reader.gd" type="Script" id=15]
+[ext_resource path="res://scenes/ui/debug_label.tscn" type="PackedScene" id=16]
 [ext_resource path="res://scripts/module_rounder.gd" type="Script" id=17]
 [ext_resource path="res://scripts/module_item_reader.gd" type="Script" id=18]
 [ext_resource path="res://scripts/module_coins.gd" type="Script" id=19]
 [ext_resource path="res://scripts/module_edge_reader.gd" type="Script" id=20]
+[ext_resource path="res://scripts/module_debugger.gd" type="Script" id=21]
 
 [sub_resource type="PhysicsMaterial" id=1]
 bounce = 0.1
@@ -122,6 +124,11 @@ collision_mask = 15
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area_Reader/Area2D"]
 shape = SubResource( 3 )
+
+[node name="Debugger" type="Node2D" parent="."]
+script = ExtResource( 21 )
+
+[node name="Label" parent="Debugger" instance=ExtResource( 16 )]
 
 [connection signal="double_button" from="Input" to="Mover" method="_on_Input_double_button"]
 [connection signal="move_left" from="Input" to="Mover" method="_on_Input_move_left"]
