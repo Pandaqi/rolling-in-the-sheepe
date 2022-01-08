@@ -139,9 +139,7 @@ func backtrack_and_find_good_room(params):
 		if i > 0 and params.prev_room.lock.has_lock_or_planned(): break
 		
 		params.prev_room = route_generator.get_path_from_front(i)
-		
-		print("NUM BACKTRACKS: " + str(i))
-		
+
 		var new_rect = find_valid_configuration_better(params)
 		if not new_rect: continue
 		
@@ -314,10 +312,7 @@ func find_valid_configuration_better(params):
 		total_num_valid_rooms += valid_rooms.size()
 		
 		if valid_rooms.size() <= 0: continue
-		
-		print("NUM VALID ROOMS")
-		print(valid_rooms.size())
-		
+
 		# pick randomly from the LAST part of the array, as those are the BIGGER rooms, and then we're done
 		if not best_room_we_have:
 			var min_index = new_size_level_index

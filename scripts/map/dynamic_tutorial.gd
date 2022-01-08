@@ -158,12 +158,6 @@ func determine_included_types():
 	for key in things_to_teach:
 		for item in things_to_teach[key]:
 			all_allowed_things.append(item)
-	
-	print("ALL ALLOWED THINGS")
-	print(all_allowed_things)
-	
-	print("DYNAMIC TUTORIAL")
-	print(things_to_teach)
 
 func get_all_demo_items(arr):
 	var keys = arr.keys()
@@ -301,8 +295,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'lock'
-	rand_type = 'button_lock_regular'
+	rand_kind = 'item'
+	rand_type = 'laser'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
@@ -369,9 +363,6 @@ func get_planned_frame():
 	return list[thing_planned.type].tut
 
 func is_everything_taught() -> bool:
-	print("CHECKING IF ALL IS TAUGHT")
-	print(things_to_teach)
-	
 	if G.in_tutorial_mode():
 		return map.room_picker.tutorial_course.is_finished()
 	else:

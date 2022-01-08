@@ -50,8 +50,6 @@ func count_players_here():
 func on_body_enter(p):
 	.on_body_enter(p)
 	register_player(p)
-	
-	print("BODY ENTERED THE TELEPORTER")
 
 func on_body_exit(p):
 	.on_body_exit(p)
@@ -79,10 +77,8 @@ func perform_teleport():
 	map.route_generator.disable_temporarily()
 	
 	$Timer.queue_free()
-	$Label/Label.set_text("!")
-	
-	print("Everyone here; teleport!")
-	
+	label.perform_update("!")
+
 	# destroy all old rooms
 	map.route_generator.is_teleporting = true
 	map.route_generator.delete_all_rooms()

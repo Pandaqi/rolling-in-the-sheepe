@@ -86,11 +86,6 @@ func place(params):
 	rect.set_pos(rect.pos - Vector2(1,1))
 	rect.set_size(rect.size + Vector2(1,1)*2)
 	rect.update_positions_array()
-	
-	# DEBUGGING
-	print("RECT PLACED")
-	print({ 'pos': rect.pos, 'size': rect.size })
-	#print(rect.shrunk)
 
 	route.set_index(params.index)
 	route.set_previous_room(params.prev_room)
@@ -108,6 +103,8 @@ func finish_placement():
 	
 	outline.determine_outline()
 	debugger.show()
+	
+	print("PLACED A ROOMo")
 
 # called when the NEXT room is being placed, as only then we know what should happen with this one
 func finish_placement_in_hindsight():

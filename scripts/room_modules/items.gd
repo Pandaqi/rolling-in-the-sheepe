@@ -60,3 +60,11 @@ func clear_special_items():
 		parent.map.special_elements.erase(item)
 	
 	special_elements = []
+
+func count_of_type(tp : String):
+	var sum = 0
+	for item in special_elements:
+		if not item or not is_instance_valid(item): continue
+		if not item.type == tp: continue
+		sum += 1
+	return sum

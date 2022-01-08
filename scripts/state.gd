@@ -48,8 +48,6 @@ func check_if_game_over():
 func game_over(we_won : bool = false):
 	if game_over_mode: return
 	
-	print("GAME OVER")
-	
 	game_over_mode = true
 	main_node.pause_menu.disable()
 	main_node.solo_mode.deactivate()

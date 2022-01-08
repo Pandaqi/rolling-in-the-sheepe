@@ -28,7 +28,15 @@ func add_special_items_to_room(room, forced : bool = false):
 		room.items.add_special_item()
 
 func get_random_type(room):
-	return map.dynamic_tutorial.get_random('item', room)
+	var tp = map.dynamic_tutorial.get_random('item', room)
+	if not tp: return null
+	
+	var data = GDict.item_types[tp]
+	if data.has('max'):
+		if room.items.count_of_type(tp) >= data.max:
+			return null
+	
+	return tp
 
 func type_is_immediate(tp):
 	return GDict.item_types[tp].has('immediate')

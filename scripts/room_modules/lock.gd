@@ -70,8 +70,7 @@ func add_lock(forced_type : String = "") -> bool:
 	lock_module = scene
 	parent.map.dynamic_tutorial.on_usage_of('lock', rand_type)
 	was_lock = true
-	
-	print("Should add lock now")
+
 	return true
 
 func remove_lock(hard_remove : bool = false):
@@ -81,8 +80,6 @@ func remove_lock(hard_remove : bool = false):
 		parent.outline.turn_border_into_soft_border()
 	
 	lock_module = null
-	
-	print("Should remove lock now")
 
 func add_teleporter():
 	# first remove any previous lock that might have been here (a HARD remove)

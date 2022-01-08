@@ -46,7 +46,7 @@ func check_current_room():
 	cur_room = new_room
 
 func get_cur_room():
-	if not cur_room: return body.map.route_generator.cur_path[0]
+	if not cur_room or not is_instance_valid(cur_room): return body.map.route_generator.cur_path[0]
 	return cur_room
 
 # TO DO: Probably a way to streamline this, instead of the if-statement

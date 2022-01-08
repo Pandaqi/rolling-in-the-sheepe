@@ -121,12 +121,8 @@ func check_for_old_room_deletion():
 		delete_oldest_room()
 
 func delete_oldest_room():
-	print("DELETING OLDEST ROOM")
-	
 	cur_path.pop_front().delete()
-	
-	print(cur_path)
-	
+
 	# update the index of all surviving rooms
 	# (should be lowered by exactly one, for all)
 	for i in range(cur_path.size()):

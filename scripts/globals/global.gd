@@ -3,7 +3,7 @@ extends Node
 # Options: "tutorial" or "play"
 var type : String = "play"
 var in_game : bool = true
-var demo : bool = true
+var demo : bool = false
 var scenes = {
 	'main': preload("res://Main.tscn"),
 	'menu': preload("res://Menu.tscn")

@@ -89,14 +89,11 @@ func become_more_round_unrealistic():
 		grow(GROW_FACTOR)
 		return
 	
-	print("SHOULD BECOME MORE ROUND NOW 1")
 	if body.shaper.is_fully_round(): return
 	
 	var new_shape_name = change_shape_index(+1)
 	var new_body = body.slicer.create_basic_body(body, new_shape_name)
-	
-	print("SHOULD BECOME MORE ROUND NOW 2")
-	
+
 	GAudio.play_dynamic_sound(body, "plop_single")
 	body.shaper.create_new_from_shape(new_body, { 'type': new_shape_name })
 	
@@ -223,12 +220,6 @@ func enable_fast_mode(dir : String):
 	
 	call_deferred("_on_Timer_timeout")
 	call_deferred("_on_GrowTimer_timeout")
-	
-	print(round_algo_timer.time_left)
-	print(grow_timer.time_left)
-	print(grow_mode)
-	
-	print("FAST MODE ENABLED")
 
 func disable_fast_mode():
 	fast_mode = false

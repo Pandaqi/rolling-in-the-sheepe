@@ -1,66 +1,26 @@
 extends Node2D
 
-var local_end_point : Vector2 = Vector2.ZERO
-
-onready var sprite = $Sprite
-onready var area = $Area2D
-onready var col_node = $Area2D/CollisionShape2D
-var col_shape
+onready var my_item = get_parent()
 
 onready var timer = $Timer
+onready var auto_on_off = $AutoOnOff
 onready var laser_tip = $LaserTip
 
-var disabled : bool = false
 const DISABLE_DURATION : float = 4.5
+const AUTO_BOUNDS : Dictionary = { 'min': 4.5, 'max': 7.5 }
 
 func _ready():
-	col_shape = col_node.shape.duplicate(true)
-	col_node.shape = col_shape
-
-func _physics_process(dt):
-	shoot_raycast()
-	position_laser()
-
-func shoot_raycast():
-	var space_state = get_world_2d().direct_space_state
-	var start = laser_tip.global_position
-	var normal = laser_tip.global_transform.x
-	var end = start + normal*400.0
-
-	var collision_layer = 2
-	var result = space_state.intersect_ray(start, end, [], collision_layer)
-	if not result: return
-
-	local_end_point = result.position - start
-
-func position_laser():
-	if disabled:
-		sprite.set_visible(false)
-		return
+	var beam = my_item.area.get_parent()
+	beam.set_starting_point(laser_tip.position)
 	
-	sprite.set_visible(true)
-	sprite.set_position(laser_tip.position)
-	
-	# make laser so its length is precisely towards the first point it hits
-	var length = local_end_point.length()
-	var x_scale = length / 64.0
-	
-	sprite.scale.x = x_scale
-
-	# collision shapes are always centered
-	# so resize then move to match the sprite
-	area.set_position(sprite.position + Vector2.RIGHT * 0.5 * length)
-	col_shape.extents.x = 0.5 * length
+	reset_auto_timer()
 
 func _on_Area2D_body_entered(body):
 	if not body.is_in_group("Players"): return
-	if disabled: return
+	if my_item.area.get_parent().disabled: return
 	
 	# NOTE: important to disable BEFORE slicing, otherwise we ALSO slice the new bodies!
-	disabled = true
-	col_shape.extents.x = 0
-	timer.wait_time = DISABLE_DURATION
-	timer.start()
+	disable_my_beam()
 	
 	body.glue.call_deferred("slice_along_halfway_line")
 	body.coins.pay_half()
@@ -68,5 +28,20 @@ func _on_Area2D_body_entered(body):
 	body.main_particles.create_for_node(body, "explosion", { "place_front": true })
 	GAudio.play_dynamic_sound(body, "laser_hit")
 
+func disable_my_beam():
+	my_item.get_area_module().disable()
+
+	timer.wait_time = DISABLE_DURATION
+	timer.start()
+
 func _on_Timer_timeout():
-	disabled = false
+	my_item.area.get_parent().enable()
+	
+	reset_auto_timer()
+
+func reset_auto_timer():
+	auto_on_off.wait_time = rand_range(AUTO_BOUNDS.min, AUTO_BOUNDS.max)
+	auto_on_off.start()
+
+func _on_AutoOnOff_timeout():
+	disable_my_beam()

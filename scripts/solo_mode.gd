@@ -13,9 +13,7 @@ onready var main_node = get_parent()
 func activate():
 	active = GInput.get_player_count() == 1
 	if not active: return
-	
-	print("STARTING SOLO MODO")
-	
+
 	restart_timer()
 	disable_temporarily()
 
@@ -67,9 +65,6 @@ func move_further_along():
 	var final_cell = sort_arr[0].pos
 	main_node.map.change_cell(final_cell, 0)
 	main_node.map.update_bitmask(final_cell, Vector2.ONE)
-	
-	print("FILLING CELL")
-	print(final_cell)
 	
 	# destroy any players/bodies here
 	main_node.map.destroy_nodes_at_cell(final_cell)

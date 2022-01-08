@@ -7,7 +7,10 @@ var my_module = null
 var data
 
 onready var label = $Label
-onready var area = $Area2D
+
+var area = null
+var beam_scene = preload("res://scenes/item_modules/beam_area.tscn")
+var regular_area_scene = preload("res://scenes/item_modules/regular_area.tscn")
 
 func set_general_parameter(val):
 	general_parameter = val
@@ -16,12 +19,37 @@ func set_general_parameter(val):
 func get_data():
 	return data
 
+# TO DO: It seems as if "set_type" is called multiple times on elements?
 func set_type(tp):
+	print("SET ELEMENT")
+	print(self.name)
+	print(tp)
+	
 	if my_module: my_module.queue_free()
+	if area: area.get_parent().queue_free()
 	
 	type = tp
 	
 	data = GDict.item_types[tp]
+	
+	if data.has('beam'):
+		var b = beam_scene.instance()
+		add_child(b)
+		
+		area = b.get_node("Area2D")
+		
+		print("BEAM SCENE ADDED")
+		
+		if data.has('unit_beam'):
+			b.set_max_tile_dist(1)
+	else:
+		var a = regular_area_scene.instance()
+		add_child(a)
+		
+		area = a.get_node("Area2D")
+	
+	area.connect("body_entered", self, "_on_Area2D_body_entered")
+	area.connect("body_exited", self, "_on_Area2D_body_exited")
 	
 	$Sprite.set_frame(data.frame)
 	
@@ -41,11 +69,12 @@ func set_type(tp):
 			area.connect("body_exited", my_module, "_on_Area2D_body_exited")
 		
 		add_child(my_module)
-		
-		print("ADDED MODULE")
 
 func has_overlapping_bodies():
 	return area.get_overlapping_bodies().size()
+
+func get_area_module():
+	return area.get_parent()
 
 func get_lock_module():
 	return my_room.lock.lock_module

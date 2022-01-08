@@ -136,16 +136,16 @@ func set_trailing_player(p):
 	if p == trailing_player: return
 
 	# change old trailing player back to sheep
-	if has_trailing_player():
+	if trailing_player and is_instance_valid(trailing_player):
 		trailing_player.status.make_sheep()
 	
 	trailing_player = p
 	
 func has_leading_player():
-	return wanted_leading_player and is_instance_valid(leading_player)
+	return wanted_leading_player and is_instance_valid(wanted_leading_player)
 
 func has_trailing_player():
-	return wanted_trailing_player and is_instance_valid(trailing_player)
+	return wanted_trailing_player and is_instance_valid(wanted_trailing_player)
 
 func get_leading_player():
 	return wanted_leading_player

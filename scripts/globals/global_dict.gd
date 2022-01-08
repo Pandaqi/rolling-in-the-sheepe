@@ -162,7 +162,7 @@ var item_types = {
 	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67, "demo": true },
 	
 	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68, "solo_prob": 6 },
-	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6 },
+	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6, "beam": true, "max": 1 },
 	
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
 	"spiderman": { "frame": 18, "toggle": true, "tut": 71 },

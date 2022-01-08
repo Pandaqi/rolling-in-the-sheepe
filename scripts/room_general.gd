@@ -42,11 +42,7 @@ func close_opening(side : int, index : int):
 			hit = true
 		
 		if not hit: continue
-		
-		print("CLOSED OPENING")
-		print(side)
-		print(index)
-		
+
 		openings.remove(i)
 		break
 
