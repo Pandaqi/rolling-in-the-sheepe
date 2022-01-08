@@ -56,7 +56,8 @@ func recalculate_room(room):
 	
 	# remove any slopes that turn out to not be slopes
 	for pos in get_slopes(room):
-		if tile_is_slope(pos): map.change_cell(pos, -1)
+		if tile_is_slope(pos): continue
+		map.change_cell(pos, -1)
 	
 	# in fact, remove _any_ tiles that block stuff???
 	for temp_pos in room.rect.shrunk_positions:

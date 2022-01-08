@@ -32,6 +32,8 @@ func load_game(tp : String):
 	
 	GDict.cfg.show_dynamic_tutorials = GConfig.get_config_val("settings", "show_dynamic_tutorials")
 	
+	GDict.cfg.fog_enabled = GConfig.get_config_val("settings", "fog")
+	
 	#GDict.cfg.contextual_feedback = GConfig.get_config_val("settings", "contextual_feedback")
 	
 	GAudio.play_static_sound("ui_button_press")

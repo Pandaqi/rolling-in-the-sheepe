@@ -80,15 +80,15 @@ func erase(obj):
 	obj.queue_free()
 	map.get_cell(grid_pos).special = null
 
-func position_item_based_on_cell(item, grid_pos):
+func position_item_based_on_cell(item, grid_pos) -> bool:
 	# if the cell underneath the item vanished completely, make the item vanish as well
 	if map.tilemap.get_cellv(grid_pos) < 0:
 		item.my_room.items.erase_special_item(item, true) # @param "hard erase"
-		return 
+		return false
 	
 	# determine rotation (based on OPEN neighbors OR slope dir) => if none possible, abort
 	var nbs = map.get_neighbor_tiles(grid_pos, { 'empty': true, 'return_with_dir': true })
-	if nbs.size() <= 0: return
+	if nbs.size() <= 0: return false
 	
 	nbs.shuffle()
 	
@@ -104,3 +104,4 @@ func position_item_based_on_cell(item, grid_pos):
 
 	item.set_position(real_pos)
 	item.set_rotation(real_rot)
+	return true

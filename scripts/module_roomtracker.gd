@@ -30,7 +30,7 @@ func figure_out_current_room():
 	
 	if in_new: return cell.room
 	if in_old: return cell.old_room
-	return null
+	return cell.room
 	
 	#body.map.route_generator.get_cur_room(body)
 	

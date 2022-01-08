@@ -59,14 +59,14 @@ var settings = [
 		"desc": "Disable this once you know what everything does."
 	},
 	
-#	{
-#		"sec": "settings",
-#		"label": "Contextual Feedback",
-#		"name": "contextual_feedback",
-#		"comp": "Checkbox",
-#		"def": false,
-#		"desc": "Whenever near to something, tells you what it does."
-#	},
+	{
+		"sec": "settings",
+		"label": "Fog",
+		"name": "fog",
+		"comp": "Checkbox",
+		"def": true,
+		"desc": "Fog occludes the route ahead ..."
+	},
 ]
 
 func _ready():

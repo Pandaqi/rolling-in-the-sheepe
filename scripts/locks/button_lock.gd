@@ -38,7 +38,12 @@ func record_button_push(item):
 		my_room.main_particles.create_at_pos(item.global_position, "general_powerup", { 'subtype': 'checkmark' })
 	
 	on_progress()
+	
+	# FAIL-SAFE: in case the number is wrong, recalculate after each push
+	# (number should have been: our progress so far + how many are left)
+	buttons_to_push = my_room.items.count() + buttons_pushed
 	buttons_pushed += 1
+
 	update_label()
 	check_if_condition_fulfilled()
 	return true

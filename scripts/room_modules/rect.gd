@@ -24,13 +24,17 @@ func update_positions_array():
 	positions = []
 	for x in range(size.x):
 		for y in range(size.y):
-			positions.append(pos + Vector2(x,y))
+			var temp_pos = pos + Vector2(x,y)
+			if parent.map.out_of_bounds(temp_pos): continue
+			positions.append(temp_pos)
 
 func update_shrunk_positions_array():
 	shrunk_positions = []
 	for x in range(shrunk.size.x):
 		for y in range(shrunk.size.y):
-			shrunk_positions.append(shrunk.pos + Vector2(x,y))
+			var temp_pos = shrunk.pos + Vector2(x,y)
+			if parent.map.out_of_bounds(temp_pos): continue
+			shrunk_positions.append(temp_pos)
 
 func set_pos(new_pos):
 	pos = new_pos

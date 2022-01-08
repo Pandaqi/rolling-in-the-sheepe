@@ -15,13 +15,15 @@ func allow():
 func has_special_items():
 	return special_elements.size() > 0
 
+func count():
+	return special_elements.size()
+
 func determine_tiles_inside():
 	tiles_inside = []
 
 	var map = parent.map
 	for temp_pos in parent.rect.positions:
 		if map.tilemap.get_cellv(temp_pos) == -1: continue
-		if map.out_of_bounds(temp_pos): continue
 		if map.get_cell(temp_pos).room != parent: continue
 		
 		tiles_inside.append(temp_pos)

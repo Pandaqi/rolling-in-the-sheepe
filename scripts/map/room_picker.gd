@@ -147,6 +147,9 @@ func backtrack_and_find_good_room(params):
 		
 		found_something = true
 		params.new_room.rect.update_from(new_rect)
+		
+		if i > 0: params.prev_room.is_backtrack = true
+		
 		break
 	
 	params.no_valid_placement = (not found_something)

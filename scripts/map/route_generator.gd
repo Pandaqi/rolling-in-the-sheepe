@@ -104,8 +104,18 @@ func check_for_old_room_deletion():
 	
 	var trail = player_progression.get_trailing_player()
 	var index = trail.room_tracker.get_cur_room().route.index
+	var last_index_incl_backtrack = index
+	
+	# find the oldest point at which the route split
+	# however, locks are a uniform "reset point" (you can't backtrack past it)
+	# so if we encounter one, just stop searching right there
+	for i in range(index, -1, -1):
+		if cur_path[i].lock.has_lock_or_was_lock(): break
+		if cur_path[i].is_backtrack:
+			last_index_incl_backtrack = i
+	
 	var num_rooms_threshold = NUM_ROOMS_BACK_BUFFER
-	var far_enough_from_last_room = (index > num_rooms_threshold)
+	var far_enough_from_last_room = (last_index_incl_backtrack > num_rooms_threshold)
 	
 	if far_enough_from_last_room:
 		delete_oldest_room()

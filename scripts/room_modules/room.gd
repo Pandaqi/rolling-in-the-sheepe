@@ -18,6 +18,7 @@ onready var debugger = $Debugger
 
 var has_tutorial : bool = false
 var is_finish : bool = false
+var is_backtrack : bool = false
 var related_items : Array = []
 
 func initialize(pos, size):

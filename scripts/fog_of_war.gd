@@ -6,22 +6,31 @@ onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 
 var mat
 onready var look_ahead = $LookAhead
+onready var color_rect = $ColorRect
+
+# should be enough to see well ahead, but not too much that it reveals the random generation
+const SIGHT_RADIUS : float = 290.0
+
+# 6 players, 3 bodies = 18 + 1 lookahead
+const MAX_LIGHTS : int = 20
 
 func _ready():
 	mat = $ColorRect.material
 	
 	remove_child(look_ahead)
 	map.add_child(look_ahead)
+	
+	color_rect.set_visible(GDict.cfg.fog_enabled)
 
 func _physics_process(_dt):
 	var players = get_tree().get_nodes_in_group("Players")
 	var num_players = players.size()
-	var max_lightbulbs = 20
+	var max_lightbulbs = MAX_LIGHTS
 	
 	var screen_size = get_viewport().size
 	mat.set_shader_param("vp_size", screen_size)
 	
-	var sight_radius = 250
+	var sight_radius = SIGHT_RADIUS
 	sight_radius /= camera.zoom.x
 	mat.set_shader_param("sight_radius", sight_radius)
 	

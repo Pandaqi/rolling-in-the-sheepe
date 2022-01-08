@@ -9,13 +9,12 @@ var time_left = 15
 
 var timer_is_running : bool = false
 
+onready var label = $Label
 onready var solo_mode = get_node("/root/Main/SoloMode")
 
 func _ready():
 	for i in GInput.get_player_count():
 		players_here[i] = []
-	
-	$Label.set_position(my_room.rect.get_free_real_pos_inside())
 
 func start_timer():
 	time_left = 15
@@ -32,7 +31,7 @@ func _on_Timer_timeout():
 		perform_teleport()
 
 func update_label():
-	$Label/Label.set_text(str(time_left))
+	label.perform_update(str(time_left))
 
 func _physics_process(_dt):
 	var wanted_num_players = GInput.get_player_count()

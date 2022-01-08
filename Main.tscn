@@ -410,7 +410,6 @@ one_shot = true
 script = ExtResource( 10 )
 
 [node name="ColorRect" type="ColorRect" parent="FogOfWar"]
-visible = false
 material = SubResource( 5 )
 anchor_right = 1.0
 anchor_bottom = 1.0

@@ -133,9 +133,8 @@ func update_bitmask_from_room(room):
 	
 	# now that slopes may have changed, recalculate the items
 	for grid_pos in room.rect.positions:
-		if out_of_bounds(grid_pos): continue # TO DO: shouldn't the "positions" just never be out of bounds?
 		if not get_cell(grid_pos).special: continue
-		special_elements.position_item_based_on_cell(get_cell(grid_pos).special, grid_pos)
+		var success = special_elements.position_item_based_on_cell(get_cell(grid_pos).special, grid_pos)
 
 func update_bitmask(pos, size):
 	var update_margin = Vector2(1,1)
@@ -210,8 +209,6 @@ func get_room_at(pos):
 
 func set_all_cells_to_room(room):
 	for new_pos in room.rect.positions:
-		if out_of_bounds(new_pos): continue
-
 		var already_has_room = get_room_at(new_pos)
 		if already_has_room:
 			get_cell(new_pos).old_room = already_has_room
@@ -220,8 +217,6 @@ func set_all_cells_to_room(room):
 
 func remove_cells_from_room(room):
 	for temp_pos in room.rect.positions:
-		if out_of_bounds(temp_pos): continue
-		
 		var room_at_cell = get_cell(temp_pos).room
 		var old_room_at_cell = get_cell(temp_pos).old_room
 		if room == room_at_cell: 

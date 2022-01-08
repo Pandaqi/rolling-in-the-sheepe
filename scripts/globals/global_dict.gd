@@ -16,9 +16,11 @@ var cfg = {
 	
 	"allow_preemptive_teleporter_placement": false,
 	
+	"fog_enabled": true,
+	
 	# debugging stuff
 	"debug_quick_finish": false,
-	"debug_quick_dynamic_tutorial": true,
+	"debug_quick_dynamic_tutorial": false,
 	
 	# makes it all a bit smoother ... but opens up new avenues and ruins the generation
 	"remove_three_way_tiles": false,

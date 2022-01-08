@@ -2,6 +2,7 @@ extends Node
 
 var lock_module
 var lock_planned : bool = false
+var was_lock : bool = false
 var lock_data = {}
 
 var edge_type : String = "regular"
@@ -23,6 +24,9 @@ func plan():
 
 func has_lock_or_planned():
 	return has_lock() or lock_planned
+
+func has_lock_or_was_lock():
+	return has_lock() or was_lock
 
 func has_lock():
 	return (lock_module != null)
@@ -65,6 +69,7 @@ func add_lock(forced_type : String = "") -> bool:
 	
 	lock_module = scene
 	parent.map.dynamic_tutorial.on_usage_of('lock', rand_type)
+	was_lock = true
 	
 	print("Should add lock now")
 	return true
