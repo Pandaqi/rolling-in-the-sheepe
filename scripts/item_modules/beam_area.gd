@@ -1,6 +1,6 @@
 extends Node2D
 
-var default_tip_pos : Vector2 = Vector2.RIGHT*40
+var default_tip_pos : Vector2 = Vector2.RIGHT*36
 var local_end_point : Vector2 = Vector2.ZERO
 
 onready var sprite = $Sprite
@@ -29,8 +29,8 @@ func set_starting_point(offset : Vector2):
 func set_max_tile_dist(dist : int):
 	max_tile_dist = dist
 
-func set_sprite_frame(frm : int):
-	sprite.set_frame(frm)
+func set_beam_modulate(mod : Color):
+	sprite.modulate = mod
 
 func shoot_raycast():
 	if disabled: return

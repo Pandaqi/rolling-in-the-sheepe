@@ -120,34 +120,26 @@ func get_spread_out_position(room):
 	
 	return pos
 
+# TO DO (Optional): if you only have one body, this SLICES that body instead?
 func remove_furthest_body_of(p_num : int):
 	var body_list = bodies_per_player[p_num]
 	if body_list.size() <= 1: return
 	
-	# TO DO (Optional): if you only have one body, this SLICES that body instead?
-	var furthest_body = null
-	var lowest_room_index = INF
-	var dist_in_room = INF
-	for b in body_list:
-		var my_index = b.room_tracker.get_cur_room().route.index
-		var my_dist = b.room_tracker.get_dist_in_room()
-		if my_index > lowest_room_index: continue
-		
-		if my_index == lowest_room_index:
-			if my_dist >= dist_in_room:
-				continue
-
-		lowest_room_index = my_index
-		furthest_body = b
-		dist_in_room = my_dist
-	
-	furthest_body.status.delete(false)
+	# NOTE: deleting will also remove it from the bodies_per_player array
+	# so no pop_front() or something needed by us here
+	body_list[0].status.delete(false)
 
 func remove_non_leading_bodies_of(p_num : int):
 	var num_bodies = bodies_per_player[p_num].size()
 	while num_bodies > 1:
 		remove_furthest_body_of(p_num)
 		num_bodies -= 1
+
+func is_furthest_body(body):
+	var body_list = bodies_per_player[body.status.player_num]
+	if body_list.size() <= 0: return false
+	
+	return body_list[0] == body
 
 func closest_dist_to_player(pos):
 	var other_players = get_tree().get_nodes_in_group("Players")
@@ -206,3 +198,41 @@ func deregister_body(p):
 
 func get_all_bodies_of(player_num : int):
 	return bodies_per_player[player_num] + []
+
+func _on_OrderTimer_timeout():
+	sort_player_bodies()
+
+func body_sort(a,b):
+	return a.score < b.score
+
+# On a fixed interval (somewhere around 1 second)
+# It sorts all player bodies => the one with the LOWEST score is the FURTHEST, and is placed at the FRONT
+# (Why? So we have extremely easy access later to bodies and their order)
+func sort_player_bodies():
+	for i in range(bodies_per_player.size()):
+		var l = bodies_per_player[i]
+		var arr = []
+		
+		# first build an array with both body + score
+		for a in range(l.size()):
+			var body = l[a]
+			var my_index = body.room_tracker.get_cur_room().route.index
+			var my_dist = body.room_tracker.get_dist_in_room()
+			
+			# my_dist is in _real pixels_
+			# so we multiple the room index by some big number that will always be greater, to ensure someone in a next room always has a higher score
+			var score = my_index * 1000 + my_dist
+			
+			var obj = {
+				'body': l[a],
+				'score': score
+			}
+			arr.append(obj)
+		
+		# sort it
+		arr.sort_custom(self, "body_sort")
+
+		# then put it back into place (only keeping the bodies)
+		bodies_per_player[i] = []
+		for a in arr:
+			bodies_per_player[i].append(a.body)

@@ -3,7 +3,11 @@ extends Node2D
 onready var my_item = get_parent()
 
 var platform
-var platform_scene = preload("res://scenes/projectiles/platform.tscn")
+var platform_scenes = [
+	preload("res://scenes/projectiles/platform.tscn"),
+	preload("res://scenes/projectiles/platform_thin.tscn"),
+	preload("res://scenes/projectiles/platform_small.tscn")
+]
 var tween_dur : float = 0.5
 
 const MAX_PLATFORM_ANGLES : int = 16
@@ -17,7 +21,7 @@ func _ready():
 	_on_Timer_timeout()
 
 func create_platform():
-	platform = platform_scene.instance()
+	platform = platform_scenes[randi() % platform_scenes.size()].instance()
 	add_child(platform)
 
 func _on_Timer_timeout():

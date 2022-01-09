@@ -6,7 +6,11 @@ const MIN_DISTANCE_TO_TRAVEL : float = 64.0*2.0
 onready var my_item = get_parent()
 
 var platform
-var platform_scene = preload("res://scenes/projectiles/platform.tscn")
+var platform_scenes = [
+	preload("res://scenes/projectiles/platform.tscn"),
+	preload("res://scenes/projectiles/platform_thin.tscn"),
+	preload("res://scenes/projectiles/platform_small.tscn")
+]
 var move_dir : int = 1
 var normal : Vector2
 var distance_traveled_in_cur_dir : float = 0.0
@@ -16,7 +20,7 @@ func _ready():
 	update_normal()
 
 func create_platform():
-	platform = platform_scene.instance()
+	platform = platform_scenes[randi() % platform_scenes.size()].instance()
 	add_child(platform)
 	platform.set_position(Vector2.RIGHT*32)
 

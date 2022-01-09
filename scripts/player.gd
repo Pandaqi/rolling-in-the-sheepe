@@ -70,6 +70,9 @@ func _integrate_forces(state):
 		}
 		
 		var body_we_hit = obj.body
+		
+		if not is_instance_valid(body_we_hit): continue
+		
 		if body_we_hit.is_in_group("Players") and body_we_hit.is_frozen:
 			body_we_hit.unfreeze()
 		

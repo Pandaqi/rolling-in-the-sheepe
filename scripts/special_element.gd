@@ -43,6 +43,9 @@ func set_type(tp):
 		
 		if data.has('unit_beam'):
 			b.set_max_tile_dist(1)
+		
+		if data.has('mod_beam'):
+			b.set_beam_modulate(data.mod_beam)
 	
 	elif data.has('radius'):
 		var c = circle_area_scene.instance()
@@ -84,6 +87,10 @@ func set_type(tp):
 
 func has_overlapping_bodies():
 	return area.get_overlapping_bodies().size()
+
+func remove_module():
+	my_module.queue_free()
+	my_module = null
 
 func has_module():
 	return my_module != null

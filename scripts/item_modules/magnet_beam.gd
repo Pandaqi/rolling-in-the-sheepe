@@ -9,6 +9,6 @@ func turn_area_into_magnet():
 	var area : Area2D = my_item.area
 	
 	area.space_override = Area2D.SPACE_OVERRIDE_REPLACE_COMBINE
-	area.gravity_vec = Vector2.UP
+	area.gravity_vec = -my_item.global_transform.x
 	area.set_position(Vector2.ZERO) # to force an update
 	

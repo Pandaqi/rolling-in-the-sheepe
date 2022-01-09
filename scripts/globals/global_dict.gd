@@ -154,17 +154,17 @@ var item_types = {
 	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58, "demo": true },
 	"speedup": { "frame": 6, "toggle": true, "prob": 2, "tut": 59 },
 	"slowdown": { "frame": 7, "toggle": true, "prob": 2, "tut": 60 },
-	"ghost": { "frame": 8, "toggle": true, "tut": 61, "beam": true, "unit_beam": true },
-	"shield": { "frame": 9, "toggle": true, "tut": 62, "beam": true, "unit_beam": true },
-	"rounder": { "frame": 10, "toggle": true, "tut": 63, "beam": true, "unit_beam": true },
-	"sharper": { "frame": 11, "toggle": true, "tut": 64, "beam": true, "unit_beam": true },
+	"ghost": { "frame": 8, "toggle": true, "tut": 61, "beam": true, "unit_beam": true, "mod_beam": Color(136/255.0, 48/255.0, 29/255.0, 0.25) },
+	"shield": { "frame": 9, "toggle": true, "tut": 62, "beam": true, "unit_beam": true, "mod_beam": Color(1.0, 189/255.0, 0, 0.25) },
+	"rounder": { "frame": 10, "toggle": true, "tut": 63, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25) },
+	"sharper": { "frame": 11, "toggle": true, "tut": 64, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25) },
 	
 	"breakable": { "frame": 12, "immediate": true, "delete": true, "tut": 65 },
 	"reset_shape": { "frame": 13, "immediate": true, "tut": 66 },
 	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67, "demo": true },
 	
 	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68, "solo_prob": 6, "max": 1 },
-	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6, "beam": true, "max": 1 },
+	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6, "beam": true, "mod_beam": Color(1.0, 22/255.0, 0.0, 0.25), "max": 1 },
 	
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
 	"spiderman": { "frame": 18, "toggle": true, "tut": 71, "radius": true },
@@ -178,24 +178,25 @@ var item_types = {
 	"fast_backward": { "frame": 25, "immediate": true, "prob": 0.5, "tut": 78, "solo_unpickable": true },
 	
 	# NEW ADDITIONS START HERE
-	"body_buyer": { "frame": 26, "immediate": true, "delete": true, "coin_related": true },
-	"conditional_freeze": { "frame": 27, "toggle": true, "beam": true },
-	"all_changer": { "frame": 28, "immediate": true, "delete": true },
+	"body_buyer": { "frame": 26, "immediate": true, "delete": true, "coin_related": true, "tut": 81 },
+	"conditional_freeze": { "frame": 27, "beam": true, "module": true, "max": 1, "mod_beam": Color(160/255.0, 83/255.0, 249/255.0, 0.25), "tut": 82 },
+	"all_changer": { "frame": 28, "immediate": true, "delete": true, "max": 1, "tut": 83 },
 	
-	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true },
-	"repel_coin": { "frame": 30, "immediate": true, "coin_related": true, "solo_unpickable": true },
-	"time_bonus_coin": { "frame": 31, "immediate": true, "coin_related": true, "solo_unpickable": true },
-	"shrink_radius_coin": { "frame": 32, "immediate": true, "coin_related": true, "solo_unpickable": true },
-	"slow_chaser": { "frame": 33, "immediate": true, "delete": true, "coin_related": true, "multi_unpickable": true },
+	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true, "tut": 84 },
+	"repel_coin": { "frame": 30, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 85 },
+	"time_bonus_coin": { "frame": 31, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 86 },
+	"shrink_radius_coin": { "frame": 32, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 87 },
+	"slow_chaser": { "frame": 33, "immediate": true, "delete": true, "coin_related": true, "multi_unpickable": true, "max": 1, "tut": 88 },
 	
-	"grow": { "frame": 34, "immediate": true },
-	"shrink": { "frame": 35, "immediate": true, "solo_prob": 3.0 },
+	"grow": { "frame": 34, "immediate": true, "tut": 89 },
+	"shrink": { "frame": 35, "immediate": true, "prob": 3, "solo_prob": 3.0, "tut": 90 },
 	
-	"magnet_radius": { "frame": 36, "radius": true, "module": true, "no_area": true },
-	"magnet_beam": { "frame": 37, "beam": true, "module": true, "no_area": true },
-	"platform": { "frame": 38, "module": true, "no_area": true },
-	"platform_moving": { "frame": 39, "module": true, "no_area": true },
-	"slope": { "frame": 40, "prob": 5.0, "module": true, "no_area": true }
+	"magnet_radius": { "frame": 36, "radius": true, "module": true, "max": 2, "tut": 91 },
+	"magnet_beam": { "frame": 37, "beam": true, "module": true, "mod_beam": Color(160/255.0, 83/255.0, 249/255.0, 0.25), "max": 2, "tut": 92 },
+	"platform": { "frame": 38, "module": true, "no_area": true, "prob": 4.0, "tut": 93 },
+	"platform_moving": { "frame": 39, "module": true, "no_area": true, "max": 2, "prob": 2.0, "tut": 94 },
+	"slope": { "frame": 40, "prob": 5.0, "module": true, "no_area": true, "tut": 95 },
+	"platform_rotating": { "frame": 41, "module": true, "no_area": true, "max": 2, "tut": 96 }
 }
 
 var terrain_types = {
