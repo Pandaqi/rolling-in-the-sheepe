@@ -1,5 +1,7 @@
 extends Node2D
 
+const SHOOT_AWAY_FORCE : float = 500.0
+
 onready var body = get_parent()
 onready var area = $Area2D
 
@@ -31,3 +33,22 @@ func _on_Area2D_area_entered(other_area):
 
 func _on_Area2D_area_exited(other_area):
 	pass # Replace with function body.
+
+func get_other_player_bodies():
+	var arr = []
+	for b in area.get_overlapping_bodies():
+		if not b.is_in_group("Players"): continue
+		if b.status.player_num == body.status.player_num: continue
+		arr.append(b)
+	return arr
+
+# TO DO: Is it necessary to go through "plan shoot away"? Can't I just apply the impulse immediately myself?
+func blast_away_nearby_bodies():
+	for b in get_other_player_bodies():
+		var vec_away = (b.global_position - body.global_position).normalized()
+		b.plan_shoot_away(vec_away * SHOOT_AWAY_FORCE)
+
+func shrink_nearby_bodies():
+	for b in area.get_overlapping_bodies():
+		b.rounder.shrink(0.5)
+		b.rounder.make_fully_malformed()

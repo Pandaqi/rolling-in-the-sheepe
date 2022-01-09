@@ -17,6 +17,7 @@ onready var player_manager = get_node("/root/Main/PlayerManager")
 onready var slicer = get_node("/root/Main/Slicer")
 onready var map = get_node("/root/Main/Map")
 onready var GUI = get_node("/root/Main/GUI")
+onready var solo_mode = get_node("/root/Main/SoloMode")
 
 # modules => only look them up once here, then use body.<name> in modules
 var status

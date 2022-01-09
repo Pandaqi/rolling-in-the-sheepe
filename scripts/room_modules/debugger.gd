@@ -3,13 +3,23 @@ extends Node2D
 onready var label = $Label
 onready var parent = get_parent()
 
+var active : bool = false
+
+func _ready():
+	active = GDict.cfg.debug_rooms
+	set_visible(active)
+
 func show():
+	if not active: return
+	
 	label.global_position = parent.rect.get_real_center()
 	label.get_node("Label").set_text(str(parent.route.index))
 	
 	update()
 
 func _draw():
+	if not active: return
+	
 	var outline = parent.outline.get_edges()
 	var line_dirs = [Vector2(1,0), Vector2(1,1), Vector2(0,1), Vector2(0,0)]
 	for edge in outline:

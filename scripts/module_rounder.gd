@@ -170,6 +170,12 @@ func shrink(val):
 	var factor = body.shaper.clamp_growth_factor(1.0 - val)
 	change_size(factor)
 
+func grow_to_max_size():
+	grow(1000)
+
+func shrink_to_min_size():
+	shrink(1000)
+
 func change_size(factor):
 	var num_shapes = body.shape_owner_get_shape_count(0)
 	var shapes_to_add = []

@@ -5,6 +5,8 @@ var temp_disabled : bool = false
 var last_known_room = null
 
 const FILL_INTERVAL : float = 0.5
+const SHORT_DISABLE_TIME : float = 1.0 # used for quick disables for safety, such as when teleporting
+const LONG_DISABLE_TIME : float = 5.0 # used for longer disables from powerups ("slow chaser")
 
 onready var timer = $Timer
 onready var disable_timer = $DisableTimer
@@ -117,8 +119,13 @@ func determine_timer_interval() -> float:
 	var final_interval = scalar * FILL_INTERVAL
 	return final_interval
 
-func disable_temporarily():
+func disable_temporarily(short : bool = true):
 	temp_disabled = true
+	
+	var time = SHORT_DISABLE_TIME
+	if not short: time = LONG_DISABLE_TIME
+	
+	disable_timer.wait_time = time
 	disable_timer.start()
 
 func _on_DisableTimer_timeout():

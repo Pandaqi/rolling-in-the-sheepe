@@ -120,9 +120,6 @@ func erase(room):
 	
 	room.tilemap.terrain = ""
 
-# TO DO: Create a function that paints a _specific tile/position_, 
-# 		 or under a _specific condition_, not just all of them??
-
 func someone_entered(node, terrain):
 	var is_coin_terrain = (GDict.terrain_types[terrain].has('coin_related'))
 	if is_coin_terrain: node.get_node("Coins").show()

@@ -13,27 +13,6 @@ var body_scene = preload("res://scenes/body.tscn")
 var start_point
 var end_point
 
-func _input(ev):
-	if ev is InputEventMouseMotion:
-		update()
-	
-	if (ev is InputEventMouseButton):
-		if ev.pressed:
-			start_point = get_global_mouse_position()
-			end_point = null
-		else:
-			end_point = get_global_mouse_position()
-			slice_bodies_hitting_line(start_point, end_point)
-
-func _draw():
-	if not start_point: return
-	
-	var a = start_point
-	var b = get_global_mouse_position()
-	if end_point: b = end_point
-	
-	draw_line(a, b, Color(0,0,0), 2)
-
 func slice_bodies_hitting_line(p1 : Vector2, p2 : Vector2, mask = []):
 	var angle = (p2 - p1).angle()
 	var avg_pos = (p2 + p1)*0.5

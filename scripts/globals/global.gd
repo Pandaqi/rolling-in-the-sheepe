@@ -2,8 +2,8 @@ extends Node
 
 # Options: "tutorial" or "play"
 var type : String = "play"
-var in_game : bool = true
-var demo : bool = false
+var in_game : bool = false
+var demo : bool = true
 var scenes = {
 	'main': preload("res://Main.tscn"),
 	'menu': preload("res://Menu.tscn")
@@ -14,6 +14,9 @@ func is_demo():
 
 func make_all_players_round():
 	return (in_game and type == "tutorial") or (not in_game)
+
+func in_menu():
+	return not in_game
 
 func load_game(tp : String):
 	type = tp

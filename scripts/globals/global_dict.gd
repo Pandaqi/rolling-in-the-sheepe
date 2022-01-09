@@ -16,11 +16,13 @@ var cfg = {
 	
 	"allow_preemptive_teleporter_placement": false,
 	
-	"fog_enabled": true,
+	"fog_enabled": false,
 	
 	# debugging stuff
 	"debug_quick_finish": false,
 	"debug_quick_dynamic_tutorial": false,
+	"debug_rooms": false,
+	"debug_players": false,
 	
 	# makes it all a bit smoother ... but opens up new avenues and ruins the generation
 	"remove_three_way_tiles": false,
@@ -42,7 +44,7 @@ var cfg = {
 	'wolf_takes_coin': true,
 	
 	'delay_finish_until_all_taught': true,
-	'min_rooms_between_last_tut_and_finish': 12,
+	'min_rooms_between_last_tut_and_finish': 10,
 	
 	# no rounding/malforming takes place on every cycle
 	# only if you've been on the ground _a lot_ or in the air _a lot_
@@ -152,20 +154,20 @@ var item_types = {
 	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58, "demo": true },
 	"speedup": { "frame": 6, "toggle": true, "prob": 2, "tut": 59 },
 	"slowdown": { "frame": 7, "toggle": true, "prob": 2, "tut": 60 },
-	"ghost": { "frame": 8, "toggle": true, "tut": 61 },
-	"shield": { "frame": 9, "toggle": true, "tut": 62 },
-	"rounder": { "frame": 10, "toggle": true, "tut": 63 },
-	"sharper": { "frame": 11, "toggle": true, "tut": 64 },
+	"ghost": { "frame": 8, "toggle": true, "tut": 61, "beam": true, "unit_beam": true },
+	"shield": { "frame": 9, "toggle": true, "tut": 62, "beam": true, "unit_beam": true },
+	"rounder": { "frame": 10, "toggle": true, "tut": 63, "beam": true, "unit_beam": true },
+	"sharper": { "frame": 11, "toggle": true, "tut": 64, "beam": true, "unit_beam": true },
 	
 	"breakable": { "frame": 12, "immediate": true, "delete": true, "tut": 65 },
 	"reset_shape": { "frame": 13, "immediate": true, "tut": 66 },
 	"change_shape": { "frame": 14, "immediate": true, "module": true, "tut": 67, "demo": true },
 	
-	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68, "solo_prob": 6 },
+	"cannon": { "frame": 15, "module": true, "prob": 3, "tut": 68, "solo_prob": 6, "max": 1 },
 	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6, "beam": true, "max": 1 },
 	
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
-	"spiderman": { "frame": 18, "toggle": true, "tut": 71 },
+	"spiderman": { "frame": 18, "toggle": true, "tut": 71, "radius": true },
 	"glue": { "frame": 19, "toggle": true, "prob": 2, "tut": 72, "glue_related": true },
 	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73, "coin_related": true, "demo": true },
 	
@@ -177,7 +179,7 @@ var item_types = {
 	
 	# NEW ADDITIONS START HERE
 	"body_buyer": { "frame": 26, "immediate": true, "delete": true, "coin_related": true },
-	"conditional_freeze": { "frame": 27, "toggle": true },
+	"conditional_freeze": { "frame": 27, "toggle": true, "beam": true },
 	"all_changer": { "frame": 28, "immediate": true, "delete": true },
 	
 	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true },
@@ -189,10 +191,11 @@ var item_types = {
 	"grow": { "frame": 34, "immediate": true },
 	"shrink": { "frame": 35, "immediate": true, "solo_prob": 3.0 },
 	
-	"magnet_radius": { "frame": 36, "toggle": true },
-	"platform": { "frame": 37 },
-	"platform_moving": { "frame": 38 },
-	"slope": { "frame": 39, "prob": 5.0 }
+	"magnet_radius": { "frame": 36, "radius": true, "module": true, "no_area": true },
+	"magnet_beam": { "frame": 37, "beam": true, "module": true, "no_area": true },
+	"platform": { "frame": 38, "module": true, "no_area": true },
+	"platform_moving": { "frame": 39, "module": true, "no_area": true },
+	"slope": { "frame": 40, "prob": 5.0, "module": true, "no_area": true }
 }
 
 var terrain_types = {

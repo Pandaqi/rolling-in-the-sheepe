@@ -76,6 +76,16 @@ func place(room, params):
 	add_child(item)
 	item.set_type(type)
 	
+	# EXCEPTION: some times can be flipped in direction (most notably slopes)
+	if type == "slope":
+		var flip = randf() <= 0.5
+		item.get_node("Sprite").flip_v = flip
+
+		if item.has_module():
+			var new_scale = -1 if flip else 1
+			item.get_module().scale.y = new_scale
+			print("FLIPPED THE MODULE")
+	
 	map.dynamic_tutorial.on_usage_of('item', type)
 	
 	return item

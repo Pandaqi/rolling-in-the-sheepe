@@ -11,6 +11,8 @@ const TRAMPOLINE_FORCE : float = 800.0
 const TIME_BONUS_VAL : float = -15.0
 const TIME_PENALTY_VAL : float = 5.0
 
+const ITEM_COIN_LIMIT : int = 2
+
 onready var body = get_parent()
 onready var timeout_timer = $TimeoutTimer
 
@@ -169,6 +171,11 @@ func handle_item(obj):
 	var type = obj.type
 	var prevent_deletion = false
 	
+	var data = GDict.item_types[type]
+	if data.has("pay"):
+		if body.coins.count() < data.pay: return
+		else: body.coins.pay(data.pay)
+	
 	match type:
 		"spikes":
 			var slice_line = body.glue.get_realistic_slice_line(obj.col_data)
@@ -217,6 +224,40 @@ func handle_item(obj):
 		"fast_backward":
 			var p = body.map.player_progression.get_trailing_player()
 			body.plan_teleport(p.global_position, "To the back!")
+		
+		"body_buyer":
+			body.coins.get_paid(body.player_manager.count_bodies_of_player(body.status.player_num))
+		
+		"all_changer":
+			var arr = body.player_manager.get_all_bodies_of(body.status.player_num)
+			var make_circle = (randf() <= 0.5)
+			
+			for body in arr:
+				if make_circle:
+					body.rounder.make_fully_round()
+				else:
+					body.rounder.make_fully_malformed()
+		
+		"body_cleanup_coin":
+			body.player_manager.remove_all_non_leading_bodies_of(body.status.player_num)
+		
+		"repel_coin":
+			body.area_reader.blast_away_nearby_bodies()
+		
+		"time_bonus_coin":
+			body.status.modify_time_penalty(TIME_BONUS_VAL*2)
+		
+		"shrink_radius_coin":
+			body.area_reader.shink_nearby_bodies()
+		
+		"slow_chaser":
+			body.solo_mode.disable_temporarily(false)
+		
+		"grow":
+			body.rounder.grow_to_max_size()
+		
+		"shrink":
+			body.rounder.shrink_to_min_size()
 	
 	if prevent_deletion: return
 	

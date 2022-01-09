@@ -349,6 +349,7 @@ func place_room_according_to_params(params):
 		route_generator.cur_path[0].route.dir = route_generator.cur_path[1].route.dir
 	
 	params.new_room.finish_placement()
+	map.dynamic_tutorial.on_room_placed()
 
 func handle_optional_requirements(params):
 	if params.ignore_optional_requirements: return

@@ -64,7 +64,7 @@ var settings = [
 		"label": "Fog",
 		"name": "fog",
 		"comp": "Checkbox",
-		"def": true,
+		"def": false,
 		"desc": "Fog occludes the route ahead ..."
 	},
 ]

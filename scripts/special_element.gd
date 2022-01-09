@@ -10,6 +10,7 @@ onready var label = $Label
 
 var area = null
 var beam_scene = preload("res://scenes/item_modules/beam_area.tscn")
+var circle_area_scene = preload("res://scenes/item_modules/circle_area.tscn")
 var regular_area_scene = preload("res://scenes/item_modules/regular_area.tscn")
 
 func set_general_parameter(val):
@@ -42,6 +43,13 @@ func set_type(tp):
 		
 		if data.has('unit_beam'):
 			b.set_max_tile_dist(1)
+	
+	elif data.has('radius'):
+		var c = circle_area_scene.instance()
+		add_child(c)
+		
+		area = c.get_node("Area2D")
+	
 	else:
 		var a = regular_area_scene.instance()
 		add_child(a)
@@ -69,9 +77,19 @@ func set_type(tp):
 			area.connect("body_exited", my_module, "_on_Area2D_body_exited")
 		
 		add_child(my_module)
+	
+	if data.has("no_area"):
+		area.queue_free()
+		area = null
 
 func has_overlapping_bodies():
 	return area.get_overlapping_bodies().size()
+
+func has_module():
+	return my_module != null
+
+func get_module():
+	return my_module
 
 func get_area_module():
 	return area.get_parent()

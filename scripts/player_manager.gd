@@ -143,6 +143,12 @@ func remove_furthest_body_of(p_num : int):
 	
 	furthest_body.status.delete(false)
 
+func remove_non_leading_bodies_of(p_num : int):
+	var num_bodies = bodies_per_player[p_num].size()
+	while num_bodies > 1:
+		remove_furthest_body_of(p_num)
+		num_bodies -= 1
+
 func closest_dist_to_player(pos):
 	var other_players = get_tree().get_nodes_in_group("Players")
 	var min_dist = INF

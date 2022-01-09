@@ -59,7 +59,7 @@ func set_global_parameters():
 	rooms_until_finish = int( floor(rand_range(level_size_bounds.x, level_size_bounds.y)))
 	
 	# to ensure the game ends immediately once the last tutorial has been shown
-	if G.in_tutorial_mode(): rooms_until_finish = 0
+	rooms_until_finish = 0
 	
 	rooms_until_section_end = int( floor(rand_range(section_size_bounds.x, section_size_bounds.y)))
 
@@ -161,10 +161,10 @@ func should_place_finish():
 		if not dynamic_tutorial.is_everything_taught(): 
 			return false
 		
-		if (get_new_room_index() - dynamic_tutorial.last_tutorial_index) < GDict.cfg.min_rooms_between_last_tut_and_finish:
+		if num_locks_placed < GDict.cfg.min_locks_before_finish:
 			return false
 		
-		if num_locks_placed < GDict.cfg.min_locks_before_finish:
+		if dynamic_tutorial.rooms_placed_since_last_tutorial < GDict.cfg.min_rooms_between_last_tut_and_finish:
 			return false
 	
 	if GDict.cfg.debug_quick_dynamic_tutorial:

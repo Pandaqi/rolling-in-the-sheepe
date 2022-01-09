@@ -11,7 +11,7 @@ script = ExtResource( 2 )
 texture = ExtResource( 1 )
 hframes = 8
 vframes = 8
-frame = 5
+frame = 40
 
 [node name="Label" type="Node2D" parent="."]
 position = Vector2( 30.7428, 0 )

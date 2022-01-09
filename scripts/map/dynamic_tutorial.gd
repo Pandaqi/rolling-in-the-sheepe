@@ -37,6 +37,8 @@ var last_placement_kinds = []
 var all_allowed_things = []
 
 var last_tutorial_index : int = -MIN_ROOMS_BETWEEN_TUTORIALS + MIN_ROOMS_BEFORE_TUTORIALS_START
+var rooms_placed_since_last_tutorial : int = 0
+
 var final_tut_room : int = -1
 var thing_planned = null
 
@@ -295,8 +297,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'item'
-	rand_type = 'laser'
+#	rand_kind = 'item'
+#	rand_type = 'platform_moving'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
@@ -318,6 +320,7 @@ func place_tutorial_custom(room, params):
 	map.bg_layer.add_child(tut)
 	room.connect_related_item(tut)
 	room.on_tutorial_placement()
+	rooms_placed_since_last_tutorial = 0
 	
 	if is_everything_taught():
 		final_tut_room = map.route_generator.get_new_room_index()
@@ -337,6 +340,7 @@ func place_tutorial(room):
 	
 	room.connect_related_item(tut)
 	room.on_tutorial_placement()
+	rooms_placed_since_last_tutorial = 0
 	map.bg_layer.add_child(tut)
 	
 	# when a tutorial is placed in its own room, it's quite distracting and probably obscures something
@@ -367,3 +371,6 @@ func is_everything_taught() -> bool:
 		return map.room_picker.tutorial_course.is_finished()
 	else:
 		return things_to_teach.keys().size() <= 0
+
+func on_room_placed():
+	rooms_placed_since_last_tutorial += 1
