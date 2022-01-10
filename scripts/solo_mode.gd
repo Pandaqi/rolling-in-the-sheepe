@@ -74,7 +74,11 @@ func move_further_along():
 	# we're dead?
 	# or somehow this didn't work, and the player is stuck somewhere BEHIND the algorithm? destroy us as well
 	var num_players_left = get_tree().get_nodes_in_group("Players").size()
-	var stuck_behind = last_known_room and last_known_room.route.index < room.route.index
+	var stuck_behind = false
+	if last_known_room and is_instance_valid(last_known_room): 
+		stuck_behind = last_known_room.route.index < room.route.index
+	else:
+		last_known_room = null
 
 	if num_players_left <= 0 or stuck_behind:
 		game_over()

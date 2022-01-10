@@ -5,7 +5,7 @@ const MAX_DIST_3D : float = 100.0
 
 var is_3D : bool = false
 
-var bg_audio = null
+var bg_audio = preload("res://assets/audio/main_theme.mp3")
 var bg_audio_player
 
 var active_players = []
