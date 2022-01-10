@@ -1,6 +1,6 @@
 extends Node2D
 
-const SHOOT_AWAY_FORCE : float = 500.0
+const SHOOT_AWAY_FORCE : float = 250.0
 
 onready var body = get_parent()
 onready var area = $Area2D
@@ -49,6 +49,6 @@ func blast_away_nearby_bodies():
 		b.plan_shoot_away(vec_away * SHOOT_AWAY_FORCE)
 
 func shrink_nearby_bodies():
-	for b in area.get_overlapping_bodies():
+	for b in get_other_player_bodies():
 		b.rounder.shrink(0.5)
 		b.rounder.make_fully_malformed()

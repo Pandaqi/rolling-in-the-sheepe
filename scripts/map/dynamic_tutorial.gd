@@ -298,7 +298,7 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
 	rand_kind = 'item'
-	rand_type = 'magnet_beam'
+	rand_type = 'spiderman'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	

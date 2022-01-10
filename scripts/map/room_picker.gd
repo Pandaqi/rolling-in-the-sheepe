@@ -32,6 +32,7 @@ func _ready():
 	default_starting_pos *= map.WORLD_SIZE
 	
 	if G.in_tutorial_mode():
+		default_starting_pos = Vector2.ZERO
 		tutorial_course = tutorial_course_scene.instance()
 		add_child(tutorial_course)
 
@@ -217,6 +218,13 @@ func find_valid_configuration_better(params):
 	if abs(map.dist_to_bounds(last_pos)) < total_max_room_size:
 		for d in map.dir_indices_to_bounds(last_pos, total_max_room_size):
 			preferred_dir_order.erase(d)
+	
+	# TUTORIAL FAIL-SAFE: always start with dir 0, so the first part is just a straight line to the right
+	# discourage verticality, but completely forbid going upwards
+	if use_simple_generation: 
+		preferred_dir_order = [0,2,1]
+	if G.in_tutorial_mode():
+		preferred_dir_order.erase(3)
 	
 	# UPGRADE: sneak peeks (explained further below)
 	var allow_sneak_rooms = GDict.cfg.route_generation_sneak_improvement

@@ -172,9 +172,10 @@ func handle_item(obj):
 	var prevent_deletion = false
 	
 	var data = GDict.item_types[type]
+	var should_pay = false
 	if data.has("pay"):
+		should_pay = true
 		if body.coins.count() < data.pay: return
-		else: body.coins.pay(data.pay)
 	
 	match type:
 		"spikes":
@@ -239,7 +240,8 @@ func handle_item(obj):
 					body.rounder.make_fully_malformed()
 		
 		"body_cleanup_coin":
-			body.player_manager.remove_all_non_leading_bodies_of(body.status.player_num)
+			var success = body.player_manager.remove_all_non_leading_bodies_of(body.status.player_num)
+			should_pay = success
 		
 		"repel_coin":
 			body.area_reader.blast_away_nearby_bodies()
@@ -248,7 +250,7 @@ func handle_item(obj):
 			body.status.modify_time_penalty(TIME_BONUS_VAL*2)
 		
 		"shrink_radius_coin":
-			body.area_reader.shink_nearby_bodies()
+			body.area_reader.shrink_nearby_bodies()
 		
 		"slow_chaser":
 			body.solo_mode.disable_temporarily(false)
@@ -260,6 +262,7 @@ func handle_item(obj):
 			body.rounder.shrink_to_min_size()
 	
 	if prevent_deletion: return
+	if should_pay: body.coins.pay(data.pay)
 	
 	body.map.special_elements.delete_on_activation(obj.item)
 

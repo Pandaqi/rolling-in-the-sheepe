@@ -136,6 +136,7 @@ func set_trailing_player(p):
 	if p == trailing_player: return
 
 	# change old trailing player back to sheep
+	# NOTE: DON'T go throguh "has_trailing_player", as that checks the WANTED trailing player instead ...
 	if trailing_player and is_instance_valid(trailing_player):
 		trailing_player.status.make_sheep()
 	
@@ -148,9 +149,11 @@ func has_trailing_player():
 	return wanted_trailing_player and is_instance_valid(wanted_trailing_player)
 
 func get_leading_player():
+	if not has_leading_player(): return null
 	return wanted_leading_player
 
 func get_trailing_player():
+	if not has_trailing_player(): return null
 	return wanted_trailing_player
 
 func on_body_removed(b):

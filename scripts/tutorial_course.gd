@@ -78,7 +78,8 @@ func _ready():
 		# and add the "shape destroyed penalty" rule
 		tuts.append({
 			"key": "shape_destroy_penalty",
-			"frame": 80
+			"frame": 80,
+			"special": "place_spikes"
 		})
 
 func on_new_room_created(room):

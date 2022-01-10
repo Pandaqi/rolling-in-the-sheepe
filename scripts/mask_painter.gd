@@ -79,6 +79,15 @@ func paint_on_mask(pos : Vector2, player_num : int):
 	
 	surface_image.lock()
 	
+	# Subtly prevent special elements from being painted
+	# Return if our hit pos is somewhere near the direction the special element is facing (if this cell has a special element)
+	var grid_pos = map.get_grid_pos(pos)
+	var cell_data = map.get_cell(grid_pos)
+	if cell_data and cell_data.special:
+		var item_normal = cell_data.special.global_transform.x
+		var hit_normal = (pos - cell_data.special.global_position).normalized()
+		if hit_normal.dot(item_normal) >= 0.33: return
+	
 	var conv_pos = pos / resolution
 	
 	# place pixels in the form of a circle

@@ -5,6 +5,7 @@ var cfg = {
 	"unrealistic_slicing": true,
 	"max_bodies_per_player": 3,
 	"num_starting_coins": 1,
+	"num_starting_bodies": 1,
 	
 	"draw_outlines": true,
 	
@@ -35,7 +36,7 @@ var cfg = {
 	"unrealistic_glueing": true,
 	"unrealistic_rounding": true,
 
-	'wall_jump_strength': 0.3, # set to 0.0 for no wall jump, 1.0 for full effect
+	'wall_jump_strength': 0.266, # set to 0.0 for no wall jump, 1.0 for full effect
 	
 	'time_penalty_unfinished_bodies': 10.0, # set to 0.0 to eliminate this rule
 	
@@ -154,10 +155,10 @@ var item_types = {
 	"trampoline": { "frame": 5, "immediate": true, "prob": 3, "tut": 58, "demo": true },
 	"speedup": { "frame": 6, "toggle": true, "prob": 2, "tut": 59 },
 	"slowdown": { "frame": 7, "toggle": true, "prob": 2, "tut": 60 },
-	"ghost": { "frame": 8, "toggle": true, "tut": 61, "beam": true, "unit_beam": true, "mod_beam": Color(136/255.0, 48/255.0, 29/255.0, 0.25) },
+	"ghost": { "frame": 8, "toggle": true, "tut": 61, "beam": true, "mod_beam": Color(136/255.0, 48/255.0, 29/255.0, 0.25), "module": true, "max": 1 },
 	"shield": { "frame": 9, "toggle": true, "tut": 62, "beam": true, "unit_beam": true, "mod_beam": Color(1.0, 189/255.0, 0, 0.25) },
-	"rounder": { "frame": 10, "toggle": true, "tut": 63, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25) },
-	"sharper": { "frame": 11, "toggle": true, "tut": 64, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25) },
+	"rounder": { "frame": 10, "toggle": true, "tut": 63, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25), "max": 1 },
+	"sharper": { "frame": 11, "toggle": true, "tut": 64, "beam": true, "unit_beam": true, "mod_beam": Color(135/255.0, 188/255.0, 76/255.0, 0.25), "max": 1 },
 	
 	"breakable": { "frame": 12, "immediate": true, "delete": true, "tut": 65 },
 	"reset_shape": { "frame": 13, "immediate": true, "tut": 66 },
@@ -167,7 +168,7 @@ var item_types = {
 	"laser": { "frame": 16, "module": true, "prob": 3, "tut": 69, "solo_prob": 6, "beam": true, "mod_beam": Color(1.0, 22/255.0, 0.0, 0.25), "max": 1 },
 	
 	"ice": { "frame": 17, "toggle": true, "tut": 70 },
-	"spiderman": { "frame": 18, "toggle": true, "tut": 71, "radius": true },
+	"spiderman": { "frame": 18, "toggle": true, "tut": 71, "radius": true, "max": 2 },
 	"glue": { "frame": 19, "toggle": true, "prob": 2, "tut": 72, "glue_related": true },
 	"coin": { "frame": 20, "immediate": true, "prob": 0.25, "delete": true, "tut": 73, "coin_related": true, "demo": true },
 	
@@ -177,16 +178,15 @@ var item_types = {
 	"fast_forward": { "frame": 24, "immediate": true, "prob": 0.5, "tut": 77, "solo_unpickable": true },
 	"fast_backward": { "frame": 25, "immediate": true, "prob": 0.5, "tut": 78, "solo_unpickable": true },
 	
-	# NEW ADDITIONS START HERE
 	"body_buyer": { "frame": 26, "immediate": true, "delete": true, "coin_related": true, "tut": 81 },
 	"conditional_freeze": { "frame": 27, "beam": true, "module": true, "max": 1, "mod_beam": Color(160/255.0, 83/255.0, 249/255.0, 0.25), "tut": 82 },
 	"all_changer": { "frame": 28, "immediate": true, "delete": true, "max": 1, "tut": 83 },
 	
-	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true, "tut": 84 },
-	"repel_coin": { "frame": 30, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 85 },
-	"time_bonus_coin": { "frame": 31, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 86 },
-	"shrink_radius_coin": { "frame": 32, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 87 },
-	"slow_chaser": { "frame": 33, "immediate": true, "delete": true, "coin_related": true, "multi_unpickable": true, "max": 1, "tut": 88 },
+	"body_cleanup_coin": { "frame": 29, "immediate": true, "coin_related": true, "tut": 84, "pay": 2 },
+	"repel_coin": { "frame": 30, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 85, "pay": 2, "delete": true },
+	"time_bonus_coin": { "frame": 31, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 86, "pay": 2, "delete": true },
+	"shrink_radius_coin": { "frame": 32, "immediate": true, "coin_related": true, "solo_unpickable": true, "tut": 87, "pay": 2, "delete": true },
+	"slow_chaser": { "frame": 33, "immediate": true, "delete": true, "coin_related": true, "multi_unpickable": true, "max": 1, "tut": 88, "pay": 2 },
 	
 	"grow": { "frame": 34, "immediate": true, "tut": 89 },
 	"shrink": { "frame": 35, "immediate": true, "prob": 3, "solo_prob": 3.0, "tut": 90 },

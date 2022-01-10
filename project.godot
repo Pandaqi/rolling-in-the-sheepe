@@ -11,7 +11,7 @@ config_version=4
 [application]
 
 config/name="Sheepe"
-run/main_scene="res://Menu.tscn"
+run/main_scene="res://Main.tscn"
 boot_splash/image="res://assets/marketing/boot_splash.png"
 boot_splash/bg_color=Color( 0.180392, 0.180392, 0.180392, 1 )
 config/icon="res://assets/marketing/favicon.png"

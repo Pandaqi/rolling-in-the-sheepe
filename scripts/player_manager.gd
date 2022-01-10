@@ -40,10 +40,11 @@ func create_players():
 		bodies_per_player[i] = []
 	
 	for i in range(num_players):
-		if is_menu:
-			create_menu_player(i)
-		else:
-			create_player(i)
+		for a in range(GDict.cfg.num_starting_bodies):
+			if is_menu:
+				create_menu_player(i)
+			else:
+				create_player(i)
 
 func get_player_starting_shape(player_num : int):
 	return player_shapes[player_num]
@@ -129,11 +130,15 @@ func remove_furthest_body_of(p_num : int):
 	# so no pop_front() or something needed by us here
 	body_list[0].status.delete(false)
 
-func remove_non_leading_bodies_of(p_num : int):
+func remove_all_non_leading_bodies_of(p_num : int):
 	var num_bodies = bodies_per_player[p_num].size()
+	if num_bodies <= 1: return false
+	
 	while num_bodies > 1:
 		remove_furthest_body_of(p_num)
 		num_bodies -= 1
+	
+	return true
 
 func is_furthest_body(body):
 	var body_list = bodies_per_player[body.status.player_num]

@@ -17,7 +17,7 @@ func activate():
 	if not active: return
 
 	restart_timer()
-	disable_temporarily()
+	disable_temporarily(false)
 
 func deactivate():
 	active = false
