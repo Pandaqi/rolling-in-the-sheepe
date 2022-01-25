@@ -1,12 +1,15 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
-[ext_resource path="res://assets/fonts/main_medium.tres" type="DynamicFont" id=1]
+[ext_resource path="res://assets/fonts/skranji_bold.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://scripts/technical_settings/technical_settings_module.gd" type="Script" id=2]
-[ext_resource path="res://assets/fonts/main_small.tres" type="DynamicFont" id=3]
 [ext_resource path="res://assets/ui/settings/grabber_normal.png" type="Texture" id=4]
 [ext_resource path="res://assets/ui/settings/grabber_highlight.png" type="Texture" id=5]
 [ext_resource path="res://assets/ui/settings/checkbox_on.png" type="Texture" id=6]
 [ext_resource path="res://assets/ui/settings/checkbox_off.png" type="Texture" id=7]
+
+[sub_resource type="DynamicFont" id=4]
+size = 38
+font_data = ExtResource( 1 )
 
 [sub_resource type="StyleBoxLine" id=1]
 color = Color( 0.764706, 1, 0.658824, 1 )
@@ -21,6 +24,10 @@ thickness = 10
 [sub_resource type="StyleBoxLine" id=3]
 color = Color( 0.960784, 0.407843, 0.0745098, 1 )
 thickness = 10
+
+[sub_resource type="DynamicFont" id=5]
+size = 18
+font_data = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer"]
 anchor_right = 1.0
@@ -39,12 +46,12 @@ rect_min_size = Vector2( 500, 0 )
 size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="HBoxContainer"]
-margin_top = 7.0
+margin_top = 13.0
 margin_right = 464.0
-margin_bottom = 73.0
+margin_bottom = 66.0
 size_flags_horizontal = 3
 custom_colors/font_color = Color( 1, 1, 1, 1 )
-custom_fonts/font = ExtResource( 1 )
+custom_fonts/font = SubResource( 4 )
 text = "Lalal"
 
 [node name="HSlider" type="HSlider" parent="HBoxContainer"]
@@ -72,10 +79,10 @@ custom_icons/unchecked = ExtResource( 7 )
 [node name="Desc" type="Label" parent="."]
 margin_top = 88.0
 margin_right = 1024.0
-margin_bottom = 121.0
+margin_bottom = 113.0
 size_flags_horizontal = 3
 custom_colors/font_color = Color( 1, 1, 1, 0.588235 )
-custom_fonts/font = ExtResource( 3 )
+custom_fonts/font = SubResource( 5 )
 text = "Lalala"
 autowrap = true
 

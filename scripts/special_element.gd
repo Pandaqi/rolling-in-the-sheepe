@@ -20,12 +20,7 @@ func set_general_parameter(val):
 func get_data():
 	return data
 
-# TO DO: It seems as if "set_type" is called multiple times on elements?
 func set_type(tp):
-	print("SET ELEMENT")
-	print(self.name)
-	print(tp)
-	
 	if my_module: my_module.queue_free()
 	if area: area.get_parent().queue_free()
 	
@@ -38,8 +33,6 @@ func set_type(tp):
 		add_child(b)
 		
 		area = b.get_node("Area2D")
-		
-		print("BEAM SCENE ADDED")
 		
 		if data.has('unit_beam'):
 			b.set_max_tile_dist(1)
@@ -86,7 +79,12 @@ func set_type(tp):
 		area = null
 
 func has_overlapping_bodies():
-	return area.get_overlapping_bodies().size()
+	var num_actual_players = 0
+	for body in area.get_overlapping_bodies():
+		if not body.is_in_group("Players"): continue
+		num_actual_players += 1
+	
+	return num_actual_players > 0
 
 func remove_module():
 	my_module.queue_free()

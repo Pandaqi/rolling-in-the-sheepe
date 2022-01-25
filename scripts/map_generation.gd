@@ -11,6 +11,7 @@ var map = []
 # global modules
 onready var particles = get_node("../Particles")
 onready var player_manager = get_node("../PlayerManager")
+onready var cam = get_node("../Camera2D")
 
 # my own modules
 onready var tilemap = $TileMap
@@ -47,6 +48,8 @@ func generate():
 	
 	route_generator.set_global_parameters()
 	route_generator.initialize_rooms()
+	
+	cam.set_correct_limits(get_full_dimensions())
 
 func initialize_grid():
 	map = []

@@ -67,7 +67,7 @@ func deregister_player(p):
 	players_here[player_num].erase(p)
 
 func perform_teleport():
-	var cant_teleport_if_no_players = (num_players_here <= 0)
+	var cant_teleport_if_no_players = (num_players_here <= 0) and GDict.cfg.dont_teleport_if_no_players
 	if cant_teleport_if_no_players:
 		time_left = 15
 		update_label()

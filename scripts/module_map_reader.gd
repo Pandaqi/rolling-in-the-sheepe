@@ -127,7 +127,7 @@ func do_effect_of_cell(cell):
 			body.coins.pay_half()
 		
 		"slower":
-			body.mover.speed_multiplier = clamp(body.coins.as_ratio()*2.0, 0.5, 2.0) 
+			body.mover.speed_multiplier = clamp(body.coins.as_ratio() + 0.5, 0.5, 1.5) 
 		
 		"bomb":
 			body.item_reader.make_bomb()
@@ -288,21 +288,20 @@ func check_if_too_far_behind():
 	if body.map.player_progression.get_leading_player() == self: return
 	
 	var too_far_behind = false
-	#var my_room = body.room_tracker.get_cur_room()
+	var leader = body.map.player_progression.get_leading_player()
+	if not leader: return
 	
-	var next_player = body.map.route_generator.get_next_best_player(body)
-	if not next_player: return
-	
-	var next_player_room = next_player.room_tracker.get_cur_room()
+	var my_room = body.room_tracker.get_cur_room()
+	var leader_room = leader.room_tracker.get_cur_room()
 	
 	# if we're still perfectly in view (because very close to next best player)
 	# ignore this whole thing, we don't (yet) need to teleport
-	var euclidian_dist = (next_player.get_global_position() - body.get_global_position()).length()
+	var euclidian_dist = (leader.get_global_position() - body.get_global_position()).length()
 	if euclidian_dist <= MIN_EUCLIDIAN_DIST_BEFORE_TELEPORT: return
 	if euclidian_dist >= MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT:
 		too_far_behind = true
 	
-	var tiled_dist = next_player_room.route.tiled_dist_to(next_player_room)
+	var tiled_dist = my_room.route.tiled_dist_to(leader_room)
 	if tiled_dist > MAX_TILED_DIST_BETWEEN_PLAYERS:
 		too_far_behind = true
 	
@@ -311,6 +310,7 @@ func check_if_too_far_behind():
 	body.status.modify_time_penalty(TIME_PENALTY_TOO_FAR_BEHIND)
 	body.plan_teleport(get_forward_boost_pos(true), "Too far behind leader!")
 
+# NOTE: The argument "pick next best player" is always passed true, as the other option just isn't ... great
 func get_forward_boost_pos(pick_next_best_player = false):
 	var target_room
 	if pick_next_best_player:

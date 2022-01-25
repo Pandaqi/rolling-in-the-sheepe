@@ -7,7 +7,8 @@ onready var label = $Label
 # 		The value on the "coin sacrifice" is quite high, as only ONE must pay
 func _ready():
 	general_parameter = randi() % 2 + 1
-	gate_type = "coin_gate"
+	
+	update_label()
 
 func perform_update():
 	general_parameter = max(general_parameter - 1, 1)

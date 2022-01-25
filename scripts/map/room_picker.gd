@@ -4,6 +4,7 @@ extends Node
 const PREEMPTIVE_TELEPORTER_THRESHOLD : int = 3
 const PREEMPTIVE_TELEPORTER_PROB : float = 0.5 # unused atm
 
+const MIN_SIMPLE_GENERATED_ROOMS : int = 4
 const DIST_BEFORE_PLACING_TELEPORTER : int = 4
 
 const MAX_BACKTRACK_ROOMS : int = 7
@@ -188,7 +189,8 @@ func generate_all_1x1_rooms_in_dir(params):
 	return arr
 
 func find_valid_configuration_better(params):
-	var use_simple_generation = tutorial_course and tutorial_course.simple_route_generation
+	var use_simple_generation = (tutorial_course and tutorial_course.simple_route_generation) or (route_generator.cur_path.size() <= MIN_SIMPLE_GENERATED_ROOMS)
+	
 	var allow_preemptive_teleporter = (route_generator.cur_path.size() > 6) and not use_simple_generation and not G.in_tutorial_mode() and GDict.cfg.allow_preemptive_teleporter_placement
 	
 	# UPGRADE: controlled variation; determine our maximum size

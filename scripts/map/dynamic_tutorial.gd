@@ -15,6 +15,10 @@ onready var solo_mode = get_node("/root/Main/SoloMode")
 
 var tutorial_scene = preload("res://scenes/dynamic_tutorial.tscn")
 
+# for tracking how often a specific thing was used
+# because some are quite "harsh" and have a maximum they cannot exceed
+var num_times_used = {}
+
 var things_taught : Dictionary = {
 	'terrain': [],
 	'lock': [],
@@ -152,10 +156,21 @@ func determine_included_types():
 			"item": get_all_demo_items(GDict.item_types)
 		}
 	
+	# EASY DEBUGGING
 	if GDict.cfg.debug_quick_dynamic_tutorial:
 		things_to_teach = {
 			'lock': ['painter_lock']
 		}
+	
+	if GDict.cfg.debug_forced_locks.size() > 0:
+		things_to_teach.lock = GDict.cfg.debug_forced_locks + []
+	
+	if GDict.cfg.debug_forced_items.size() > 0:
+		things_to_teach.item = GDict.cfg.debug_forced_items + []
+	
+	if GDict.cfg.debug_forced_terrains.size() > 0:
+		things_to_teach.terrain = GDict.cfg.debug_forced_terrains + []
+	
 	
 	for key in things_to_teach:
 		for item in things_to_teach[key]:
@@ -176,11 +191,11 @@ func remove_unpickables(arr, ref_arr):
 			arr.remove(i)
 			continue
 		
-		if solo_mode.is_active() and ref_arr.has('solo_unpickable'):
+		if solo_mode.is_active() and ref_arr[key].has('solo_unpickable'):
 			arr.remove(i)
 			continue
 		
-		if not solo_mode.is_active() and ref_arr.has('multi_unpickable'):
+		if not solo_mode.is_active() and ref_arr[key].has('multi_unpickable'):
 			arr.remove(i)
 			continue
 
@@ -267,9 +282,25 @@ func get_random(kind : String, room = null):
 	var types_list = things_taught[kind]
 	if types_list.size() <= 0: return null
 
-	
 	var rand_type = draw_list_weighted(kind, types_list, 1)[0]
+	record_type_usage_for_statistics(kind, rand_type)
+	
 	return rand_type
+
+func record_type_usage_for_statistics(kind : String, tp : String):
+	if not num_times_used.has(tp):
+		num_times_used[tp] = 0
+	
+	num_times_used[tp] += 1
+	
+	var data = get_list_from_kind(kind)[tp]
+	if not data.has('max_usage'): return
+	
+	# do we exceed some fixed maximum? remove ourselves from the list again
+	if num_times_used[tp] >= data.max_usage:
+		things_taught[kind].erase(tp)
+		all_allowed_things.erase(tp)
+		update_probabilities(kind)
 
 func has_random(kind : String, room = null):
 	return get_random(kind, room) != null
@@ -297,8 +328,8 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var rand_type = types_list[randi() % types_list.size()]
 	
 	# DEBUGGING => FOR TESTING NEW STUFF
-	rand_kind = 'item'
-	rand_type = 'spiderman'
+#	rand_kind = 'item'
+#	rand_type = 'spiderman'
 	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	

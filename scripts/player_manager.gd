@@ -100,6 +100,10 @@ func create_player(player_num : int):
 		feedback.create_for_node(player, "Welcome!")
 		GAudio.play_dynamic_sound(player, "player_logged_in")
 		particles.create_at_pos(start_pos, "general_powerup", { 'subtype': 'welcome' })
+		
+		# to prevent players getting stuck in start menu
+		player.physics_material_override = player.physics_material_override.duplicate(true)
+		player.physics_material_override.bounce = 0.8
 
 func get_spread_out_position(room):
 	var start_pos = room.rect.get_real_shrunk_pos()
@@ -156,14 +160,15 @@ func closest_dist_to_player(pos):
 	return min_dist
 
 func load_colors():
-	var num_colors = 10
+	var num_colors : float = 6.0
 	var hue_step = 1.0 / num_colors
 	
 	var saturation = 1.0
 	var value = 1.0
 	
 	for i in range(num_colors):
-		var new_col = Color.from_hsv(i * hue_step, saturation, value)
+		var hue : float = (i * hue_step)
+		var new_col = Color.from_hsv(hue, saturation, value)
 		player_colors.append(new_col)
 
 func load_predefined_shapes():
@@ -203,6 +208,9 @@ func deregister_body(p):
 
 func get_all_bodies_of(player_num : int):
 	return bodies_per_player[player_num] + []
+
+func count_total_bodies():
+	return get_tree().get_nodes_in_group("Players").size()
 
 func _on_OrderTimer_timeout():
 	sort_player_bodies()

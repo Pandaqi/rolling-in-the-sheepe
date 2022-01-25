@@ -11,6 +11,7 @@ func on_resize():
 	var vp = get_viewport().size
 	
 	var zoom_per_axis = default_vp / vp
-	var final_zoom = min(zoom_per_axis.x, zoom_per_axis.y)
-	
+	var final_zoom = max(zoom_per_axis.x, zoom_per_axis.y)
+
 	zoom = Vector2.ONE * final_zoom
+	position = 0.5*default_vp

@@ -3,13 +3,15 @@ extends Node2D
 var game_over_screen = preload("res://scenes/ui/game_over_screen.tscn")
 
 var player_raw_times = {}
-var player_times = {}
 var player_ranks_helper = []
+var player_times = {}
 var player_ranks = []
 var num_players_finished : int = 0
 
 var game_start : float = 0.0
 var game_over_mode : bool = false
+
+var input_enabled : bool = false
 
 onready var main_node = get_parent()
 
@@ -19,6 +21,7 @@ func activate():
 
 func _input(ev):
 	if not game_over_mode: return
+	if not input_enabled: return
 	
 	if ev.is_action_released("ui_restart"):
 # warning-ignore:return_value_discarded
@@ -33,7 +36,7 @@ func show_finish_game_over_screen():
 	# TO DO => find a good position out of the way of players
 	# (give camera unique focus type where "players = one side, gui = other")
 	screen.set_position(Vector2.ZERO)
-	screen.populate(player_ranks, player_times)
+	screen.populate(player_ranks_helper)
 	
 	# NOTE: _must_ come after populate, as that also remembers who actually won and stuff
 	screen.show_final_message()
@@ -85,7 +88,7 @@ func player_finished(b):
 	# Calculate final time (from raw time of first body + modifiers)
 	var final_time = raw_time + time_modifiers
 	player_times[player_num] = final_time
-	
+
 	# erase previous entry and overwrite with new time
 	for entry in player_ranks_helper:
 		if entry.num == player_num: player_ranks_helper.erase(entry)
@@ -106,13 +109,15 @@ func get_player_rank(num):
 	return player_ranks[num]
 
 func update_ranks():
+	player_ranks_helper.shuffle() # to break ties randomly
 	player_ranks_helper.sort_custom(self, "rank_sort_function")
 	
 	player_ranks = []
 	player_ranks.resize(GInput.get_player_count())
 	
 	for i in range(player_ranks_helper.size()):
-		player_ranks[player_ranks_helper[i].num] = i
+		var p_num = player_ranks_helper[i].num
+		player_ranks[p_num] = i
 	
 	var players = get_tree().get_nodes_in_group("Players")
 	for p in players:

@@ -246,7 +246,7 @@ func get_pos_just_ahead():
 	var coming_positions : Vector2 = Vector2.ZERO
 	var num_positions_considered : float = 0
 	
-	var max_rooms_to_look_ahead = 3
+	var max_rooms_to_look_ahead = 2
 	var max_bound = min(cur_path.size(), index+max_rooms_to_look_ahead)
 	
 	for i in range(index+1, max_bound):
@@ -256,7 +256,7 @@ func get_pos_just_ahead():
 	
 	coming_positions /= num_positions_considered
 	
-	var max_look_ahead_euclidian = 400
+	var max_look_ahead_euclidian = 318
 	var vec = (coming_positions - lead.get_global_position())
 	var norm_vec = vec.normalized()
 	var dist = min(vec.length(), max_look_ahead_euclidian)
@@ -286,6 +286,7 @@ func get_ideal_teleporter_room():
 		var room = get_path_from_front(i)
 		if room.rect.get_area() <= biggest_size: continue
 		if room.lock.has_lock(): continue
+		if room.has_tutorial: continue
 		if room.entities.has_some(): continue
 		
 		biggest_size = room.rect.get_area()

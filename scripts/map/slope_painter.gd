@@ -120,7 +120,9 @@ func fill_room(room):
 	var holes_not_allowed = room.lock.lock_data.has("no_holes")
 	
 	if holes_not_allowed:
-		for pos in room.rect.shrunk_positions:
+		for i in range(room.rect.shrunk_positions.size()):
+			var pos = room.rect.shrunk_positions[i]
+			
 			if room.tilemap.is_cell_filled(pos): continue
 			
 			var nbs = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
@@ -131,6 +133,7 @@ func fill_room(room):
 			
 			if num_filled_nbs >= 4:
 				map.change_cell(pos, 0)
+				i = -1 # reset the loop, as now NEW holes might've been created!
 
 ####
 # Slopes

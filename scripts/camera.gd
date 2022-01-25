@@ -3,7 +3,7 @@ extends Camera2D
 const MIN_ZOOM : float = 0.75
 const MAX_ZOOM : float = 4.0
 
-const ZOOM_MARGIN : Vector2 = Vector2(100.0, 100.0)
+const ZOOM_MARGIN : Vector2 = Vector2(50.0, 50.0)
 
 var debug_zoom_out : bool = false
 
@@ -14,12 +14,7 @@ onready var route_generator = get_node("/root/Main/Map/RouteGenerator")
 # TO DO: Test if this even works AND if it's a good idea (focusing on the look ahead this much)
 var look_ahead : bool = true
 
-func _ready():
-	set_correct_limits()
-
-func set_correct_limits():
-	var dims = map.get_full_dimensions()
-	
+func set_correct_limits(dims):
 	limit_left = dims.x
 	limit_right = dims.x + dims.width
 	

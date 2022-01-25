@@ -84,16 +84,10 @@ func register_contact(obj):
 # (when inside area, they toggle on, when outside, they toggle off again)
 #
 func turn_on_item(block, tp : String):
-	print("TRYING TO TURN ON")
-	print(tp)
-	
 	if not body.map.special_elements.type_is_toggle(tp): return
 	
 	var obj = { 'block': block, 'type': tp }
 	toggled_items.append(obj)
-	
-	print("TURNING ON")
-	print(tp)
 	
 	match tp:
 		'ghost': body.status.make_ghost()

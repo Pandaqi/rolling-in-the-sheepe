@@ -52,6 +52,15 @@ var settings = [
 	
 	{
 		"sec": "settings",
+		"label": "Jump Straight Up",
+		"name": "always_jump_straight_up",
+		"comp": "Checkbox",
+		"def": true,
+		"desc": "Easier for beginners. (If off, you jump away from closest surface.)"
+	},
+	
+	{
+		"sec": "settings",
 		"label": "Show Tutorials",
 		"name": "show_dynamic_tutorials",
 		"comp": "Checkbox",

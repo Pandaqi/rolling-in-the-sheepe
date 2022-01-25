@@ -68,8 +68,7 @@ func check_player_movement(dt):
 
 func position_sprite_above_player():
 	var pos = body.get_global_transform_with_canvas().origin
-	var offset = Vector2.UP * 50
-	
+	var offset = Vector2.UP * 75
 	sprite.set_position(pos + offset)
 
 func _on_Timer_timeout():

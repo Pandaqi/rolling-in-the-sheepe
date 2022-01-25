@@ -3,7 +3,9 @@ extends "res://scripts/locks/lock_general.gd"
 const MIN_PERCENTAGE_FILL : float = 0.995
 const MIN_CHANGE_BEFORE_FEEDBACK : float = 0.1
 const MIN_DIST_BEFORE_AUDIO_FEEDBACK : float = 6.0
-const HOLE_SIZE = { 'min': 5, 'max': 10 }
+
+const NUM_HOLES = { 'min': 3, 'max': 6 }
+const HOLE_SIZE = { 'min': 8, 'max': 14 }
 
 onready var canvas = $Canvas
 onready var label = $Label
@@ -40,7 +42,7 @@ func _ready():
 func add_holes():
 	if sub_type != "holes": return
 	
-	var num_holes = 6
+	var num_holes = randi() % (NUM_HOLES.max - NUM_HOLES.min) + NUM_HOLES.min
 	for i in range(num_holes):
 		var rand_pos = my_room.rect.get_random_real_pos_inside({ 'empty': true })
 		var rand_local_pos = rand_pos - my_room.rect.get_real_shrunk_pos()

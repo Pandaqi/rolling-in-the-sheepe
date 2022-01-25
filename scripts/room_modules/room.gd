@@ -103,8 +103,6 @@ func finish_placement():
 	
 	outline.determine_outline()
 	debugger.show()
-	
-	print("PLACED A ROOMo")
 
 # called when the NEXT room is being placed, as only then we know what should happen with this one
 func finish_placement_in_hindsight():

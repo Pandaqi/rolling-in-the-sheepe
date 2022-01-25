@@ -3,6 +3,7 @@ extends Node
 const FADE_DURATION : float = 4.0
 const MAX_COINS : int = 5
 const NUM_COLS_IN_INTERFACE : int = 5
+const COIN_SCALE : float = 0.35
 
 var num_coins : int = 0
 var coin_sprite_scene = preload("res://scenes/ui/coin_sprite.tscn")
@@ -80,10 +81,13 @@ func transfer_coins_to_biggest_shape(obj):
 # TO DO => IDEA => Show the coins _on the player itself_, so we temporarily hide your face? (Not sure if this is great, as shapes can get very small.)
 func update_gui():
 	var counter = 0
-	var coin_sprite_size = 16
+	var coin_sprite_size = COIN_SCALE * 64.0
 	var cols = min(NUM_COLS_IN_INTERFACE, num_coins)
 	
 	var total_offset = Vector2(0.5 * (cols-1)*coin_sprite_size, -0.5*coin_sprite_size)
+	
+	var bump_scale = Vector2.ONE*1.35
+	var bump_dur = 0.45
 	
 	for child in my_gui.get_children():
 		var show = (counter < num_coins)
@@ -96,8 +100,14 @@ func update_gui():
 			var my_offset = coin_sprite_size*Vector2(col, row)
 			
 			child.set_position(-total_offset + my_offset)
+			
+			tween.interpolate_property(child, "scale",
+				bump_scale, Vector2.ONE, bump_dur,
+				Tween.TRANS_LINEAR, Tween.EASE_OUT, counter*0.75*bump_dur)
 		
 		counter += 1
+	
+	tween.start()
 
 func show():
 	update_gui()

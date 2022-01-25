@@ -9,8 +9,14 @@ var scenes = {
 	'menu': preload("res://Menu.tscn")
 }
 
+var standard_viewport = Vector2(1024, 600)
+
 func is_demo():
 	return demo
+
+func get_viewport_scale_factor() -> float:
+	var factors = get_viewport().size / standard_viewport
+	return max(min(factors.x, factors.y), 1.0)
 
 func make_all_players_round():
 	return (in_game and type == "tutorial") or (not in_game)

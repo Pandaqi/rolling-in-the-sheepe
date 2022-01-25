@@ -113,10 +113,16 @@ func jump():
 	# NOTE: It enables itself again after a (very) short period
 	body.clinger.disable()
 	
-	var grav_scale_absolute = abs(body.gravity_scale)
+	var grav_scale = body.gravity_scale
+	var grav_scale_absolute = abs(grav_scale)
+	if grav_scale == 0: grav_scale = 1.0 # in case of no-gravity/float terrain
 	if grav_scale_absolute == 0: grav_scale_absolute = 1.0
+	
+	var final_jump_vec = jump_vec * grav_scale_absolute
+	if GDict.cfg.always_jump_straight_up:
+		final_jump_vec = Vector2.UP * grav_scale
 
-	var final_jump_vec = jump_vec * JUMP_FORCE * grav_scale_absolute * size_speed_multiplier
+	final_jump_vec *= JUMP_FORCE * size_speed_multiplier
 	body.apply_central_impulse(final_jump_vec)
 
 func _physics_process(dt):
@@ -176,7 +182,7 @@ func check_for_standstill():
 	if time_since_last_input <= (STANDSTILL_THRESHOLD + randf()*8.0): return
 	
 	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT, false)
-	body.plan_teleport(body.map_reader.get_forward_boost_pos(), "Stood still too long!")
+	body.plan_teleport(body.map_reader.get_forward_boost_pos(true), "Stood still too long!")
 	
 	# NOTE: important, otherwise it keeps endlessly teleporting of course!
 	last_input_time = cur_time
@@ -263,3 +269,6 @@ func draw_normal_indicator(dt):
 	var cur_vec = Vector2(cos(cur_rot), sin(cur_rot))
 	
 	normal_indicator.rotation = cur_vec.slerp(wanted_vec, 8*dt).angle()
+	
+	if GDict.cfg.always_jump_straight_up:
+		normal_indicator.set_visible(false)

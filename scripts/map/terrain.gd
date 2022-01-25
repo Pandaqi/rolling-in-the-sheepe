@@ -60,6 +60,10 @@ func get_random_terrain_type(room):
 	
 	while bad_choice:
 		key = map.dynamic_tutorial.get_random('terrain', room)
+		if not key:
+			key = ""
+			break
+		
 		num_tries += 1
 		
 		if num_tries > MAX_TRIES:

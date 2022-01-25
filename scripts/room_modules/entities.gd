@@ -29,10 +29,10 @@ func has_some():
 
 func delete():
 	if not parent.map.route_generator.is_teleporting:
-		for p in players_inside:
+		for p in get_them():
 			p.status.delete(false)
 		
 		players_inside = []
 	
-	for p in players_inside:
+	for p in get_them():
 		p.room_tracker.on_room_removed()

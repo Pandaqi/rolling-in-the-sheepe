@@ -39,6 +39,11 @@ func add_lock(forced_type : String = "") -> bool:
 	var rand_type = parent.map.dynamic_tutorial.get_random('lock', parent)
 	if forced_type != "": rand_type = forced_type
 	
+	# NOTE: somehow, I had the luminous idea of CHANGING rand_type later on if the lock is part of a lock group
+	# making the value wrong for some things, causing the dynamic tutorial to falter
+	# so save the original type here
+	var original_type = rand_type
+	
 	var data = GDict.lock_types[rand_type]
 	lock_data = data
 	
@@ -68,7 +73,7 @@ func add_lock(forced_type : String = "") -> bool:
 	parent.map.terrain.paint(parent, related_terrain)
 	
 	lock_module = scene
-	parent.map.dynamic_tutorial.on_usage_of('lock', rand_type)
+	parent.map.dynamic_tutorial.on_usage_of('lock', original_type)
 	was_lock = true
 
 	return true

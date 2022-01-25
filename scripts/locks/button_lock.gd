@@ -27,6 +27,9 @@ func record_button_push(item):
 		
 		map.special_elements.erase(item)
 	
+	# NOTE: this just means we succeed for sure,
+	# as this function is only called once we've already established
+	# all buttons are being pressed at the same time
 	elif sub_type == "simultaneous":
 		buttons_pushed = buttons_to_push
 	
@@ -41,7 +44,8 @@ func record_button_push(item):
 	
 	# FAIL-SAFE: in case the number is wrong, recalculate after each push
 	# (number should have been: our progress so far + how many are left)
-	buttons_to_push = my_room.items.count() + buttons_pushed
+	if sub_type != "simultaneous":
+		buttons_to_push = my_room.items.count() + buttons_pushed
 	buttons_pushed += 1
 
 	update_label()
@@ -58,9 +62,17 @@ func spawn_buttons():
 	
 	var num_buttons = 2 + randi() % 3
 	if sub_type == "simultaneous":
-		num_buttons = 2
-		if num_players  >= 4: 
-			num_buttons = 2 + randi() % 2
+		var max_btns = min(get_tree().get_nodes_in_group("Players").size(), 6)
+		var min_btns = 2
+		
+		if max_btns > min_btns:
+			num_buttons = randi() % (max_btns - min_btns) + min_btns
+		else:
+			num_buttons = min_btns
+		
+		# 6 is possible, but quite hard, so randomly push it down when we hit it
+		if num_buttons == 6 and randf() <= 0.5:
+			num_buttons = 5
 	
 	if sub_type == "timed":
 		num_buttons = 1
@@ -69,12 +81,14 @@ func spawn_buttons():
 		if num_players >= 3:
 			num_buttons = 1 + randi() % 2
 	
+	# NOTE: crucial remark, we use parameter "use_shrunk" 
+	# to force buttons to be _inside_ the lock completely, and thus reachable
+	# all other special tiles just use the full room
+	
 	buttons = []
 	var final_buttons_placed = 0
 	for i in range(num_buttons):
-		# NOTE: crucial remark, we use parameter "use_shrunk" 
-		# to force buttons to be _inside_ the lock completely, and thus reachable
-		# all other special tiles just use the full room
+		
 		var new_button = my_room.items.add_special_item({ 'type': "button_" + sub_type , 'use_shrunk': true, 'ignore_size': true })
 		if not new_button: break
 		
@@ -99,6 +113,10 @@ func _physics_process(_dt):
 	
 	var num_pressed = 0
 	for btn in buttons:
+		if not btn or not is_instance_valid(btn): 
+			num_pressed += 1
+			continue
+		
 		if btn.has_overlapping_bodies():
 			num_pressed += 1
 	

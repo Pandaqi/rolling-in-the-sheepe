@@ -1,6 +1,7 @@
 extends Node2D
 
 onready var player_manager = get_node("/root/Main/PlayerManager")
+onready var state = get_node("/root/Main/State")
 onready var anim_player = $AnimationPlayer
 
 var item_scene = preload("res://scenes/ui/game_over_screen_item.tscn")
@@ -20,20 +21,20 @@ func on_resize():
 	who_won.set_position(0.5*vp)
 	message.set_position(0.5*vp)
 
-func populate(ranks, times):
+func populate(ranks_helper):
 	var padding = 15
 	var gap = 0
 	
 	var item_base_size = 128
 	var last_item_pos
 	
-	for i in range(ranks.size()):
-		var player_num = ranks[i]
+	for i in range(ranks_helper.size()):
+		var player_num = ranks_helper[i].num
 		if i == 0: winner = player_num
 		
 		var col = player_manager.player_colors[player_num]
 		var shape_frame = player_manager.get_player_shape_frame(player_num)
-		var time = times[player_num]
+		var time = ranks_helper[i].time
 		
 		var item = item_scene.instance()
 		item.get_node("Rank").set_text("#" + str(i+1))
@@ -75,3 +76,6 @@ func show_final_message():
 	
 	# play basic revealing animation
 	anim_player.play("FinalMessage")
+
+func game_over_anim_finished():
+	state.input_enabled = true
