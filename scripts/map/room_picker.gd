@@ -157,14 +157,18 @@ func backtrack_and_find_good_room(params):
 func place_teleporter_if_stuck(params):
 	if not params.no_valid_placement: return false
 	
-#	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
-#	if not should_place_teleporter: return false
-	
 	print("TELEPORTER PLACED (because stuck)")
 	
 	# destroy the bad room we ended up not using
 	params.new_room.queue_free()
 	
+	# in tutorial mode, we don't ACTUALLY go through with this
+	# we just want to hold off on placing one, a better/valid option SHOULD present itself
+	if G.in_tutorial_mode() and route_generator.cur_path.size() < 10: return true
+	
+#	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
+#	if not should_place_teleporter: return false
+
 	route_generator.pause_room_generation = true
 	route_generator.get_ideal_teleporter_room().turn_into_teleporter()
 	return true
@@ -225,19 +229,17 @@ func find_valid_configuration_better(params):
 	# discourage verticality, but completely forbid going upwards
 	if use_simple_generation: 
 		preferred_dir_order = [0,2,1]
-	if G.in_tutorial_mode():
+		
+	# EXCEPTION: tutorial wants to stay simple, so no upward
+	if G.in_tutorial_mode() or use_simple_generation:
 		preferred_dir_order.erase(3)
 	
 	# UPGRADE: sneak peeks (explained further below)
 	var allow_sneak_rooms = GDict.cfg.route_generation_sneak_improvement
 	
-	# EXCEPTION: tutorial wants to stay simple, so no upward
-	if use_simple_generation:
-		preferred_dir_order.erase(3)
-	
 	# find the valid rooms in each dir, until we have a direction with results
 	var total_num_valid_rooms : int = 0
-	var best_room_we_have
+	var best_room_we_have = null
 	while preferred_dir_order.size() > 0:
 		
 		params.dir = preferred_dir_order.pop_front()
@@ -276,7 +278,8 @@ func find_valid_configuration_better(params):
 				continue
 			
 			# simple generation wants rooms to stay the same size
-			if use_simple_generation:
+			# NOTE: but we still want to have the POSSIBILITY of choosing something else if desperately needed, so ignore this restraint on verticality)
+			if use_simple_generation and params.dir != 1:
 				if params.dir == 0 or params.dir == 2:
 					if room.size.x != last_size.x: continue
 				elif params.dir == 1 or params.dir == 3:
@@ -325,7 +328,7 @@ func find_valid_configuration_better(params):
 
 		# pick randomly from the LAST part of the array, as those are the BIGGER rooms, and then we're done
 		if not best_room_we_have:
-			var min_index = new_size_level_index
+			var min_index = max(new_size_level_index - 1, 0)
 			var max_index = valid_rooms.size()
 			var rand_index = randi() % (max_index - min_index) + min_index
 			

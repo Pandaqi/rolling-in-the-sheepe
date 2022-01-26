@@ -8,9 +8,9 @@ const BOUNCE_VAL : float = 0.8
 const REPEL_FORCE : float = 600.0
 const MIN_COIN_LIMIT : int = 2
 
-const MAX_TILED_DIST_BETWEEN_PLAYERS : int = 50
-const MIN_EUCLIDIAN_DIST_BEFORE_TELEPORT : float = 460.0
-const MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT : float = 1500.0
+const MAX_TILED_DIST_BETWEEN_PLAYERS : int = 55
+const MIN_EUCLIDIAN_DIST_BEFORE_TELEPORT : float = 400.0
+const MAX_EUCLIDIAN_DIST_GUARANTEE_TELEPORT : float = 1400.0
 
 const TIME_PENALTY_TOO_FAR_BEHIND : float = 10.0
 
@@ -286,6 +286,7 @@ func position_gui_above_us():
 
 func check_if_too_far_behind():
 	if body.map.player_progression.get_leading_player() == self: return
+	if body.status.has_finished: return
 	
 	var too_far_behind = false
 	var leader = body.map.player_progression.get_leading_player()
@@ -308,7 +309,7 @@ func check_if_too_far_behind():
 	if not too_far_behind: return
 	
 	body.status.modify_time_penalty(TIME_PENALTY_TOO_FAR_BEHIND)
-	body.plan_teleport(get_forward_boost_pos(true), "Too far behind leader!")
+	body.plan_teleport(get_forward_boost_pos(true), "Too far behind!")
 
 # NOTE: The argument "pick next best player" is always passed true, as the other option just isn't ... great
 func get_forward_boost_pos(pick_next_best_player = false):

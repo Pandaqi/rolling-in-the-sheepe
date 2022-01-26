@@ -19,6 +19,7 @@ var cfg = {
 	
 	"allow_preemptive_teleporter_placement": false,
 	"dont_teleport_if_no_players": false, # restarts timer if it's 0 but no players actually inside teleporter
+	"teleport_if_everyone_inside": false, # although a fine idea, it's a bit sudden, and means the tutorial doesn't show everything FOR CERTAIN ... which is bad
 	
 	"fog_enabled": false,
 	

@@ -8,6 +8,7 @@ var num_players_here : int = 0
 var time_left = 15
 
 var timer_is_running : bool = false
+var activated : bool = false
 
 onready var label = $Label
 onready var solo_mode = get_node("/root/Main/SoloMode")
@@ -24,21 +25,28 @@ func start_timer():
 	timer_is_running = true
 
 func _on_Timer_timeout():
+	if activated: return
+	
 	time_left -= 1
 	update_label()
 	
 	if time_left <= 0:
-		perform_teleport()
+		activated = true
+		call_deferred("perform_teleport")
 
 func update_label():
 	label.perform_update(str(time_left))
 
 func _physics_process(_dt):
+	if activated: return
+	if not GDict.cfg.teleport_if_everyone_inside: return
+	
 	var wanted_num_players = GInput.get_player_count()
 	num_players_here = count_players_here()
 	
 	if num_players_here >= wanted_num_players:
-		perform_teleport()
+		activated = true
+		call_deferred("perform_teleport")
 
 func count_players_here():
 	var sum = 0
@@ -86,7 +94,7 @@ func perform_teleport():
 	# create the new one
 	map.route_generator.pause_room_generation = false
 	
-	var new_pos_margin = 5
+	var new_pos_margin = 9
 	map.room_picker.create_new_room( map.get_random_grid_pos(new_pos_margin) )
 	
 	# teleport all players there
@@ -100,6 +108,8 @@ func perform_teleport():
 	
 	for key in players_here:
 		for body in players_here[key]:
+			if not body or not is_instance_valid(body): continue
+			
 			var final_pos = map.player_manager.get_spread_out_position(teleport_target_room)
 			body.plan_teleport(final_pos)
 			

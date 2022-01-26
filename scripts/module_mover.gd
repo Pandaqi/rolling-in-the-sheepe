@@ -182,10 +182,13 @@ func check_for_standstill():
 	if time_since_last_input <= (STANDSTILL_THRESHOLD + randf()*8.0): return
 	
 	body.status.modify_time_penalty(TIME_PENALTY_STANDSTILL_TELEPORT, false)
-	body.plan_teleport(body.map_reader.get_forward_boost_pos(true), "Stood still too long!")
+	body.plan_teleport(body.map_reader.get_forward_boost_pos(true), "Don't stand still!")
 	
 	# NOTE: important, otherwise it keeps endlessly teleporting of course!
 	last_input_time = cur_time
+
+func reset_standstill_check():
+	last_input_time = OS.get_ticks_msec()
 
 func cap_speed():
 	var vel = body.linear_velocity

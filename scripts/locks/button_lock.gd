@@ -106,6 +106,7 @@ func is_invalid() -> bool:
 
 func erase_all_buttons():
 	for btn in buttons:
+		if not btn or not is_instance_valid(btn): continue
 		map.special_elements.erase(btn)
 
 func _physics_process(_dt):

@@ -9,7 +9,7 @@ const MAX_TIME_BETWEEN_STEPS : int = 15
 onready var timer = $Timer
 
 var tutorial_step : int = -1
-var base_frames = [0,8]
+var base_frames = [0,8,97]
 
 const MOVEMENT_BEFORE_NEXT_STEP : float = 3.0 # in _seconds_, regardless of speed
 var player_movement : float = 0.0
@@ -21,6 +21,9 @@ func _module_ready():
 
 func activate():
 	active = true
+	
+	if GInput.is_keyboard_player(body.status.player_num):
+		base_frames.erase(97)
 	
 	remove_child(sprite)
 	body.GUI.add_child(sprite)
@@ -42,6 +45,11 @@ func load_next_step():
 		base_frame += abs(device_id + 1)
 	else:
 		base_frame += 4
+	
+	# EXCEPTION: controller tutorial gets an extra step, but keyboard doesn't, so we just take the raw value
+	# (if we need more exceptions, we need cleaner code for that, but eh ...)
+	if base_frames[tutorial_step] == 97:
+		base_frame = 97
 	
 	sprite.set_frame(base_frame)
 	player_movement = 0.0
@@ -72,4 +80,4 @@ func position_sprite_above_player():
 	sprite.set_position(pos + offset)
 
 func _on_Timer_timeout():
-	pass # Replace with function body.
+	load_next_step()

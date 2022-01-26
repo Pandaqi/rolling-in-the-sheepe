@@ -84,6 +84,7 @@ func _on_Timer_timeout():
 
 func become_more_round_unrealistic():
 	if body.status.is_wolf: return
+	if body.status.has_finished: return
 	
 	if grow_instead_of_rounding:
 		grow(GROW_FACTOR)
@@ -101,6 +102,7 @@ func become_more_round_unrealistic():
 
 func become_more_malformed_unrealistic():
 	if body.status.is_wolf: return
+	if body.status.has_finished: return
 	
 	if grow_instead_of_rounding:
 		shrink(GROW_FACTOR)

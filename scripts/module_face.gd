@@ -1,6 +1,7 @@
 extends Node2D
 
 var sprite_size : float = 256.0
+var scale_bump : float = 1.33
 
 onready var animation_player = $AnimationPlayer
 onready var shield = $Shield
@@ -21,7 +22,7 @@ func link_sprites():
 func update_size(_bounds):
 	if not face_sprite: link_sprites()
 	
-	var new_scale = shaper.approximate_radius()/sprite_size
+	var new_scale = shaper.approximate_radius()/sprite_size * scale_bump
 	face_sprite.set_scale(Vector2(1,1)*new_scale)
 	
 	# TO DO: show this BEHIND the Shaper, but I see no easy way to set those Z-indices

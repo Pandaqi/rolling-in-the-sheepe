@@ -135,6 +135,8 @@ func plan_teleport(pos, reason : String = ""):
 	teleport_pos = pos
 	teleport_reason = reason
 	contact_data = []
+	
+	mover.reset_standstill_check()
 
 func plan_shoot_away(vec):
 	shoot_away_vec = vec
