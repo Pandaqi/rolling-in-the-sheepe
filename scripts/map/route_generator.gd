@@ -12,6 +12,7 @@ const NUM_STARTING_ROOMS : int = 10
 
 # the actual path of rooms, in order
 var cur_path = []
+var total_path_length : int = 0
 
 # keep track of total room count, so we know when to finish
 var total_rooms_created : int = 0
@@ -65,6 +66,13 @@ func set_global_parameters():
 
 func generation_disallowed():
 	return pause_room_generation or has_finished
+
+func append_to_path(room):
+	cur_path.append(room)
+	total_path_length += 1
+
+func get_total_path_length():
+	return total_path_length
 
 #
 # Every frame update; core of algorithm (delete old rooms, add new)

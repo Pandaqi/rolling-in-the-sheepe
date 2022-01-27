@@ -13,6 +13,7 @@ func _init():
 		GInput.create_debugging_players()
 
 func _ready():
+	solo_mode.pre_activate()
 	map.generate()
 	player_manager.activate()
 	solo_mode.activate()

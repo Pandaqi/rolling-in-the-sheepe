@@ -12,10 +12,11 @@ onready var timer = $Timer
 onready var disable_timer = $DisableTimer
 onready var main_node = get_parent()
 
-func activate():
+func pre_activate():
 	active = GInput.get_player_count() == 1
-	if not active: return
 
+func activate():
+	if not active: return
 	restart_timer()
 	disable_temporarily(false)
 

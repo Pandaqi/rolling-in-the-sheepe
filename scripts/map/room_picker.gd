@@ -164,7 +164,8 @@ func place_teleporter_if_stuck(params):
 	
 	# in tutorial mode, we don't ACTUALLY go through with this
 	# we just want to hold off on placing one, a better/valid option SHOULD present itself
-	if G.in_tutorial_mode() and route_generator.cur_path.size() < 10: return true
+	if G.in_tutorial_mode() and route_generator.get_total_path_length() < 10: 
+		return true
 	
 #	var should_place_teleporter = (player_progression.get_distance_to_generation_end() <= DIST_BEFORE_PLACING_TELEPORTER)
 #	if not should_place_teleporter: return false
@@ -350,7 +351,7 @@ func place_room_according_to_params(params):
 	params.index = route_generator.get_new_room_index()
 	params.path_pos = route_generator.total_rooms_created
 
-	route_generator.cur_path.append(params.new_room)
+	route_generator.append_to_path(params.new_room)
 	params.new_room.place(params)
 	
 	if params.prev_room:

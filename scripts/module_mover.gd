@@ -23,8 +23,8 @@ const EXTRA_RAYCAST_MARGIN : float = 8.0
 # NOTE: This force is applied _constantly_, each frame, so it should be quite low
 const AIR_RESISTANCE_FORCE : float = 8.0
 
-const STANDSTILL_THRESHOLD : float = 10.0 # in seconds
-const TIME_PENALTY_STANDSTILL_TELEPORT : float = 6.0
+const STANDSTILL_THRESHOLD : float = 15.0 # in seconds
+const TIME_PENALTY_STANDSTILL_TELEPORT : float = 15.0
 
 var normal_vec : Vector2
 var jump_vec : Vector2

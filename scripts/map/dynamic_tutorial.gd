@@ -327,10 +327,6 @@ func plan_random_placement(wanted_kind : String = 'any'):
 	var types_list = things_to_teach[rand_kind]
 	var rand_type = types_list[randi() % types_list.size()]
 	
-	# DEBUGGING => FOR TESTING NEW STUFF
-#	rand_kind = 'item'
-#	rand_type = 'spiderman'
-	
 	thing_planned = { 'kind': rand_kind, 'type': rand_type, 'tutorial_placed': false }
 	
 	# if no dynamic tutorials enabled (globally), skip the whole tutorial part

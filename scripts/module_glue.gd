@@ -132,6 +132,8 @@ func slice_along_halfway_line():
 
 func spike_object(obj):
 	if obj.body.status.is_invincible: return
+	if body.map_reader.last_cell_has_terrain("teleporter"): return
+	if obj.body.map_reader.last_cell_has_terrain("teleporter"): return
 	
 	var slice_line = get_realistic_slice_line(obj)
 	if is_wolf: 

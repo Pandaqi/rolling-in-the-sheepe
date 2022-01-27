@@ -7,6 +7,8 @@ var buttons = []
 var buttons_pushed : int = 0
 var buttons_to_push : int = 0
 
+var first_enter : bool = true
+
 onready var label = $Label
 
 func _ready():
@@ -44,8 +46,7 @@ func record_button_push(item):
 	
 	# FAIL-SAFE: in case the number is wrong, recalculate after each push
 	# (number should have been: our progress so far + how many are left)
-	if sub_type != "simultaneous":
-		buttons_to_push = my_room.items.count() + buttons_pushed
+	recheck_button_count()
 	buttons_pushed += 1
 
 	update_label()
@@ -100,6 +101,18 @@ func spawn_buttons():
 
 	buttons_to_push = final_buttons_placed
 	update_label()
+
+func on_body_enter(p):
+	.on_body_enter(p)
+	
+	if not first_enter: return
+	recheck_button_count()
+	first_enter = false
+
+func recheck_button_count():
+	if sub_type == "simultaneous": return
+	
+	buttons_to_push = my_room.items.count() + buttons_pushed
 
 func is_invalid() -> bool:
 	return buttons.size() <= 0

@@ -1,11 +1,11 @@
 extends Node2D
 
 const CLING_GRAVITY_REDUCTION : float = 0.1
-const CLING_FORCE : float = 85.0
+const CLING_FORCE : float = 98.0
 var active : bool = false
 
 const EXTRA_RAYCAST_MARGIN : float = 8.0
-const ACTIVE_EXTRA_RAYCAST_MARGIN : float = 11.0 # for when it's actually active, needs to be a little stronger
+const ACTIVE_EXTRA_RAYCAST_MARGIN : float = 12.0 # for when it's actually active, needs to be a little stronger
 
 var cling_vec : Vector2
 var size_force_multiplier : float = 1.0
@@ -128,7 +128,7 @@ func shoot_raycast_in_dir(dir):
 	if active: margin = ACTIVE_EXTRA_RAYCAST_MARGIN
 	
 	var raycast_dist = body.shaper.get_bounding_box_along_vec(dir) 
-	var end = start + dir*raycast_dist
+	var end = start + dir*(raycast_dist + margin)
 	
 	debug_cling_raycasts.append(end)
 

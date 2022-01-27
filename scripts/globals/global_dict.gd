@@ -24,7 +24,7 @@ var cfg = {
 	"fog_enabled": false,
 	
 	# debugging dynamic tutorial stuff
-	"debug_forced_locks": ["button_lock_simultaneous"],
+	"debug_forced_locks": [],
 	"debug_forced_terrains": [],
 	"debug_forced_items": [],
 	
@@ -144,7 +144,7 @@ var lock_types = {
 	
 	"slot_gate": { "terrain": "slot_gate_lock", "edge_type": "slot_gate", "tut": 47 },
 	"fast_gate": { "terrain": "fast_gate_lock", "edge_type": "fast_gate", "tut": 48 },
-	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49, "prob": 2 },
+	"float_lock": { "terrain": "float_lock", "edge_type": "regular", "tut": 49, "prob": 2, "solo_prob": 0.8 },
 	
 	"painter_lock": { "terrain": "painter_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "regular", "tut": 50, "prob": 3, "no_holes": true, "demo": true },
 	"painter_holes_lock": { "terrain": "painter_holes_lock", "edge_type": "painter", "lock_group": "painter_lock", "sub_type": "holes", "tut": 52, "no_holes": true },
